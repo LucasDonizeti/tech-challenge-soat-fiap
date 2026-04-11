@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 public class CpfJaCadastradoException extends DomainException {
-    private final CPF cpf;
+    private final transient CPF cpf;
 
     public CpfJaCadastradoException(CPF cpf) {
         super("CPF já cadastrado: " + cpf.getFormatado());

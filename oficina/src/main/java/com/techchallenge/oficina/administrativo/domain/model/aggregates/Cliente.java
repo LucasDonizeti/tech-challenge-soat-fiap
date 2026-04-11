@@ -194,24 +194,16 @@ public class Cliente extends AbstractAggregateRoot<Cliente> {
     }
 
     // Método para restaurar aggregate do banco
-    public static Cliente restaurar(
-            UUID id, 
-            Nome nome, 
-            CPF cpf, 
-            CNPJ cnpj, 
-            Email email, 
-            StatusCliente status, 
-            LocalDateTime criadoEm, 
-            LocalDateTime atualizadoEm) {
+    public static Cliente restaurar(ClienteRestauracaoParams params) {
         Cliente cliente = new Cliente();
-        cliente.id = id;
-        cliente.nome = nome;
-        cliente.cpf = cpf;
-        cliente.cnpj = cnpj;
-        cliente.email = email;
-        cliente.status = status;
-        cliente.criadoEm = criadoEm;
-        cliente.atualizadoEm = atualizadoEm;
+        cliente.id = params.id();
+        cliente.nome = params.nome();
+        cliente.cpf = params.cpf();
+        cliente.cnpj = params.cnpj();
+        cliente.email = params.email();
+        cliente.status = params.status();
+        cliente.criadoEm = params.criadoEm();
+        cliente.atualizadoEm = params.atualizadoEm();
         return cliente;
     }
 }

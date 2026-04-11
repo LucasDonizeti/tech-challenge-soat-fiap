@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 public class EmailJaCadastradoException extends DomainException {
-    private final Email email;
+    private final transient Email email;
 
     public EmailJaCadastradoException(Email email) {
         super("Email já cadastrado: " + email.getEndereco());

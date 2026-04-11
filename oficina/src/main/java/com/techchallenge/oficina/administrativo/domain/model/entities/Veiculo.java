@@ -49,11 +49,11 @@ public class Veiculo {
     protected Veiculo() {}
 
     // Método estático para restauração (padrão DDD)
-    public static Veiculo restaurar(UUID id, Placa placa, String marca, String modelo, Integer ano, String cor, java.time.LocalDateTime criadoEm, java.time.LocalDateTime atualizadoEm) {
-        Veiculo veiculo = new Veiculo(placa, marca, modelo, ano, cor, false);
-        veiculo.id = id;
-        veiculo.criadoEm = criadoEm;
-        veiculo.atualizadoEm = atualizadoEm;
+    public static Veiculo restaurar(VeiculoRestauracaoParams params) {
+        Veiculo veiculo = new Veiculo(params.placa(), params.marca(), params.modelo(), params.ano(), params.cor(), false);
+        veiculo.id = params.id();
+        veiculo.criadoEm = params.criadoEm();
+        veiculo.atualizadoEm = params.atualizadoEm();
         return veiculo;
     }
 

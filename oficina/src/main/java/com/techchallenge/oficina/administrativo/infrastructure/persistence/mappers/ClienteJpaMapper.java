@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.administrativo.infrastructure.persistence.mappers;
 
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
+import com.techchallenge.oficina.administrativo.domain.model.aggregates.ClienteRestauracaoParams;
 import com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.*;
 import com.techchallenge.oficina.administrativo.infrastructure.persistence.entities.ClienteEntity;
@@ -40,7 +41,7 @@ public class ClienteJpaMapper {
             return null;
         }
         
-        Cliente cliente = Cliente.restaurar(
+        ClienteRestauracaoParams params = new ClienteRestauracaoParams(
                 entity.getId(),
                 Nome.of(entity.getNome()),
                 entity.getCpf() != null ? CPF.of(entity.getCpf()) : null,
@@ -50,6 +51,8 @@ public class ClienteJpaMapper {
                 entity.getCriadoEm(),
                 entity.getAtualizadoEm()
         );
+        
+        Cliente cliente = Cliente.restaurar(params);
         
         // Adiciona os veículos ao cliente
         List<Veiculo> veiculos = veiculoJpaMapper.toDomainList(entity.getVeiculos());

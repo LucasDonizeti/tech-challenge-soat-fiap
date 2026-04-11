@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 public class CnpjJaCadastradoException extends DomainException {
-    private final CNPJ cnpj;
+    private final transient CNPJ cnpj;
 
     public CnpjJaCadastradoException(CNPJ cnpj) {
         super("CNPJ já cadastrado: " + cnpj.getFormatado());

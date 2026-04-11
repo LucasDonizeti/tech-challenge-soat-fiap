@@ -17,7 +17,7 @@ import java.io.IOException;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private static final Logger jwtLogger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     private static final String BEARER_PREFIX = "Bearer ";
     private static final String AUTH_HEADER = "Authorization";
 
@@ -61,7 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             return jwtTokenUtil.getUsernameFromToken(token);
         } catch (Exception e) {
-            logger.warn("Token JWT inválido ou expirado. Erro: {}", e.getMessage());
+            jwtLogger.warn("Token JWT inválido ou expirado. Erro: {}", e.getMessage());
             return null;
         }
     }
@@ -78,9 +78,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     userDetails, null, userDetails.getAuthorities());
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authToken);
-            logger.info("Usuário autenticado com sucesso via JWT: {}", username);
+            jwtLogger.info("Usuário autenticado com sucesso via JWT: {}", username);
         } else {
-            logger.warn("Falha na validação do token JWT para o usuário: {}", username);
+            jwtLogger.warn("Falha na validação do token JWT para o usuário: {}", username);
         }
     }
 }

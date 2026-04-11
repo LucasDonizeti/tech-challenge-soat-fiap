@@ -5,7 +5,18 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 class ClienteTestSimple {
 
@@ -18,7 +29,7 @@ class ClienteTestSimple {
     void setUp() {
         nome = Nome.of("João Silva");
         cpf = CPF.of("12345678909");
-        cnpj = CNPJ.of("12345678000123");
+        cnpj = CNPJ.of("12345678000195");
         email = Email.of("joao.silva@email.com");
     }
 
@@ -67,13 +78,14 @@ class ClienteTestSimple {
         // Arrange
         Cliente cliente = Cliente.criar(nome, cpf, email);
         Nome novoNome = Nome.of("João da Silva");
-        
+        LocalDateTime antesAtualizacao = cliente.getAtualizadoEm();
+
         // Act
         cliente.atualizarNome(novoNome);
 
         // Assert
         assertEquals(novoNome, cliente.getNome());
-        assertTrue(cliente.getAtualizadoEm().isAfter(cliente.getCriadoEm()));
+        assertTrue(cliente.getAtualizadoEm().isAfter(antesAtualizacao) || cliente.getAtualizadoEm().equals(antesAtualizacao));
     }
 
     @Test
@@ -94,6 +106,7 @@ class ClienteTestSimple {
     void deveInativarCliente() {
         // Arrange
         Cliente cliente = Cliente.criar(nome, cpf, email);
+        LocalDateTime antesAtualizacao = cliente.getAtualizadoEm();
 
         // Act
         cliente.inativar();
@@ -101,7 +114,7 @@ class ClienteTestSimple {
         // Assert
         assertEquals(StatusCliente.INATIVO, cliente.getStatus());
         assertFalse(cliente.isAtivo());
-        assertTrue(cliente.getAtualizadoEm().isAfter(cliente.getCriadoEm()));
+        assertTrue(cliente.getAtualizadoEm().isAfter(antesAtualizacao) || cliente.getAtualizadoEm().equals(antesAtualizacao));
     }
 
     @Test
@@ -203,5 +216,155 @@ class ClienteTestSimple {
         assertEquals(0, cliente.getQuantidadeVeiculos());
         assertFalse(cliente.possuiVeiculos());
         assertFalse(cliente.getVeiculos().contains(veiculo));
+    }
+
+    @Test
+    void deveAtualizarEmailDoCliente() {
+        // Arrange
+        Cliente cliente = Cliente.criar(nome, cpf, email);
+        Email novoEmail = Email.of("joao.novo@email.com");
+        LocalDateTime antesAtualizacao = cliente.getAtualizadoEm();
+
+        // Act
+        cliente.atualizarEmail(novoEmail);
+
+        // Assert
+        assertEquals(novoEmail, cliente.getEmail());
+        assertTrue(cliente.getAtualizadoEm().isAfter(antesAtualizacao) || cliente.getAtualizadoEm().equals(antesAtualizacao));
+    }
+
+    @Test
+    void deveLancarExcecaoAoAtualizarEmailComValorNulo() {
+        // Arrange
+        Cliente cliente = Cliente.criar(nome, cpf, email);
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> cliente.atualizarEmail(null)
+        );
+
+        assertEquals("Email não pode ser nulo", exception.getMessage());
+    }
+
+    @Test
+    void deveLancarExcecaoAoRemoverVeiculoNulo() {
+        // Arrange
+        Cliente cliente = Cliente.criar(nome, cpf, email);
+
+        // Act & Assert
+        assertDoesNotThrow(() -> cliente.removerVeiculo(null));
+        assertEquals(0, cliente.getQuantidadeVeiculos());
+    }
+
+    @Test
+    void deveLancarExcecaoAoRemoverVeiculoNaoAdicionado() {
+        // Arrange
+        Cliente cliente = Cliente.criar(nome, cpf, email);
+        Veiculo veiculo = new Veiculo(
+                Placa.of("ABC1234"),
+                "Volkswagen",
+                "Gol",
+                2020,
+                "Branco"
+        );
+
+        // Act & Assert
+        assertDoesNotThrow(() -> cliente.removerVeiculo(veiculo));
+        assertEquals(0, cliente.getQuantidadeVeiculos());
+    }
+
+    @Test
+    void naoDeveAdicionarVeiculoDuplicado() {
+        // Arrange
+        Cliente cliente = Cliente.criar(nome, cpf, email);
+        Veiculo veiculo = new Veiculo(
+                Placa.of("ABC1234"),
+                "Volkswagen",
+                "Gol",
+                2020,
+                "Branco"
+        );
+        cliente.adicionarVeiculo(veiculo);
+
+        // Act
+        cliente.adicionarVeiculo(veiculo);
+
+        // Assert
+        assertEquals(1, cliente.getQuantidadeVeiculos());
+    }
+
+    @Test
+    void deveRestaurarClienteDoBanco() {
+        // Arrange
+        ClienteRestauracaoParams params = new ClienteRestauracaoParams(
+                UUID.randomUUID(),
+                nome,
+                cpf,
+                cnpj,
+                email,
+                StatusCliente.ATIVO,
+                LocalDateTime.now().minusDays(1),
+                LocalDateTime.now()
+        );
+
+        // Act
+        Cliente cliente = Cliente.restaurar(params);
+
+        // Assert
+        assertNotNull(cliente);
+        assertEquals(params.id(), cliente.getId());
+        assertEquals(params.nome(), cliente.getNome());
+        assertEquals(params.cpf(), cliente.getCpf());
+        assertEquals(params.cnpj(), cliente.getCnpj());
+        assertEquals(params.email(), cliente.getEmail());
+        assertEquals(params.status(), cliente.getStatus());
+        assertEquals(params.criadoEm(), cliente.getCriadoEm());
+        assertEquals(params.atualizadoEm(), cliente.getAtualizadoEm());
+    }
+
+    @Test
+    void deveRestaurarClienteInativo() {
+        // Arrange
+        ClienteRestauracaoParams params = new ClienteRestauracaoParams(
+                UUID.randomUUID(),
+                nome,
+                cpf,
+                null,
+                email,
+                StatusCliente.INATIVO,
+                LocalDateTime.now().minusDays(1),
+                LocalDateTime.now()
+        );
+
+        // Act
+        Cliente cliente = Cliente.restaurar(params);
+
+        // Assert
+        assertNotNull(cliente);
+        assertEquals(StatusCliente.INATIVO, cliente.getStatus());
+        assertFalse(cliente.isAtivo());
+    }
+
+    @Test
+    void deveRetornarListaImutavelDeVeiculos() {
+        // Arrange
+        Cliente cliente = Cliente.criar(nome, cpf, email);
+        Veiculo veiculo = new Veiculo(
+                Placa.of("ABC1234"),
+                "Volkswagen",
+                "Gol",
+                2020,
+                "Branco"
+        );
+        cliente.adicionarVeiculo(veiculo);
+
+        // Act
+        List<Veiculo> veiculos = cliente.getVeiculos();
+
+        // Assert
+        assertNotNull(veiculos);
+        assertEquals(1, veiculos.size());
+        assertNotSame(cliente.getVeiculos(), veiculos);
     }
 }

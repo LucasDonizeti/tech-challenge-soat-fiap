@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.administrativo.infrastructure.persistence.mappers;
 
 import com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo;
+import com.techchallenge.oficina.administrativo.domain.model.entities.VeiculoRestauracaoParams;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.*;
 import com.techchallenge.oficina.administrativo.infrastructure.persistence.entities.VeiculoEntity;
 import org.springframework.stereotype.Component;
@@ -34,7 +35,7 @@ public class VeiculoJpaMapper {
             return null;
         }
         
-        return Veiculo.restaurar(
+        VeiculoRestauracaoParams params = new VeiculoRestauracaoParams(
                 entity.getId(),
                 Placa.of(entity.getPlaca()),
                 entity.getMarca(),
@@ -44,6 +45,8 @@ public class VeiculoJpaMapper {
                 entity.getCriadoEm(),
                 entity.getAtualizadoEm()
         );
+        
+        return Veiculo.restaurar(params);
     }
     
     public List<VeiculoEntity> toEntityList(List<Veiculo> veiculos) {

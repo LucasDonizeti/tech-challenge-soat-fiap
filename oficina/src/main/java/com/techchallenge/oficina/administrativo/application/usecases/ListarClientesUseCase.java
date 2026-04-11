@@ -12,7 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,11 +31,16 @@ public class ListarClientesUseCase {
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), clientes.size());
         
+        // Verificar se start está além do tamanho da lista
+        if (start >= clientes.size()) {
+            return new PageImpl<>(List.of(), pageable, clientes.size());
+        }
+        
         List<Cliente> clientesPaginados = clientes.subList(start, end);
         
         List<ClienteResponse> responses = clientesPaginados.stream()
                 .map(ClienteResponse::from)
-                .collect(Collectors.toList());
+                .toList();
         
         Page<ClienteResponse> page = new PageImpl<>(
                 responses,
