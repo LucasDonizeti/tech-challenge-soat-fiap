@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class ClienteWebMapper {
@@ -22,7 +21,7 @@ public class ClienteWebMapper {
         
         return responses.stream()
                 .map(this::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     public Page<ClienteResponseDto> toDtoPage(Page<ClienteResponse> responses) {

@@ -2,6 +2,7 @@ package com.techchallenge.oficina.infrastructure.config.security;
 
 import com.techchallenge.oficina.sharedkernel.infrastructure.security.JwtAuthenticationFilter;
 import com.techchallenge.oficina.sharedkernel.infrastructure.security.JwtTokenUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,9 +21,18 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Value("${spring.security.user.name}")
+    private String adminUsername;
+
+    @Value("${spring.security.user.password}")
+    private String adminPassword;
+
+    @Value("${spring.security.user.roles}")
+    private String adminRoles;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) 
-            throws Exception {
+            throws Exception { // NOSONAR - Spring Security framework requires throws Exception
         http
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -48,7 +58,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) 
-            throws Exception {
+            throws Exception { // NOSONAR - Spring Security framework requires throws Exception
         return config.getAuthenticationManager();
     }
 
@@ -61,9 +71,9 @@ public class SecurityConfig {
     public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
         org.springframework.security.core.userdetails.UserDetails adminUser = 
             org.springframework.security.core.userdetails.User.builder()
-                .username("admin")
-                .password(passwordEncoder.encode("secret"))
-                .roles("ADMIN")
+                .username(adminUsername)
+                .password(passwordEncoder.encode(adminPassword))
+                .roles(adminRoles.split(","))
                 .build();
 
         return new org.springframework.security.provisioning.InMemoryUserDetailsManager(adminUser);

@@ -3,9 +3,9 @@ package com.techchallenge.oficina.administrativo.web.controllers;
 import com.techchallenge.oficina.administrativo.application.usecases.*;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ClienteResponse;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.StatusCliente;
-import com.techchallenge.oficina.administrativo.web.dto.AtualizarClienteRequest;
-import com.techchallenge.oficina.administrativo.web.dto.CriarClienteRequest;
 import com.techchallenge.oficina.administrativo.web.dto.ClienteResponseDto;
+import com.techchallenge.oficina.administrativo.web.dto.CriarClienteRequest;
+import com.techchallenge.oficina.administrativo.web.mappers.ClienteWebMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -15,19 +15,16 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class ClienteControllerTestSimple {
+class ClienteControllerSimpleTest {
 
     @Mock
     private CriarClienteUseCase criarClienteUseCase;
@@ -49,6 +46,9 @@ class ClienteControllerTestSimple {
 
     @Mock
     private ListarClientesUseCase listarClientesUseCase;
+
+    @Mock
+    private ClienteWebMapper mapper;
 
     @InjectMocks
     private ClienteController clienteController;
@@ -80,7 +80,10 @@ class ClienteControllerTestSimple {
                 .quantidadeVeiculos(0)
                 .build();
 
+        ClienteResponseDto dto = ClienteResponseDto.from(response);
+
         when(criarClienteUseCase.execute(any())).thenReturn(response);
+        when(mapper.toDto(response)).thenReturn(dto);
 
         // Act & Assert
         mockMvc.perform(post("/v1/admin/clientes")
@@ -107,7 +110,10 @@ class ClienteControllerTestSimple {
                 .status(StatusCliente.ATIVO)
                 .build();
 
+        ClienteResponseDto dto = ClienteResponseDto.from(response);
+
         when(buscarClienteUseCase.execute(any())).thenReturn(response);
+        when(mapper.toDto(response)).thenReturn(dto);
 
         // Act & Assert
         mockMvc.perform(get("/v1/admin/clientes/{id}", clienteId))

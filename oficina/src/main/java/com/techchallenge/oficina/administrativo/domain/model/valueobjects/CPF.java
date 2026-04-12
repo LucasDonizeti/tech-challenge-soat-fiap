@@ -22,7 +22,7 @@ public final class CPF {
     }
 
     private String validar(String cpf) {
-        String cpfLimpo = cpf.replaceAll("[^0-9]", "");
+        String cpfLimpo = cpf.replaceAll("\\D", "");
         
         if (!isValidCPF(cpfLimpo)) {
             throw new IllegalArgumentException("CPF inválido");

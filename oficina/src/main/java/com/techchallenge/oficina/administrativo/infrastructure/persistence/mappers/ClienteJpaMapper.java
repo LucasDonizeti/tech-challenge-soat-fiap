@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -68,7 +67,7 @@ public class ClienteJpaMapper {
         
         return clientes.stream()
                 .map(this::toEntity)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     public List<Cliente> toDomainList(List<ClienteEntity> entities) {
@@ -78,7 +77,7 @@ public class ClienteJpaMapper {
         
         return entities.stream()
                 .map(this::toDomain)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     private StatusClienteEntity toEntityStatus(StatusCliente status) {

@@ -6,6 +6,9 @@ import lombok.Getter;
 @Getter
 @EqualsAndHashCode
 public final class Placa {
+    private static final String FORMATO_MERCOSUL_REGEX = "[A-Z]{3}\\d[A-Z]\\d{2}";
+    private static final String FORMATO_ANTIGO_REGEX = "[A-Z]{3}\\d{4}";
+    
     private final String valor;
 
     private Placa(String valor) {
@@ -20,7 +23,7 @@ public final class Placa {
     }
 
     private String validar(String placa) {
-        String placaLimpa = placa.replaceAll("[^A-Z0-9]", "").toUpperCase();
+        String placaLimpa = placa.replaceAll("[^A-Z\\d]", "").toUpperCase();
         
         if (!isValidPlaca(placaLimpa)) {
             throw new IllegalArgumentException("Placa inválida: " + placa);
@@ -34,17 +37,7 @@ public final class Placa {
             return false;
         }
         
-        // Validação do formato Mercosul (LLLNLNN)
-        if (placa.matches("[A-Z]{3}[0-9][A-Z][0-9]{2}")) {
-            return true;
-        }
-        
-        // Validação do formato antigo (LLLNNNN)
-        if (placa.matches("[A-Z]{3}[0-9]{4}")) {
-            return true;
-        }
-        
-        return false;
+        return placa.matches(FORMATO_MERCOSUL_REGEX) || placa.matches(FORMATO_ANTIGO_REGEX);
     }
 
     public String getFormatada() {
@@ -53,12 +46,12 @@ public final class Placa {
         }
         
         // Formato Mercosul (LLLNLNN -> LLL-NLNN)
-        if (valor.matches("[A-Z]{3}[0-9][A-Z][0-9]{2}")) {
+        if (valor.matches(FORMATO_MERCOSUL_REGEX)) {
             return valor.substring(0, 3) + "-" + valor.substring(3, 5) + valor.substring(5);
         }
         
         // Formato antigo (LLLNNNN -> LLL-NNNN)
-        if (valor.matches("[A-Z]{3}[0-9]{4}")) {
+        if (valor.matches(FORMATO_ANTIGO_REGEX)) {
             return valor.substring(0, 3) + "-" + valor.substring(3);
         }
         
@@ -66,11 +59,11 @@ public final class Placa {
     }
 
     public boolean isMercosul() {
-        return valor != null && valor.matches("[A-Z]{3}[0-9][A-Z][0-9]{2}");
+        return valor != null && valor.matches(FORMATO_MERCOSUL_REGEX);
     }
 
     public boolean isFormatoAntigo() {
-        return valor != null && valor.matches("[A-Z]{3}[0-9]{4}");
+        return valor != null && valor.matches(FORMATO_ANTIGO_REGEX);
     }
 
     @Override

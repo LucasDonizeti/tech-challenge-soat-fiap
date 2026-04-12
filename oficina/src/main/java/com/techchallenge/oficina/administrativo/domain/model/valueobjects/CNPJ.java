@@ -22,7 +22,7 @@ public final class CNPJ {
     }
 
     private String validar(String cnpj) {
-        String cnpjLimpo = cnpj.replaceAll("[^0-9]", "");
+        String cnpjLimpo = cnpj.replaceAll("\\D", "");
         
         if (!isValidCNPJ(cnpjLimpo)) {
             throw new IllegalArgumentException("CNPJ inválido");

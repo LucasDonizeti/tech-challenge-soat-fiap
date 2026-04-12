@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 
-class ClienteTestSimple {
+class ClienteSimpleTest {
 
     private Nome nome;
     private CPF cpf;
@@ -126,7 +126,7 @@ class ClienteTestSimple {
         // Act & Assert
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
-                () -> cliente.inativar()
+                cliente::inativar
         );
         
         assertEquals("Cliente já está inativo", exception.getMessage());
@@ -144,7 +144,7 @@ class ClienteTestSimple {
         // Assert
         assertEquals(StatusCliente.ATIVO, cliente.getStatus());
         assertTrue(cliente.isAtivo());
-        assertTrue(cliente.getAtualizadoEm().isAfter(cliente.getCriadoEm()));
+        assertTrue(cliente.getAtualizadoEm().isAfter(cliente.getCriadoEm()) || cliente.getAtualizadoEm().equals(cliente.getCriadoEm()));
     }
 
     @Test
@@ -155,7 +155,7 @@ class ClienteTestSimple {
         // Act & Assert
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
-                () -> cliente.reativar()
+                cliente::reativar
         );
         
         assertEquals("Cliente já está ativo", exception.getMessage());

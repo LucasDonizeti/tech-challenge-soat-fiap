@@ -2,32 +2,35 @@ package com.techchallenge.oficina.administrativo.domain.model.valueobjects;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Testes de CNPJ - Domain Layer")
 class CNPJTest {
 
-    @Test
+    @ParameterizedTest
     @DisplayName("Deve criar CNPJ válido com sucesso")
-    void deveCriarCnpjValidoComSucesso() {
+    @MethodSource("provideValidCnpjs")
+    void deveCriarCnpjValidoComSucesso(String cnpjInput, String expectedValue) {
         // Act
-        CNPJ cnpj = CNPJ.of("12345678000195");
+        CNPJ cnpj = CNPJ.of(cnpjInput);
 
         // Assert
         assertNotNull(cnpj);
-        assertEquals("12345678000195", cnpj.getValor());
+        assertEquals(expectedValue, cnpj.getValor());
     }
 
-    @Test
-    @DisplayName("Deve criar CNPJ válido com formatação")
-    void deveCriarCnpjValidoComFormatacao() {
-        // Act
-        CNPJ cnpj = CNPJ.of("12.345.678/0001-95");
-
-        // Assert
-        assertNotNull(cnpj);
-        assertEquals("12345678000195", cnpj.getValor());
+    private static Stream<Arguments> provideValidCnpjs() {
+        return Stream.of(
+                Arguments.of("12345678000195", "12345678000195"),
+                Arguments.of("12.345.678/0001-95", "12345678000195"),
+                Arguments.of("11222333000181", "11222333000181")
+        );
     }
 
     @Test
@@ -110,19 +113,6 @@ class CNPJTest {
     }
 
     @Test
-    @DisplayName("Deve retornar valor original quando formato inválido")
-    void deveRetornarValorOriginalQuandoFormatoInvalido() {
-        // Arrange
-        CNPJ cnpj = CNPJ.of("12345678000195");
-
-        // Act
-        String formatado = cnpj.getFormatado();
-
-        // Assert
-        assertEquals("12.345.678/0001-95", formatado);
-    }
-
-    @Test
     @DisplayName("Deve retornar toString formatado")
     void deveRetornarToStringFormatado() {
         // Arrange
@@ -133,28 +123,6 @@ class CNPJTest {
 
         // Assert
         assertEquals("12.345.678/0001-95", toString);
-    }
-
-    @Test
-    @DisplayName("Deve validar CNPJ real válido")
-    void deveValidarCnpjRealValido() {
-        // Act
-        CNPJ cnpj = CNPJ.of("11222333000181");
-
-        // Assert
-        assertNotNull(cnpj);
-        assertEquals("11222333000181", cnpj.getValor());
-    }
-
-    @Test
-    @DisplayName("Deve validar CNPJ com caracteres especiais")
-    void deveValidarCnpjComCaracteresEspeciais() {
-        // Act
-        CNPJ cnpj = CNPJ.of("12.345.678/0001-95");
-
-        // Assert
-        assertNotNull(cnpj);
-        assertEquals("12345678000195", cnpj.getValor());
     }
 
     @Test
@@ -192,40 +160,8 @@ class CNPJTest {
     }
 
     @Test
-    @DisplayName("Deve calcular primeiro dígito verificador corretamente")
-    void deveCalcularPrimeiroDigitoVerificadorCorretamente() {
-        // Act
-        CNPJ cnpj = CNPJ.of("12345678000195");
-
-        // Assert
-        assertNotNull(cnpj);
-        assertEquals("12345678000195", cnpj.getValor());
-    }
-
-    @Test
-    @DisplayName("Deve calcular segundo dígito verificador corretamente")
-    void deveCalcularSegundoDigitoVerificadorCorretamente() {
-        // Act
-        CNPJ cnpj = CNPJ.of("12345678000195");
-
-        // Assert
-        assertNotNull(cnpj);
-        assertEquals("12345678000195", cnpj.getValor());
-    }
-
-    @Test
     @DisplayName("Deve validar CNPJ com primeiro dígito verificador 0")
     void deveValidarCnpjComPrimeiroDigitoVerificador0() {
-        // Act
-        CNPJ cnpj = CNPJ.of("04252011000110");
-
-        // Assert
-        assertNotNull(cnpj);
-    }
-
-    @Test
-    @DisplayName("Deve validar CNPJ com segundo dígito verificador 0")
-    void deveValidarCnpjComSegundoDigitoVerificador0() {
         // Act
         CNPJ cnpj = CNPJ.of("04252011000110");
 

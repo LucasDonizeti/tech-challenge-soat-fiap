@@ -2,7 +2,6 @@ package com.techchallenge.oficina.administrativo.infrastructure.persistence.repo
 
 import com.techchallenge.oficina.administrativo.infrastructure.persistence.entities.ClienteEntity;
 import com.techchallenge.oficina.administrativo.infrastructure.persistence.entities.ClienteEntity.StatusClienteEntity;
-import com.techchallenge.oficina.administrativo.infrastructure.persistence.specifications.ClienteFilter;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

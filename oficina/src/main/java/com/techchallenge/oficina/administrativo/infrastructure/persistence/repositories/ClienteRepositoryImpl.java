@@ -90,39 +90,53 @@ public class ClienteRepositoryImpl implements ClienteRepository {
     @Override
     public List<Cliente> findByFilter(Object filter) {
         if (filter instanceof ClienteFilter clienteFilter) {
+            return findByClienteFilter(clienteFilter);
+        }
+        
+        return findByLegacyFilter(filter);
+    }
+
+    private List<Cliente> findByClienteFilter(ClienteFilter clienteFilter) {
+        List<ClienteEntity> entities = jpaRepository.findByFilter(
+            clienteFilter.getNome(),
+            clienteFilter.getCpf(),
+            clienteFilter.getCnpj(),
+            clienteFilter.getEmail(),
+            clienteFilter.getStatus() != null ? toEntityStatus(clienteFilter.getStatus()) : null
+        );
+        return mapper.toDomainList(entities);
+    }
+
+    private List<Cliente> findByLegacyFilter(Object filter) {
+        // Fallback para compatibilidade com DTOs existentes (temporário)
+        // Nota: Usando instanceof para verificação de tipo
+        try {
+            Class<?> filterRequestClass = Class.forName("com.techchallenge.oficina.administrativo.web.dto.ClienteFilterRequest");
+            if (!filterRequestClass.isInstance(filter)) {
+                throw new IllegalArgumentException("Tipo de filtro não suportado: " + filter.getClass().getSimpleName());
+            }
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("Tipo de filtro não suportado: " + filter.getClass().getSimpleName());
+        }
+        
+        try {
+            Object nome = filter.getClass().getMethod("getNome").invoke(filter);
+            Object cpf = filter.getClass().getMethod("getCpf").invoke(filter);
+            Object cnpj = filter.getClass().getMethod("getCnpj").invoke(filter);
+            Object email = filter.getClass().getMethod("getEmail").invoke(filter);
+            Object status = filter.getClass().getMethod("getStatus").invoke(filter);
+            
             List<ClienteEntity> entities = jpaRepository.findByFilter(
-                clienteFilter.getNome(),
-                clienteFilter.getCpf(),
-                clienteFilter.getCnpj(),
-                clienteFilter.getEmail(),
-                clienteFilter.getStatus() != null ? toEntityStatus(clienteFilter.getStatus()) : null
+                nome != null ? nome.toString() : null,
+                cpf != null ? cpf.toString() : null,
+                cnpj != null ? cnpj.toString() : null,
+                email != null ? email.toString() : null,
+                status != null ? toEntityStatus((StatusCliente) status) : null
             );
             return mapper.toDomainList(entities);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Erro ao processar filtro", e);
         }
-        
-        // Fallback para compatibilidade com DTOs existentes (temporário)
-        if (filter.getClass().getSimpleName().equals("ClienteFilterRequest")) {
-            try {
-                Object nome = filter.getClass().getMethod("getNome").invoke(filter);
-                Object cpf = filter.getClass().getMethod("getCpf").invoke(filter);
-                Object cnpj = filter.getClass().getMethod("getCnpj").invoke(filter);
-                Object email = filter.getClass().getMethod("getEmail").invoke(filter);
-                Object status = filter.getClass().getMethod("getStatus").invoke(filter);
-                
-                List<ClienteEntity> entities = jpaRepository.findByFilter(
-                    nome != null ? nome.toString() : null,
-                    cpf != null ? cpf.toString() : null,
-                    cnpj != null ? cnpj.toString() : null,
-                    email != null ? email.toString() : null,
-                    status != null ? toEntityStatus((StatusCliente) status) : null
-                );
-                return mapper.toDomainList(entities);
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Erro ao processar filtro", e);
-            }
-        }
-        
-        throw new IllegalArgumentException("Tipo de filtro não suportado: " + filter.getClass().getSimpleName());
     }
     
     private ClienteEntity.StatusClienteEntity toEntityStatus(StatusCliente status) {

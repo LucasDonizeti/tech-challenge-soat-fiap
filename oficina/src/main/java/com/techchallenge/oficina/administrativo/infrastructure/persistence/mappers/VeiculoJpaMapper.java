@@ -7,7 +7,6 @@ import com.techchallenge.oficina.administrativo.infrastructure.persistence.entit
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class VeiculoJpaMapper {
@@ -56,7 +55,7 @@ public class VeiculoJpaMapper {
         
         return veiculos.stream()
                 .map(this::toEntity)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     public List<Veiculo> toDomainList(List<VeiculoEntity> entities) {
@@ -66,6 +65,6 @@ public class VeiculoJpaMapper {
         
         return entities.stream()
                 .map(this::toDomain)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

@@ -28,7 +28,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<Map<String, String>> createAuthenticationToken(@RequestBody AuthRequest authRequest) {
         logger.info("Tentativa de login para o usuário: {}", authRequest.getUsername());
         
         try {
@@ -37,6 +37,9 @@ public class AuthController {
             );
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            if (userDetails == null) {
+                throw new IllegalStateException("UserDetails não pode ser nulo após autenticação");
+            }
             String token = jwtTokenUtil.generateToken(userDetails);
 
             Map<String, String> response = new HashMap<>();

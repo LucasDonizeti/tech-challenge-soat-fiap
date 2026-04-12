@@ -18,9 +18,9 @@ public class Veiculo {
     private UUID id;
     
     @Embedded
-    @AttributeOverrides({
+    @AttributeOverrides(
         @AttributeOverride(name = "valor", column = @Column(name = "placa", length = 7, nullable = false, unique = true))
-    })
+    )
     private Placa placa;
     
     @Column(name = "marca", length = 50, nullable = false)

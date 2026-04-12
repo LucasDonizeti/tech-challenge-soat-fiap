@@ -55,10 +55,7 @@ public class ClienteDomainService {
         }
         
         // Regra: não pode excluir cliente com ordens de serviço em andamento
-        // NOTA: Verificação de OS será implementada quando o módulo OrdemServico for integrado
         // Por enquanto, apenas verificamos se o cliente possui veículos cadastrados
-        
-        // Por enquanto, só pode excluir se não tiver veículos cadastrados
         return !cliente.possuiVeiculos();
     }
     

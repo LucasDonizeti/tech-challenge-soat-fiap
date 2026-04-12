@@ -1,6 +1,5 @@
 package com.techchallenge.oficina.administrativo.domain.model.entities;
 
-import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;

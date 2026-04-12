@@ -22,27 +22,27 @@ public class Cliente extends AbstractAggregateRoot<Cliente> {
     private UUID id;
     
     @Embedded
-    @AttributeOverrides({
+    @AttributeOverrides(
         @AttributeOverride(name = "valor", column = @Column(name = "nome", length = 100, nullable = false))
-    })
+    )
     private Nome nome;
     
     @Embedded
-    @AttributeOverrides({
+    @AttributeOverrides(
         @AttributeOverride(name = "valor", column = @Column(name = "cpf", length = 11))
-    })
+    )
     private CPF cpf;
     
     @Embedded
-    @AttributeOverrides({
+    @AttributeOverrides(
         @AttributeOverride(name = "valor", column = @Column(name = "cnpj", length = 14))
-    })
+    )
     private CNPJ cnpj;
     
     @Embedded
-    @AttributeOverrides({
+    @AttributeOverrides(
         @AttributeOverride(name = "endereco", column = @Column(name = "email", length = 100, nullable = false, unique = true))
-    })
+    )
     private Email email;
     
     @Enumerated(EnumType.STRING)
