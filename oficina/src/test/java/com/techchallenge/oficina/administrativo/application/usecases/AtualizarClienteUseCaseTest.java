@@ -3,6 +3,7 @@ package com.techchallenge.oficina.administrativo.application.usecases;
 import com.techchallenge.oficina.administrativo.application.usecases.commands.AtualizarClienteCommand;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ClienteResponse;
 import com.techchallenge.oficina.administrativo.domain.exceptions.EmailJaCadastradoException;
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoClienteException;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CPF;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
@@ -145,8 +146,8 @@ class AtualizarClienteUseCaseTest {
     @DisplayName("Deve lançar exceção quando command com nome nulo")
     void deveLancarExcecaoQuandoCommandNomeNulo() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoClienteException exception = assertThrows(
+                ValidacaoClienteException.class,
                 () -> new AtualizarClienteCommand(null, "email@teste.com")
         );
 
@@ -157,8 +158,8 @@ class AtualizarClienteUseCaseTest {
     @DisplayName("Deve lançar exceção quando command com nome em branco")
     void deveLancarExcecaoQuandoCommandNomeEmBranco() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoClienteException exception = assertThrows(
+                ValidacaoClienteException.class,
                 () -> new AtualizarClienteCommand("", "email@teste.com")
         );
 
@@ -169,8 +170,8 @@ class AtualizarClienteUseCaseTest {
     @DisplayName("Deve lançar exceção quando command com email nulo")
     void deveLancarExcecaoQuandoCommandEmailNulo() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoClienteException exception = assertThrows(
+                ValidacaoClienteException.class,
                 () -> new AtualizarClienteCommand("Nome Teste", null)
         );
 
@@ -181,8 +182,8 @@ class AtualizarClienteUseCaseTest {
     @DisplayName("Deve lançar exceção quando command com email em branco")
     void deveLancarExcecaoQuandoCommandEmailEmBranco() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoClienteException exception = assertThrows(
+                ValidacaoClienteException.class,
                 () -> new AtualizarClienteCommand("Nome Teste", "")
         );
 

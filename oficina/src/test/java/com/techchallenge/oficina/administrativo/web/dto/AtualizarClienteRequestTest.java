@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.administrativo.web.dto;
 
 import com.techchallenge.oficina.administrativo.application.usecases.commands.AtualizarClienteCommand;
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoClienteException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,7 +60,7 @@ class AtualizarClienteRequestTest {
         request.setEmail("");
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, request::toCommand);
+        assertThrows(ValidacaoClienteException.class, request::toCommand);
     }
 
     @Test
@@ -70,7 +71,7 @@ class AtualizarClienteRequestTest {
         request.setEmail(null);
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, request::toCommand);
+        assertThrows(ValidacaoClienteException.class, request::toCommand);
     }
 
     @Test

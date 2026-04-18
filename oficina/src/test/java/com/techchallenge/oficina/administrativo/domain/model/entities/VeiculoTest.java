@@ -1,6 +1,8 @@
 package com.techchallenge.oficina.administrativo.domain.model.entities;
 
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa;
+import com.techchallenge.oficina.administrativo.domain.model.valueobjects.StatusVeiculo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
@@ -86,11 +88,14 @@ class VeiculoTest {
     void deveLancarExcecaoParaAnoAnteriorA1900() {
         // Arrange
         Placa placa = Placa.of("ABC1D23");
+        String marca = "Toyota";
+        String modelo = "Corolla";
+        String cor = "Prata";
         
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> new Veiculo(placa, "Toyota", "Corolla", 1899, "Prata")
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
+                () -> new Veiculo(placa, marca, modelo, 1899, cor)
         );
         
         assertEquals("Ano inválido. Deve estar entre 1900 e " + (java.time.Year.now().getValue() + 1), exception.getMessage());
@@ -102,11 +107,14 @@ class VeiculoTest {
         // Arrange
         Placa placa = Placa.of("ABC1D23");
         int anoInvalido = java.time.Year.now().getValue() + 2;
+        String marca = "Toyota";
+        String modelo = "Corolla";
+        String cor = "Prata";
         
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> new Veiculo(placa, "Toyota", "Corolla", anoInvalido, "Prata")
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
+                () -> new Veiculo(placa, marca, modelo, anoInvalido, cor)
         );
         
         assertTrue(exception.getMessage().contains("Ano inválido"));
@@ -259,7 +267,7 @@ class VeiculoTest {
         LocalDateTime criadoEm = LocalDateTime.now().minusDays(10);
         LocalDateTime atualizadoEm = LocalDateTime.now().minusDays(5);
         VeiculoRestauracaoParams params = new VeiculoRestauracaoParams(
-            id, placa, "Toyota", "Corolla", 2023, "Prata", criadoEm, atualizadoEm
+            id, placa, "Toyota", "Corolla", 2023, "Prata", StatusVeiculo.ATIVO, criadoEm, atualizadoEm
         );
         
         // Act

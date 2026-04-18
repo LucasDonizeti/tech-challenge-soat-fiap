@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.domain.model.aggregates;
 
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -94,8 +95,8 @@ class ClienteSimpleTest {
         Cliente cliente = Cliente.criar(nome, cpf, email);
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> cliente.atualizarNome(null)
         );
         
@@ -124,8 +125,8 @@ class ClienteSimpleTest {
         cliente.inativar();
 
         // Act & Assert
-        IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 cliente::inativar
         );
         
@@ -153,8 +154,8 @@ class ClienteSimpleTest {
         Cliente cliente = Cliente.criar(nome, cpf, email);
 
         // Act & Assert
-        IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 cliente::reativar
         );
         
@@ -174,6 +175,8 @@ class ClienteSimpleTest {
         );
 
         // Act
+        // Nota: Como o relacionamento agora é unidirecional (apenas Veiculo -> Cliente),
+        // o método adicionarVeiculo apenas adiciona à lista local para consulta
         cliente.adicionarVeiculo(veiculo);
 
         // Assert
@@ -188,8 +191,8 @@ class ClienteSimpleTest {
         Cliente cliente = Cliente.criar(nome, cpf, email);
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> cliente.adicionarVeiculo(null)
         );
         
@@ -207,6 +210,8 @@ class ClienteSimpleTest {
                 2020,
                 "Branco"
         );
+        // Nota: Como o relacionamento agora é unidirecional (apenas Veiculo -> Cliente),
+        // o método adicionarVeiculo apenas adiciona à lista local para consulta
         cliente.adicionarVeiculo(veiculo);
 
         // Act
@@ -239,8 +244,8 @@ class ClienteSimpleTest {
         Cliente cliente = Cliente.criar(nome, cpf, email);
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> cliente.atualizarEmail(null)
         );
 
@@ -285,6 +290,8 @@ class ClienteSimpleTest {
                 2020,
                 "Branco"
         );
+        // Nota: Como o relacionamento agora é unidirecional (apenas Veiculo -> Cliente),
+        // o método adicionarVeiculo apenas adiciona à lista local para consulta
         cliente.adicionarVeiculo(veiculo);
 
         // Act
@@ -357,6 +364,8 @@ class ClienteSimpleTest {
                 2020,
                 "Branco"
         );
+        // Nota: Como o relacionamento agora é unidirecional (apenas Veiculo -> Cliente),
+        // o método adicionarVeiculo apenas adiciona à lista local para consulta
         cliente.adicionarVeiculo(veiculo);
 
         // Act
