@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ClienteResponse;
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CPF;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
@@ -125,8 +126,8 @@ class InativarClienteUseCaseTest {
         when(repository.findById(clienteId)).thenReturn(Optional.of(cliente));
 
         // Act & Assert
-        IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> useCase.execute(clienteId)
         );
 

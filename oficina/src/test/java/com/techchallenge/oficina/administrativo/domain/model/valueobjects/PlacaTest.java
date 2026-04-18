@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.domain.model.valueobjects;
 
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
@@ -50,8 +51,8 @@ class PlacaTest {
     @DisplayName("Deve lançar exceção para placa nula")
     void deveLancarExcecaoParaPlacaNula() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> Placa.of(null)
         );
         
@@ -62,8 +63,8 @@ class PlacaTest {
     @DisplayName("Deve lançar exceção para placa vazia")
     void deveLancarExcecaoParaPlacaVazia() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> Placa.of("")
         );
         
@@ -74,8 +75,8 @@ class PlacaTest {
     @DisplayName("Deve lançar exceção para placa em branco")
     void deveLancarExcecaoParaPlacaEmBranco() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> Placa.of("   ")
         );
         
@@ -86,8 +87,8 @@ class PlacaTest {
     @DisplayName("Deve lançar exceção para placa com tamanho inválido")
     void deveLancarExcecaoParaPlacaTamanhoInvalido() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> Placa.of("ABC12")
         );
         

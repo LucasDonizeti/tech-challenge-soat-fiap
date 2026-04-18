@@ -1,7 +1,9 @@
 package com.techchallenge.oficina.administrativo.domain.model.entities;
 
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa;
+import com.techchallenge.oficina.administrativo.domain.model.valueobjects.StatusVeiculo;
 import lombok.Getter;
 
 import jakarta.persistence.*;
@@ -34,7 +36,11 @@ public class Veiculo {
     
     @Column(name = "cor", length = 30)
     private String cor;
-    
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private StatusVeiculo status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false, columnDefinition = "BINARY(16)")
     private Cliente cliente;
@@ -50,7 +56,7 @@ public class Veiculo {
 
     // Método estático para restauração (padrão DDD)
     public static Veiculo restaurar(VeiculoRestauracaoParams params) {
-        Veiculo veiculo = new Veiculo(params.placa(), params.marca(), params.modelo(), params.ano(), params.cor(), false);
+        Veiculo veiculo = new Veiculo(params.placa(), params.marca(), params.modelo(), params.ano(), params.cor(), params.status(), false);
         veiculo.id = params.id();
         veiculo.criadoEm = params.criadoEm();
         veiculo.atualizadoEm = params.atualizadoEm();
@@ -58,7 +64,7 @@ public class Veiculo {
     }
 
     // Construtor para criação
-    private Veiculo(Placa placa, String marca, String modelo, Integer ano, String cor, boolean gerarId) {
+    private Veiculo(Placa placa, String marca, String modelo, Integer ano, String cor, StatusVeiculo status, boolean gerarId) {
         if (gerarId) {
             this.id = UUID.randomUUID();
         }
@@ -67,17 +73,18 @@ public class Veiculo {
         this.modelo = Objects.requireNonNull(modelo, "Modelo não pode ser nulo");
         this.ano = Objects.requireNonNull(ano, "Ano não pode ser nulo");
         this.cor = cor;
+        this.status = status != null ? status : StatusVeiculo.ATIVO;
         if (gerarId) {
             this.criadoEm = java.time.LocalDateTime.now();
             this.atualizadoEm = java.time.LocalDateTime.now();
         }
-        
+
         validarAno(ano);
     }
 
     // Construtor público para criação
     public Veiculo(Placa placa, String marca, String modelo, Integer ano, String cor) {
-        this(placa, marca, modelo, ano, cor, true);
+        this(placa, marca, modelo, ano, cor, StatusVeiculo.ATIVO, true);
     }
 
     // Comportamentos de negócio
@@ -100,11 +107,27 @@ public class Veiculo {
         this.cliente = cliente;
     }
 
+    public void inativar() {
+        if (this.status == StatusVeiculo.INATIVO) {
+            throw new ValidacaoValorException("Veículo já está inativo");
+        }
+        this.status = StatusVeiculo.INATIVO;
+        this.atualizadoEm = java.time.LocalDateTime.now();
+    }
+
+    public void reativar() {
+        if (this.status == StatusVeiculo.ATIVO) {
+            throw new ValidacaoValorException("Veículo já está ativo");
+        }
+        this.status = StatusVeiculo.ATIVO;
+        this.atualizadoEm = java.time.LocalDateTime.now();
+    }
+
     // Validações
     private void validarAno(Integer ano) {
         int anoAtual = java.time.Year.now().getValue();
         if (ano < 1900 || ano > anoAtual + 1) {
-            throw new IllegalArgumentException("Ano inválido. Deve estar entre 1900 e " + (anoAtual + 1));
+            throw new ValidacaoValorException("Ano inválido. Deve estar entre 1900 e " + (anoAtual + 1));
         }
     }
     
