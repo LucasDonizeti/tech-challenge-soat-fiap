@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.domain.model.valueobjects;
 
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
@@ -30,8 +31,8 @@ class VeiculoIdTest {
     @DisplayName("Deve lançar exceção para UUID nulo")
     void deveLancarExcecaoParaUuidNulo() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> VeiculoId.of(null)
         );
         
@@ -68,8 +69,8 @@ class VeiculoIdTest {
     @DisplayName("Deve lançar exceção para string nula")
     void deveLancarExcecaoParaStringNula() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> VeiculoId.fromString(null)
         );
         
@@ -80,8 +81,8 @@ class VeiculoIdTest {
     @DisplayName("Deve lançar exceção para string vazia")
     void deveLancarExcecaoParaStringVazia() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> VeiculoId.fromString("")
         );
         
@@ -92,8 +93,8 @@ class VeiculoIdTest {
     @DisplayName("Deve lançar exceção para string em branco")
     void deveLancarExcecaoParaStringEmBranco() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> VeiculoId.fromString("   ")
         );
         
@@ -104,8 +105,8 @@ class VeiculoIdTest {
     @DisplayName("Deve lançar exceção para string inválida")
     void deveLancarExcecaoParaStringInvalida() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> VeiculoId.fromString("uuid-invalido")
         );
         

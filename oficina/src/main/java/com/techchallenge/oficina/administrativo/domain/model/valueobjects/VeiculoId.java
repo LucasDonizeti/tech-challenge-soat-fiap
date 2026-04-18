@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.domain.model.valueobjects;
 
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -12,7 +13,7 @@ public final class VeiculoId {
 
     private VeiculoId(UUID value) {
         if (value == null) {
-            throw new IllegalArgumentException("VeiculoId não pode ser nulo");
+            throw new ValidacaoValorException("VeiculoId não pode ser nulo");
         }
         this.value = value;
     }
@@ -27,12 +28,12 @@ public final class VeiculoId {
 
     public static VeiculoId fromString(String value) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("VeiculoId não pode ser nulo ou vazio");
+            throw new ValidacaoValorException("VeiculoId não pode ser nulo ou vazio");
         }
         try {
             return new VeiculoId(UUID.fromString(value));
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("VeiculoId inválido: " + value);
+            throw new ValidacaoValorException("VeiculoId inválido: " + value);
         }
     }
 

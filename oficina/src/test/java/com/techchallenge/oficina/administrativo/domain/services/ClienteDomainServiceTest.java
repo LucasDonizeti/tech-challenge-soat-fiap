@@ -3,6 +3,7 @@ package com.techchallenge.oficina.administrativo.domain.services;
 import com.techchallenge.oficina.administrativo.domain.exceptions.CnpjJaCadastradoException;
 import com.techchallenge.oficina.administrativo.domain.exceptions.CpfJaCadastradoException;
 import com.techchallenge.oficina.administrativo.domain.exceptions.EmailJaCadastradoException;
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CNPJ;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CPF;
@@ -232,13 +233,16 @@ class ClienteDomainServiceTest {
     @DisplayName("Deve retornar false quando cliente possui veículos")
     void deveRetornarFalseQuandoClientePossuiVeiculos() {
         // Arrange
-        cliente.adicionarVeiculo(new com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo(
+        // Como a lista de veículos agora é apenas para consulta, adicionamos manualmente para teste
+        com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo veiculo =
+                new com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo(
                 com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa.of("ABC1234"),
                 "Volkswagen",
                 "Gol",
                 2020,
                 "Branco"
-        ));
+        );
+        cliente.adicionarVeiculo(veiculo);
 
         // Act & Assert
         assertFalse(domainService.podeExcluirCliente(cliente));
@@ -262,20 +266,23 @@ class ClienteDomainServiceTest {
     @DisplayName("Deve lançar exceção quando cliente não pode ser excluído")
     void deveLancarExcecaoQuandoClienteNaoPodeSerExcluido() {
         // Arrange
-        cliente.adicionarVeiculo(new com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo(
+        // Como a lista de veículos agora é apenas para consulta, adicionamos manualmente para teste
+        com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo veiculo =
+                new com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo(
                 com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa.of("ABC1234"),
                 "Volkswagen",
                 "Gol",
                 2020,
                 "Branco"
-        ));
+        );
+        cliente.adicionarVeiculo(veiculo);
 
         // Act & Assert
-        IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> domainService.validarExclusaoCliente(cliente)
         );
-        assertEquals("Cliente não pode ser excluído. Verifique se há ordens de serviço em andamento ou veículos cadastrados.", 
+        assertEquals("Cliente não pode ser excluído. Verifique se há ordens de serviço em andamento ou veículos cadastrados.",
                 exception.getMessage());
     }
 
@@ -283,8 +290,8 @@ class ClienteDomainServiceTest {
     @DisplayName("Deve lançar exceção quando cliente nulo na validação de exclusão")
     void deveLancarExcecaoQuandoClienteNuloNaValidacaoExclusao() {
         // Act & Assert
-        IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> domainService.validarExclusaoCliente(null)
         );
         assertEquals("Cliente não pode ser excluído. Verifique se há ordens de serviço em andamento ou veículos cadastrados.", 

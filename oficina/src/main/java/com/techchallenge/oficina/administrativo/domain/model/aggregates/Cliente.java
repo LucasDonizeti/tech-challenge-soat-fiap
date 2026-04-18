@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.administrativo.domain.model.aggregates;
 
 import com.techchallenge.oficina.administrativo.domain.events.*;
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.*;
 import lombok.Getter;
@@ -55,7 +56,7 @@ public class Cliente extends AbstractAggregateRoot<Cliente> {
     @Column(name = "atualizado_em", nullable = false)
     private LocalDateTime atualizadoEm;
     
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "cliente", fetch = FetchType.LAZY)
     private List<Veiculo> veiculos = new ArrayList<>();
 
     // Construtor padrão para JPA
@@ -110,59 +111,58 @@ public class Cliente extends AbstractAggregateRoot<Cliente> {
     // Comportamentos de negócio
     public void atualizarNome(Nome novoNome) {
         if (novoNome == null) {
-            throw new IllegalArgumentException("Nome não pode ser nulo");
+            throw new ValidacaoValorException("Nome não pode ser nulo");
         }
         this.nome = novoNome;
         this.atualizadoEm = LocalDateTime.now();
-        
+
         registerEvent(new ClienteAtualizadoEvent(this.id, this.nome.getValor()));
     }
     
     public void atualizarEmail(Email novoEmail) {
         if (novoEmail == null) {
-            throw new IllegalArgumentException("Email não pode ser nulo");
+            throw new ValidacaoValorException("Email não pode ser nulo");
         }
         this.email = novoEmail;
         this.atualizadoEm = LocalDateTime.now();
-        
+
         registerEvent(new ClienteAtualizadoEvent(this.id, this.nome.getValor()));
     }
     
     public void inativar() {
         if (this.status == StatusCliente.INATIVO) {
-            throw new IllegalStateException("Cliente já está inativo");
+            throw new ValidacaoValorException("Cliente já está inativo");
         }
         this.status = StatusCliente.INATIVO;
         this.atualizadoEm = LocalDateTime.now();
-        
+
         registerEvent(new ClienteInativadoEvent(this.id));
     }
     
     public void reativar() {
         if (this.status == StatusCliente.ATIVO) {
-            throw new IllegalStateException("Cliente já está ativo");
+            throw new ValidacaoValorException("Cliente já está ativo");
         }
         this.status = StatusCliente.ATIVO;
         this.atualizadoEm = LocalDateTime.now();
-        
+
         registerEvent(new ClienteReativadoEvent(this.id));
     }
     
+    // Lista de veículos é apenas para consulta - manipulação deve ser feita através do VeiculoRepository
     public void adicionarVeiculo(Veiculo veiculo) {
         if (veiculo == null) {
-            throw new IllegalArgumentException("Veículo não pode ser nulo");
+            throw new ValidacaoValorException("Veículo não pode ser nulo");
         }
         if (!veiculos.contains(veiculo)) {
             veiculos.add(veiculo);
-            veiculo.setCliente(this);
             this.atualizadoEm = LocalDateTime.now();
         }
     }
-    
+
     public void removerVeiculo(Veiculo veiculo) {
         if (veiculo != null && veiculos.contains(veiculo)) {
             veiculos.remove(veiculo);
-            veiculo.setCliente(null);
             this.atualizadoEm = LocalDateTime.now();
         }
     }

@@ -3,6 +3,7 @@ package com.techchallenge.oficina.administrativo.infrastructure.persistence.mapp
 import com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo;
 import com.techchallenge.oficina.administrativo.domain.model.entities.VeiculoRestauracaoParams;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa;
+import com.techchallenge.oficina.administrativo.domain.model.valueobjects.StatusVeiculo;
 import com.techchallenge.oficina.administrativo.infrastructure.persistence.entities.VeiculoEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -41,6 +42,7 @@ class VeiculoJpaMapperTest {
                 "Corolla",
                 2022,
                 "Prata",
+                StatusVeiculo.ATIVO,
                 criadoEm,
                 atualizadoEm
         );
@@ -75,6 +77,7 @@ class VeiculoJpaMapperTest {
                 .modelo("Civic")
                 .ano(2023)
                 .cor("Preto")
+                .status(VeiculoEntity.StatusVeiculoEntity.ATIVO)
                 .criadoEm(criadoEm)
                 .atualizadoEm(atualizadoEm)
                 .build();
@@ -118,8 +121,8 @@ class VeiculoJpaMapperTest {
     @DisplayName("Deve converter lista de veículos para entities")
     void deveConverterListaDeVeiculosParaEntities() {
         // Arrange
-        VeiculoRestauracaoParams params1 = new VeiculoRestauracaoParams(UUID.randomUUID(), Placa.of("ABC1234"), "Toyota", "Corolla", 2022, "Prata", LocalDateTime.now().minusDays(1), LocalDateTime.now());
-        VeiculoRestauracaoParams params2 = new VeiculoRestauracaoParams(UUID.randomUUID(), Placa.of("XYZ5678"), "Honda", "Civic", 2023, "Preto", LocalDateTime.now().minusDays(1), LocalDateTime.now());
+        VeiculoRestauracaoParams params1 = new VeiculoRestauracaoParams(UUID.randomUUID(), Placa.of("ABC1234"), "Toyota", "Corolla", 2022, "Prata", StatusVeiculo.ATIVO, LocalDateTime.now().minusDays(1), LocalDateTime.now());
+        VeiculoRestauracaoParams params2 = new VeiculoRestauracaoParams(UUID.randomUUID(), Placa.of("XYZ5678"), "Honda", "Civic", 2023, "Preto", StatusVeiculo.ATIVO, LocalDateTime.now().minusDays(1), LocalDateTime.now());
         Veiculo veiculo1 = Veiculo.restaurar(params1);
         Veiculo veiculo2 = Veiculo.restaurar(params2);
         List<Veiculo> veiculos = List.of(veiculo1, veiculo2);
@@ -145,8 +148,9 @@ class VeiculoJpaMapperTest {
                 .modelo("Corolla")
                 .ano(2022)
                 .cor("Prata")
+                .status(VeiculoEntity.StatusVeiculoEntity.ATIVO)
                 .build();
-        
+
         VeiculoEntity entity2 = VeiculoEntity.builder()
                 .id(java.util.UUID.randomUUID())
                 .placa("XYZ5678")
@@ -154,6 +158,7 @@ class VeiculoJpaMapperTest {
                 .modelo("Civic")
                 .ano(2023)
                 .cor("Preto")
+                .status(VeiculoEntity.StatusVeiculoEntity.ATIVO)
                 .build();
         
         List<VeiculoEntity> entities = List.of(entity1, entity2);

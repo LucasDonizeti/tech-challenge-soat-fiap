@@ -16,6 +16,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VeiculoEntity {
+
+    public enum StatusVeiculoEntity {
+        ATIVO,
+        INATIVO
+    }
     
     @Id
     @Column(name = "id", columnDefinition = "BINARY(16)")
@@ -35,7 +40,11 @@ public class VeiculoEntity {
     
     @Column(name = "cor", length = 30)
     private String cor;
-    
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private StatusVeiculoEntity status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false, columnDefinition = "BINARY(16)")
     private ClienteEntity cliente;

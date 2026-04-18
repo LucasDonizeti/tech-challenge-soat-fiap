@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.domain.model.valueobjects;
 
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -17,18 +18,18 @@ public final class Placa {
 
     public static Placa of(String valor) {
         if (valor == null || valor.isBlank()) {
-            throw new IllegalArgumentException("Placa não pode ser nula ou vazia");
+            throw new ValidacaoValorException("Placa não pode ser nula ou vazia");
         }
         return new Placa(valor);
     }
 
     private String validar(String placa) {
         String placaLimpa = placa.replaceAll("[^A-Z\\d]", "").toUpperCase();
-        
+
         if (!isValidPlaca(placaLimpa)) {
-            throw new IllegalArgumentException("Placa inválida: " + placa);
+            throw new ValidacaoValorException("Placa inválida: " + placa);
         }
-        
+
         return placaLimpa;
     }
 

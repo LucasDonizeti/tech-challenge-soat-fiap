@@ -3,6 +3,7 @@ package com.techchallenge.oficina.administrativo.domain.services;
 import com.techchallenge.oficina.administrativo.domain.exceptions.CnpjJaCadastradoException;
 import com.techchallenge.oficina.administrativo.domain.exceptions.CpfJaCadastradoException;
 import com.techchallenge.oficina.administrativo.domain.exceptions.EmailJaCadastradoException;
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CNPJ;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CPF;
@@ -61,7 +62,7 @@ public class ClienteDomainService {
     
     public void validarExclusaoCliente(Cliente cliente) {
         if (!podeExcluirCliente(cliente)) {
-            throw new IllegalStateException("Cliente não pode ser excluído. Verifique se há ordens de serviço em andamento ou veículos cadastrados.");
+            throw new ValidacaoValorException("Cliente não pode ser excluído. Verifique se há ordens de serviço em andamento ou veículos cadastrados.");
         }
     }
 }

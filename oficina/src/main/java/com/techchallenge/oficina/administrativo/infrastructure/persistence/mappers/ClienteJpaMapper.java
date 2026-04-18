@@ -14,14 +14,14 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class ClienteJpaMapper {
-    
+
     private final VeiculoJpaMapper veiculoJpaMapper;
     
     public ClienteEntity toEntity(Cliente cliente) {
         if (cliente == null) {
             return null;
         }
-        
+
         return ClienteEntity.builder()
                 .id(cliente.getId())
                 .nome(cliente.getNome().getValor())
@@ -53,7 +53,7 @@ public class ClienteJpaMapper {
         
         Cliente cliente = Cliente.restaurar(params);
         
-        // Adiciona os veículos ao cliente
+        // Adiciona os veículos ao cliente (apenas para consulta, não cascade)
         List<Veiculo> veiculos = veiculoJpaMapper.toDomainList(entity.getVeiculos());
         veiculos.forEach(cliente::adicionarVeiculo);
         
@@ -74,7 +74,7 @@ public class ClienteJpaMapper {
         if (entities == null) {
             return List.of();
         }
-        
+
         return entities.stream()
                 .map(this::toDomain)
                 .toList();
