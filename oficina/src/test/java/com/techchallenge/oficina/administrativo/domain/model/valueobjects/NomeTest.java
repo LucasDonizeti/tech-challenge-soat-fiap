@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.domain.model.valueobjects;
 
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
@@ -28,8 +29,8 @@ class NomeTest {
     @DisplayName("Deve lançar exceção para nome nulo")
     void deveLancarExcecaoParaNomeNulo() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> Nome.of(null)
         );
         
@@ -40,8 +41,8 @@ class NomeTest {
     @DisplayName("Deve lançar exceção para nome vazio")
     void deveLancarExcecaoParaNomeVazio() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> Nome.of("")
         );
         
@@ -52,8 +53,8 @@ class NomeTest {
     @DisplayName("Deve lançar exceção para nome com menos de 3 caracteres")
     void deveLancarExcecaoParaNomeCurto() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> Nome.of("Jo")
         );
         
@@ -67,8 +68,8 @@ class NomeTest {
         String nomeLongo = "A".repeat(101);
         
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> Nome.of(nomeLongo)
         );
         
@@ -79,8 +80,8 @@ class NomeTest {
     @DisplayName("Deve lançar exceção para nome com números")
     void deveLancarExcecaoParaNomeComNumeros() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> Nome.of("João123")
         );
         
@@ -91,8 +92,8 @@ class NomeTest {
     @DisplayName("Deve lançar exceção para nome com caracteres especiais")
     void deveLancarExcecaoParaNomeComCaracteresEspeciais() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> Nome.of("João@Silva")
         );
         

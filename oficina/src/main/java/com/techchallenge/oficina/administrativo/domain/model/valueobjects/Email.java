@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.domain.model.valueobjects;
 
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -14,7 +15,7 @@ public final class Email {
 
     public static Email of(String endereco) {
         if (endereco == null || endereco.isBlank()) {
-            throw new IllegalArgumentException("Email não pode ser nulo ou vazio");
+            throw new ValidacaoValorException("Email não pode ser nulo ou vazio");
         }
         return new Email(endereco);
     }
@@ -23,12 +24,12 @@ public final class Email {
         String emailTrim = email.trim().toLowerCase();
         
         if (emailTrim.length() > 100) {
-            throw new IllegalArgumentException("Email deve ter no máximo 100 caracteres");
+            throw new ValidacaoValorException("Email deve ter no máximo 100 caracteres");
         }
         
         // Validação básica de formato de email
         if (!isValidEmail(emailTrim)) {
-            throw new IllegalArgumentException("Email inválido");
+            throw new ValidacaoValorException("Email inválido");
         }
         
         return emailTrim;

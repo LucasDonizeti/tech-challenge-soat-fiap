@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.domain.model.valueobjects;
 
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -16,7 +17,7 @@ public final class CPF {
 
     public static CPF of(String valor) {
         if (valor == null || valor.isBlank()) {
-            throw new IllegalArgumentException("CPF não pode ser nulo ou vazio");
+            throw new ValidacaoValorException("CPF não pode ser nulo ou vazio");
         }
         return new CPF(valor);
     }
@@ -25,7 +26,7 @@ public final class CPF {
         String cpfLimpo = cpf.replaceAll("\\D", "");
         
         if (!isValidCPF(cpfLimpo)) {
-            throw new IllegalArgumentException("CPF inválido");
+            throw new ValidacaoValorException("CPF inválido");
         }
         
         return cpfLimpo;

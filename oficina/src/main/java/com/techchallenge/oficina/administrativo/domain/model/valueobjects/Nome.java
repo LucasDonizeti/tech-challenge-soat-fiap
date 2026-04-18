@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.domain.model.valueobjects;
 
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -14,7 +15,7 @@ public final class Nome {
 
     public static Nome of(String valor) {
         if (valor == null || valor.isBlank()) {
-            throw new IllegalArgumentException("Nome não pode ser nulo ou vazio");
+            throw new ValidacaoValorException("Nome não pode ser nulo ou vazio");
         }
         return new Nome(valor);
     }
@@ -23,16 +24,16 @@ public final class Nome {
         String nomeTrim = nome.trim();
         
         if (nomeTrim.length() < 3) {
-            throw new IllegalArgumentException("Nome deve ter no mínimo 3 caracteres");
+            throw new ValidacaoValorException("Nome deve ter no mínimo 3 caracteres");
         }
         
         if (nomeTrim.length() > 100) {
-            throw new IllegalArgumentException("Nome deve ter no máximo 100 caracteres");
+            throw new ValidacaoValorException("Nome deve ter no máximo 100 caracteres");
         }
         
         // Verifica se contém apenas letras, espaços e caracteres permitidos
         if (!nomeTrim.matches("^[a-zA-ZÀ-ÿ\\s]+$")) {
-            throw new IllegalArgumentException("Nome deve conter apenas letras e espaços");
+            throw new ValidacaoValorException("Nome deve conter apenas letras e espaços");
         }
         
         return nomeTrim;

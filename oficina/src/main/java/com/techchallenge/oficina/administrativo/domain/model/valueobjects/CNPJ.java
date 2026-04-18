@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.domain.model.valueobjects;
 
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -16,7 +17,7 @@ public final class CNPJ {
 
     public static CNPJ of(String valor) {
         if (valor == null || valor.isBlank()) {
-            throw new IllegalArgumentException("CNPJ não pode ser nulo ou vazio");
+            throw new ValidacaoValorException("CNPJ não pode ser nulo ou vazio");
         }
         return new CNPJ(valor);
     }
@@ -25,7 +26,7 @@ public final class CNPJ {
         String cnpjLimpo = cnpj.replaceAll("\\D", "");
         
         if (!isValidCNPJ(cnpjLimpo)) {
-            throw new IllegalArgumentException("CNPJ inválido");
+            throw new ValidacaoValorException("CNPJ inválido");
         }
         
         return cnpjLimpo;

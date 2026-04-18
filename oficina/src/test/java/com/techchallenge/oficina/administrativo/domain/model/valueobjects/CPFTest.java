@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.domain.model.valueobjects;
 
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
@@ -29,8 +30,8 @@ class CPFTest {
     @DisplayName("Deve lançar exceção para CPF nulo")
     void deveLancarExcecaoParaCpfNulo() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> CPF.of(null)
         );
         
@@ -41,8 +42,8 @@ class CPFTest {
     @DisplayName("Deve lançar exceção para CPF vazio")
     void deveLancarExcecaoParaCpfVazio() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> CPF.of("")
         );
         
@@ -53,8 +54,8 @@ class CPFTest {
     @DisplayName("Deve lançar exceção para CPF com tamanho inválido")
     void deveLancarExcecaoParaCpfTamanhoInvalido() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> CPF.of("123456789")
         );
         
@@ -65,8 +66,8 @@ class CPFTest {
     @DisplayName("Deve lançar exceção para CPF com dígitos iguais")
     void deveLancarExcecaoParaCpfDigitosIguais() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> CPF.of("11111111111")
         );
         
@@ -77,8 +78,8 @@ class CPFTest {
     @DisplayName("Deve lançar exceção para CPF com checksum inválido")
     void deveLancarExcecaoParaCpfChecksumInvalido() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> CPF.of("12345678900")
         );
         

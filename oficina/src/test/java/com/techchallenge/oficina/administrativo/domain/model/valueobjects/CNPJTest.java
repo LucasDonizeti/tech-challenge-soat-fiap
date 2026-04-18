@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.domain.model.valueobjects;
 
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,8 +38,8 @@ class CNPJTest {
     @DisplayName("Deve lançar exceção quando CNPJ é nulo")
     void deveLancarExcecaoQuandoCnpjNulo() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> CNPJ.of(null)
         );
         assertEquals("CNPJ não pode ser nulo ou vazio", exception.getMessage());
@@ -48,8 +49,8 @@ class CNPJTest {
     @DisplayName("Deve lançar exceção quando CNPJ é vazio")
     void deveLancarExcecaoQuandoCnpjVazio() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> CNPJ.of("")
         );
         assertEquals("CNPJ não pode ser nulo ou vazio", exception.getMessage());
@@ -59,8 +60,8 @@ class CNPJTest {
     @DisplayName("Deve lançar exceção quando CNPJ é branco")
     void deveLancarExcecaoQuandoCnpjBranco() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> CNPJ.of("   ")
         );
         assertEquals("CNPJ não pode ser nulo ou vazio", exception.getMessage());
@@ -70,8 +71,8 @@ class CNPJTest {
     @DisplayName("Deve lançar exceção quando CNPJ tem tamanho inválido")
     void deveLancarExcecaoQuandoCnpjTamanhoInvalido() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> CNPJ.of("12345678")
         );
         assertEquals("CNPJ inválido", exception.getMessage());
@@ -81,8 +82,8 @@ class CNPJTest {
     @DisplayName("Deve lançar exceção quando CNPJ tem todos dígitos iguais")
     void deveLancarExcecaoQuandoCnpjDigitosIguais() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> CNPJ.of("11111111111111")
         );
         assertEquals("CNPJ inválido", exception.getMessage());
@@ -92,8 +93,8 @@ class CNPJTest {
     @DisplayName("Deve lançar exceção quando CNPJ tem dígitos verificadores incorretos")
     void deveLancarExcecaoQuandoCnpjDigitosVerificadoresIncorretos() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> CNPJ.of("12345678000190")
         );
         assertEquals("CNPJ inválido", exception.getMessage());
@@ -129,8 +130,8 @@ class CNPJTest {
     @DisplayName("Deve lançar exceção quando CNPJ tem letras")
     void deveLancarExcecaoQuandoCnpjTemLetras() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> CNPJ.of("12.345.678/0001-A5")
         );
         assertEquals("CNPJ inválido", exception.getMessage());

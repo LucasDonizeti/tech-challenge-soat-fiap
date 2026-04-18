@@ -106,6 +106,14 @@
 - **Contexto:** Necessidade de ferramenta sistemática para análise estática identificando code smells, vulnerabilidades, bugs e garantindo qualidade contínua do código
 - **Decisão:** Implementação do SonarQube com integração Maven
 
+### ADR-014: Implementação de Swagger para Documentação de APIs
+- **Número:** 014
+- **Título:** Implementação de Swagger para Documentação de APIs
+- **Data:** 2026-04-17
+- **Responsável:** Arquiteto do Projeto
+- **Contexto:** Ausência de documentação formal e padronizada das APIs REST, dificultando integração entre bounded contexts e onboarding de novos desenvolvedores
+- **Decisão:** Implementação do Swagger (OpenAPI Specification 3.0) com SpringDoc OpenAPI para documentação automática e interativa das APIs
+
 ---
 
 *Os ADRs detalhados estão disponíveis na pasta `ADR/` com arquivos individuais para cada decisão.*

@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.domain.model.valueobjects;
 
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
@@ -30,8 +31,8 @@ class EmailTest {
     @DisplayName("Deve lançar exceção para email nulo")
     void deveLancarExcecaoParaEmailNulo() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> Email.of(null)
         );
         
@@ -42,8 +43,8 @@ class EmailTest {
     @DisplayName("Deve lançar exceção para email vazio")
     void deveLancarExcecaoParaEmailVazio() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> Email.of("")
         );
         
@@ -54,8 +55,8 @@ class EmailTest {
     @DisplayName("Deve lançar exceção para email em branco")
     void deveLancarExcecaoParaEmailEmBranco() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> Email.of("   ")
         );
         
@@ -69,8 +70,8 @@ class EmailTest {
         String emailLongo = "a".repeat(90) + "@exemplo.com";
         
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> Email.of(emailLongo)
         );
         
@@ -81,8 +82,8 @@ class EmailTest {
     @DisplayName("Deve lançar exceção para email sem @")
     void deveLancarExcecaoParaEmailSemArroba() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> Email.of("emailinvalido")
         );
         
@@ -93,8 +94,8 @@ class EmailTest {
     @DisplayName("Deve lançar exceção para email sem dominio")
     void deveLancarExcecaoParaEmailSemDominio() {
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ValidacaoValorException exception = assertThrows(
+                ValidacaoValorException.class,
                 () -> Email.of("usuario@")
         );
         
