@@ -1,0 +1,180 @@
+package com.techchallenge.oficina.os.application.usecases;
+
+import com.techchallenge.oficina.os.application.usecases.commands.AtualizarPrecoMROCommand;
+import com.techchallenge.oficina.os.application.usecases.responses.MROResponse;
+import com.techchallenge.oficina.os.domain.model.entities.MRO;
+import com.techchallenge.oficina.os.domain.model.valueobjects.TipoMRO;
+import com.techchallenge.oficina.os.domain.repositories.MRORepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("Testes de AtualizarPrecoMROUseCase - Application Layer")
+class AtualizarPrecoMROUseCaseTest {
+
+    @Mock
+    private MRORepository repository;
+
+    @InjectMocks
+    private AtualizarPrecoMROUseCase useCase;
+
+    private UUID mroId;
+    private MRO mro;
+    private AtualizarPrecoMROCommand command;
+    private BigDecimal novoPreco;
+
+    @BeforeEach
+    void setUp() {
+        mroId = UUID.randomUUID();
+        novoPreco = new BigDecimal("55.90");
+        command = new AtualizarPrecoMROCommand(mroId, novoPreco);
+
+        mro = MRO.criar(
+                "Óleo Motor 5W30",
+                "Óleo para motor automotivo",
+                TipoMRO.INSUMO,
+                100,
+                new BigDecimal("45.90")
+        );
+    }
+
+    @Test
+    @DisplayName("Deve atualizar preço do MRO com sucesso")
+    void deveAtualizarPrecoDoMROComSucesso() {
+        // Arrange
+        when(repository.findById(mroId)).thenReturn(Optional.of(mro));
+        when(repository.save(any(MRO.class))).thenReturn(mro);
+
+        // Act
+        MROResponse response = useCase.execute(command);
+
+        // Assert
+        assertNotNull(response);
+        assertNotNull(response.getId());
+        assertEquals("Óleo Motor 5W30", response.getNome());
+        assertEquals(novoPreco, response.getPrecoUnitario());
+
+        verify(repository, times(1)).findById(mroId);
+        verify(repository, times(1)).save(any(MRO.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando MRO não encontrado")
+    void deveLancarExcecaoQuandoMRONaoEncontrado() {
+        // Arrange
+        when(repository.findById(mroId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> useCase.execute(command)
+        );
+
+        assertTrue(exception.getMessage().contains("MRO não encontrado"));
+
+        verify(repository, times(1)).findById(mroId);
+        verify(repository, never()).save(any(MRO.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando comando é nulo")
+    void deveLancarExcecaoQuandoComandoNulo() {
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> useCase.execute(null));
+
+        verify(repository, never()).findById(any(UUID.class));
+        verify(repository, never()).save(any(MRO.class));
+    }
+
+    @Test
+    @DisplayName("Deve propagar exceção quando repository falha ao buscar")
+    void devePropagarExcecaoQuandoRepositoryFalhaAoBuscar() {
+        // Arrange
+        when(repository.findById(mroId)).thenThrow(new RuntimeException("Erro ao buscar no banco"));
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> useCase.execute(command)
+        );
+
+        assertEquals("Erro ao buscar no banco", exception.getMessage());
+
+        verify(repository, times(1)).findById(mroId);
+        verify(repository, never()).save(any(MRO.class));
+    }
+
+    @Test
+    @DisplayName("Deve propagar exceção quando repository falha ao salvar")
+    void devePropagarExcecaoQuandoRepositoryFalhaAoSalvar() {
+        // Arrange
+        when(repository.findById(mroId)).thenReturn(Optional.of(mro));
+        when(repository.save(any(MRO.class))).thenThrow(new RuntimeException("Erro ao salvar no banco"));
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> useCase.execute(command)
+        );
+
+        assertEquals("Erro ao salvar no banco", exception.getMessage());
+
+        verify(repository, times(1)).findById(mroId);
+        verify(repository, times(1)).save(any(MRO.class));
+    }
+
+    @Test
+    @DisplayName("Deve atualizar preço para valor maior")
+    void deveAtualizarPrecoParaValorMaior() {
+        // Arrange
+        BigDecimal precoMaior = new BigDecimal("99.99");
+        AtualizarPrecoMROCommand commandPrecoMaior = new AtualizarPrecoMROCommand(mroId, precoMaior);
+
+        when(repository.findById(mroId)).thenReturn(Optional.of(mro));
+        when(repository.save(any(MRO.class))).thenReturn(mro);
+
+        // Act
+        MROResponse response = useCase.execute(commandPrecoMaior);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(precoMaior, response.getPrecoUnitario());
+
+        verify(repository, times(1)).findById(mroId);
+        verify(repository, times(1)).save(any(MRO.class));
+    }
+
+    @Test
+    @DisplayName("Deve atualizar preço para valor menor")
+    void deveAtualizarPrecoParaValorMenor() {
+        // Arrange
+        BigDecimal precoMenor = new BigDecimal("25.00");
+        AtualizarPrecoMROCommand commandPrecoMenor = new AtualizarPrecoMROCommand(mroId, precoMenor);
+
+        when(repository.findById(mroId)).thenReturn(Optional.of(mro));
+        when(repository.save(any(MRO.class))).thenReturn(mro);
+
+        // Act
+        MROResponse response = useCase.execute(commandPrecoMenor);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(precoMenor, response.getPrecoUnitario());
+
+        verify(repository, times(1)).findById(mroId);
+        verify(repository, times(1)).save(any(MRO.class));
+    }
+}
