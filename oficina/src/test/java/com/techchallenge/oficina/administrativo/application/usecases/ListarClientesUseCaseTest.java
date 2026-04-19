@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -48,7 +49,8 @@ class ListarClientesUseCaseTest {
     void deveListarClientesComPaginacaoPadrao() {
         // Arrange
         Pageable pageable = PageRequest.of(0, 10);
-        when(repository.findAll()).thenReturn(clientes);
+        Page<Cliente> pageClientes = new PageImpl<>(clientes, pageable, clientes.size());
+        when(repository.findAll(pageable)).thenReturn(pageClientes);
 
         // Act
         Page<ClienteResponse> result = useCase.execute(pageable);
@@ -61,7 +63,7 @@ class ListarClientesUseCaseTest {
         assertEquals("Maria Santos", result.getContent().get(1).getNome());
         assertEquals("Pedro Costa", result.getContent().get(2).getNome());
 
-        verify(repository, times(1)).findAll();
+        verify(repository, times(1)).findAll(pageable);
     }
 
     @Test
@@ -69,7 +71,8 @@ class ListarClientesUseCaseTest {
     void deveAplicarPaginacaoCorretamente() {
         // Arrange
         Pageable pageable = PageRequest.of(0, 2);
-        when(repository.findAll()).thenReturn(clientes);
+        Page<Cliente> pageClientes = new PageImpl<>(clientes.subList(0, 2), pageable, clientes.size());
+        when(repository.findAll(pageable)).thenReturn(pageClientes);
 
         // Act
         Page<ClienteResponse> result = useCase.execute(pageable);
@@ -81,7 +84,7 @@ class ListarClientesUseCaseTest {
         assertEquals(2, result.getSize()); // Tamanho da página
         assertEquals(0, result.getNumber()); // Número da página
 
-        verify(repository, times(1)).findAll();
+        verify(repository, times(1)).findAll(pageable);
     }
 
     @Test
@@ -89,7 +92,8 @@ class ListarClientesUseCaseTest {
     void deveRetornarPaginaVaziaQuandoNaoHaClientes() {
         // Arrange
         Pageable pageable = PageRequest.of(0, 10);
-        when(repository.findAll()).thenReturn(List.of());
+        Page<Cliente> pageClientes = new PageImpl<>(List.of(), pageable, 0);
+        when(repository.findAll(pageable)).thenReturn(pageClientes);
 
         // Act
         Page<ClienteResponse> result = useCase.execute(pageable);
@@ -100,7 +104,7 @@ class ListarClientesUseCaseTest {
         assertEquals(0, result.getContent().size());
         assertTrue(result.getContent().isEmpty());
 
-        verify(repository, times(1)).findAll();
+        verify(repository, times(1)).findAll(pageable);
     }
 
     @Test
@@ -108,7 +112,8 @@ class ListarClientesUseCaseTest {
     void deveListarSegundaPaginaCorretamente() {
         // Arrange
         Pageable pageable = PageRequest.of(1, 2); // Segunda página, tamanho 2
-        when(repository.findAll()).thenReturn(clientes);
+        Page<Cliente> pageClientes = new PageImpl<>(clientes.subList(2, 3), pageable, clientes.size());
+        when(repository.findAll(pageable)).thenReturn(pageClientes);
 
         // Act
         Page<ClienteResponse> result = useCase.execute(pageable);
@@ -120,7 +125,7 @@ class ListarClientesUseCaseTest {
         assertEquals("Pedro Costa", result.getContent().get(0).getNome());
         assertEquals(1, result.getNumber()); // Número da página
 
-        verify(repository, times(1)).findAll();
+        verify(repository, times(1)).findAll(pageable);
     }
 
     @Test
@@ -137,7 +142,8 @@ class ListarClientesUseCaseTest {
         );
         
         Pageable pageable = PageRequest.of(0, 10);
-        when(repository.findAll()).thenReturn(clientesPJ);
+        Page<Cliente> pageClientesPJ = new PageImpl<>(clientesPJ, pageable, clientesPJ.size());
+        when(repository.findAll(pageable)).thenReturn(pageClientesPJ);
 
         // Act
         Page<ClienteResponse> result = useCase.execute(pageable);
@@ -149,7 +155,7 @@ class ListarClientesUseCaseTest {
         assertTrue(result.getContent().get(0).isPessoaJuridica());
         assertTrue(result.getContent().get(1).isPessoaJuridica());
 
-        verify(repository, times(1)).findAll();
+        verify(repository, times(1)).findAll(pageable);
     }
 
     @Test
@@ -164,7 +170,8 @@ class ListarClientesUseCaseTest {
         );
         
         Pageable pageable = PageRequest.of(0, 10);
-        when(repository.findAll()).thenReturn(clientesMistos);
+        Page<Cliente> pageClientesMistos = new PageImpl<>(clientesMistos, pageable, clientesMistos.size());
+        when(repository.findAll(pageable)).thenReturn(pageClientesMistos);
 
         // Act
         Page<ClienteResponse> result = useCase.execute(pageable);
@@ -176,7 +183,7 @@ class ListarClientesUseCaseTest {
         assertTrue(result.getContent().get(0).isPessoaFisica());
         assertTrue(result.getContent().get(1).isPessoaJuridica());
 
-        verify(repository, times(1)).findAll();
+        verify(repository, times(1)).findAll(pageable);
     }
 
     @Test
@@ -191,7 +198,8 @@ class ListarClientesUseCaseTest {
     void deveListarClientesComPaginaAlemDoConteudo() {
         // Arrange
         Pageable pageable = PageRequest.of(2, 5); // Página além do conteúdo
-        when(repository.findAll()).thenReturn(clientes);
+        Page<Cliente> pageClientes = new PageImpl<>(List.of(), pageable, clientes.size());
+        when(repository.findAll(pageable)).thenReturn(pageClientes);
 
         // Act
         Page<ClienteResponse> result = useCase.execute(pageable);
@@ -202,6 +210,6 @@ class ListarClientesUseCaseTest {
         assertEquals(0, result.getContent().size()); // Página vazia
         assertEquals(2, result.getNumber()); // Número da página solicitada
 
-        verify(repository, times(1)).findAll();
+        verify(repository, times(1)).findAll(pageable);
     }
 }

@@ -10,6 +10,8 @@ import com.techchallenge.oficina.administrativo.infrastructure.persistence.entit
 import com.techchallenge.oficina.administrativo.infrastructure.persistence.mappers.ClienteJpaMapper;
 import com.techchallenge.oficina.administrativo.infrastructure.persistence.specifications.ClienteFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -41,7 +43,13 @@ public class ClienteRepositoryImpl implements ClienteRepository {
         List<ClienteEntity> entities = jpaRepository.findAll();
         return mapper.toDomainList(entities);
     }
-    
+
+    @Override
+    public Page<Cliente> findAll(Pageable pageable) {
+        Page<ClienteEntity> entities = jpaRepository.findAll(pageable);
+        return entities.map(mapper::toDomain);
+    }
+
     @Override
     public List<Cliente> findByStatus(StatusCliente status) {
         ClienteEntity.StatusClienteEntity entityStatus = toEntityStatus(status);

@@ -83,7 +83,8 @@ class ListarVeiculosUseCaseTest {
         // Arrange
         List<Veiculo> veiculos = List.of(veiculo1, veiculo2, veiculo3);
         Pageable pageable = PageRequest.of(0, 10);
-        when(repository.findAll()).thenReturn(veiculos);
+        Page<Veiculo> pageVeiculos = new PageImpl<>(veiculos, pageable, veiculos.size());
+        when(repository.findAll(pageable)).thenReturn(pageVeiculos);
 
         // Act
         Page<VeiculoResponse> response = useCase.execute(pageable);
@@ -96,7 +97,7 @@ class ListarVeiculosUseCaseTest {
         assertEquals("Honda", response.getContent().get(1).getMarca());
         assertEquals("Chevrolet", response.getContent().get(2).getMarca());
 
-        verify(repository, times(1)).findAll();
+        verify(repository, times(1)).findAll(pageable);
     }
 
     @Test
@@ -105,7 +106,8 @@ class ListarVeiculosUseCaseTest {
         // Arrange
         List<Veiculo> veiculos = List.of();
         Pageable pageable = PageRequest.of(0, 10);
-        when(repository.findAll()).thenReturn(veiculos);
+        Page<Veiculo> pageVeiculos = new PageImpl<>(veiculos, pageable, 0);
+        when(repository.findAll(pageable)).thenReturn(pageVeiculos);
 
         // Act
         Page<VeiculoResponse> response = useCase.execute(pageable);
@@ -115,7 +117,7 @@ class ListarVeiculosUseCaseTest {
         assertEquals(0, response.getTotalElements());
         assertTrue(response.getContent().isEmpty());
 
-        verify(repository, times(1)).findAll();
+        verify(repository, times(1)).findAll(pageable);
     }
 
     @Test
@@ -124,7 +126,8 @@ class ListarVeiculosUseCaseTest {
         // Arrange
         List<Veiculo> veiculos = List.of(veiculo1, veiculo2, veiculo3);
         Pageable pageable = PageRequest.of(0, 2);
-        when(repository.findAll()).thenReturn(veiculos);
+        Page<Veiculo> pageVeiculos = new PageImpl<>(veiculos.subList(0, 2), pageable, veiculos.size());
+        when(repository.findAll(pageable)).thenReturn(pageVeiculos);
 
         // Act
         Page<VeiculoResponse> response = useCase.execute(pageable);
@@ -136,7 +139,7 @@ class ListarVeiculosUseCaseTest {
         assertEquals(0, response.getNumber());
         assertEquals(2, response.getSize());
 
-        verify(repository, times(1)).findAll();
+        verify(repository, times(1)).findAll(pageable);
     }
 
     @Test
@@ -145,7 +148,8 @@ class ListarVeiculosUseCaseTest {
         // Arrange
         List<Veiculo> veiculos = List.of(veiculo1, veiculo2);
         Pageable pageable = PageRequest.of(5, 10);
-        when(repository.findAll()).thenReturn(veiculos);
+        Page<Veiculo> pageVeiculos = new PageImpl<>(List.of(), pageable, veiculos.size());
+        when(repository.findAll(pageable)).thenReturn(pageVeiculos);
 
         // Act
         Page<VeiculoResponse> response = useCase.execute(pageable);
@@ -155,7 +159,7 @@ class ListarVeiculosUseCaseTest {
         assertEquals(2, response.getTotalElements());
         assertEquals(0, response.getContent().size());
 
-        verify(repository, times(1)).findAll();
+        verify(repository, times(1)).findAll(pageable);
     }
 
     @Test
@@ -165,7 +169,8 @@ class ListarVeiculosUseCaseTest {
         veiculo2.inativar();
         List<Veiculo> veiculos = List.of(veiculo1, veiculo2);
         Pageable pageable = PageRequest.of(0, 10);
-        when(repository.findAll()).thenReturn(veiculos);
+        Page<Veiculo> pageVeiculos = new PageImpl<>(veiculos, pageable, veiculos.size());
+        when(repository.findAll(pageable)).thenReturn(pageVeiculos);
 
         // Act
         Page<VeiculoResponse> response = useCase.execute(pageable);
@@ -176,6 +181,6 @@ class ListarVeiculosUseCaseTest {
         assertEquals("ATIVO", response.getContent().get(0).getStatus().name());
         assertEquals("INATIVO", response.getContent().get(1).getStatus().name());
 
-        verify(repository, times(1)).findAll();
+        verify(repository, times(1)).findAll(pageable);
     }
 }

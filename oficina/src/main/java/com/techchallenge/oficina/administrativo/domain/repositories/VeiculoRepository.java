@@ -3,6 +3,8 @@ package com.techchallenge.oficina.administrativo.domain.repositories;
 import com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.StatusVeiculo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +27,8 @@ public interface VeiculoRepository {
     List<Veiculo> findByStatus(StatusVeiculo status);
 
     List<Veiculo> findAll();
+
+    Page<Veiculo> findAll(Pageable pageable);
 
     void deleteById(UUID id);
 }

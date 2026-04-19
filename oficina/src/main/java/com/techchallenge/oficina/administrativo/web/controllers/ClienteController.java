@@ -5,6 +5,7 @@ import com.techchallenge.oficina.administrativo.application.usecases.responses.C
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.StatusCliente;
 import com.techchallenge.oficina.administrativo.web.dto.*;
 import com.techchallenge.oficina.administrativo.web.mappers.ClienteWebMapper;
+import com.techchallenge.oficina.sharedkernel.common.PageableValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -22,6 +23,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -42,6 +44,7 @@ public class ClienteController {
     private final ListarClientesUseCase listarClientesUseCase;
     private final BuscarClientesPorFiltroUseCase buscarClientesPorFiltroUseCase;
     private final ClienteWebMapper mapper;
+    private final PageableValidator pageableValidator;
     
     @PostMapping
     @Operation(summary = "Criar novo cliente", description = "Cadastra um novo cliente no sistema")
@@ -80,10 +83,14 @@ public class ClienteController {
     })
     public ResponseEntity<Page<ClienteResponseDto>> listar(Pageable pageable) {
         log.info("Listando clientes com paginação");
-        
-        Page<ClienteResponse> responses = listarClientesUseCase.execute(pageable);
+
+        // Validar e limitar os campos de ordenação para evitar erros de Sort
+        Set<String> allowedFields = Set.of("nome", "cpf", "cnpj", "email", "status", "criadoEm", "atualizadoEm");
+        Pageable validatedPageable = pageableValidator.validate(pageable, allowedFields);
+
+        Page<ClienteResponse> responses = listarClientesUseCase.execute(validatedPageable);
         Page<ClienteResponseDto> dtos = mapper.toDtoPage(responses);
-        
+
         return ResponseEntity.ok(dtos);
     }
     
