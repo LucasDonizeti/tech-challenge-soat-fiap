@@ -9,6 +9,8 @@ import com.techchallenge.oficina.administrativo.infrastructure.persistence.entit
 import com.techchallenge.oficina.administrativo.infrastructure.persistence.mappers.VeiculoJpaMapper;
 import com.techchallenge.oficina.administrativo.infrastructure.persistence.repositories.ClienteJpaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -79,6 +81,12 @@ public class VeiculoRepositoryImpl implements VeiculoRepository {
     public List<Veiculo> findAll() {
         List<VeiculoEntity> entities = jpaRepository.findAll();
         return mapper.toDomainList(entities);
+    }
+
+    @Override
+    public Page<Veiculo> findAll(Pageable pageable) {
+        Page<VeiculoEntity> entities = jpaRepository.findAll(pageable);
+        return entities.map(mapper::toDomain);
     }
 
     @Override

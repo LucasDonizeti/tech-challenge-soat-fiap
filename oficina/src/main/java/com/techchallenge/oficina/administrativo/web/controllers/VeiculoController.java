@@ -5,6 +5,7 @@ import com.techchallenge.oficina.administrativo.application.usecases.responses.V
 import com.techchallenge.oficina.administrativo.web.dto.CriarVeiculoRequest;
 import com.techchallenge.oficina.administrativo.web.dto.VeiculoResponseDto;
 import com.techchallenge.oficina.administrativo.web.mappers.VeiculoWebMapper;
+import com.techchallenge.oficina.sharedkernel.common.PageableValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -21,6 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -39,6 +41,7 @@ public class VeiculoController {
     private final ReativarVeiculoUseCase reativarVeiculoUseCase;
     private final ListarVeiculosUseCase listarVeiculosUseCase;
     private final VeiculoWebMapper mapper;
+    private final PageableValidator pageableValidator;
 
     @PostMapping
     @Operation(summary = "Criar novo veículo", description = "Cadastra um novo veículo vinculado a um cliente existente")
@@ -95,7 +98,11 @@ public class VeiculoController {
     public ResponseEntity<Page<VeiculoResponseDto>> listar(Pageable pageable) {
         log.info("Listando veículos com paginação");
 
-        Page<VeiculoResponse> responses = listarVeiculosUseCase.execute(pageable);
+        // Validar e limitar os campos de ordenação para evitar erros de Sort
+        Set<String> allowedFields = Set.of("placa", "marca", "modelo", "ano", "cor", "status", "criadoEm", "atualizadoEm");
+        Pageable validatedPageable = pageableValidator.validate(pageable, allowedFields);
+
+        Page<VeiculoResponse> responses = listarVeiculosUseCase.execute(validatedPageable);
         Page<VeiculoResponseDto> dtos = mapper.toDtoPage(responses);
 
         return ResponseEntity.ok(dtos);

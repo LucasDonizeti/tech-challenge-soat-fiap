@@ -5,6 +5,8 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CNPJ;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CPF;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.StatusCliente;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +19,8 @@ public interface ClienteRepository {
     Optional<Cliente> findById(UUID id);
     
     List<Cliente> findAll();
+    
+    Page<Cliente> findAll(Pageable pageable);
     
     List<Cliente> findByStatus(StatusCliente status);
     

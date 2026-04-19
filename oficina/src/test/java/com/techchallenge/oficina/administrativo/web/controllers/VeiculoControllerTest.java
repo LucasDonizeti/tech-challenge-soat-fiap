@@ -7,6 +7,7 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Status
 import com.techchallenge.oficina.administrativo.web.dto.CriarVeiculoRequest;
 import com.techchallenge.oficina.administrativo.web.dto.VeiculoResponseDto;
 import com.techchallenge.oficina.administrativo.web.mappers.VeiculoWebMapper;
+import com.techchallenge.oficina.sharedkernel.common.PageableValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -57,6 +58,9 @@ class VeiculoControllerTest {
 
     @Mock
     private VeiculoWebMapper mapper;
+
+    @Mock
+    private PageableValidator pageableValidator;
 
     @InjectMocks
     private VeiculoController veiculoController;
@@ -175,6 +179,7 @@ class VeiculoControllerTest {
         // Arrange
         Pageable pageable = PageRequest.of(0, 10);
         Page<VeiculoResponse> page = new PageImpl<>(List.of(veiculoResponse), pageable, 1);
+        when(pageableValidator.validate(any(Pageable.class), any())).thenReturn(pageable);
         when(listarVeiculosUseCase.execute(any(Pageable.class))).thenReturn(page);
         when(mapper.toDtoPage(any())).thenReturn(new PageImpl<>(List.of(veiculoResponseDto), pageable, 1));
 
@@ -185,6 +190,7 @@ class VeiculoControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray());
 
+        verify(pageableValidator, times(1)).validate(any(Pageable.class), any());
         verify(listarVeiculosUseCase, times(1)).execute(any(Pageable.class));
         verify(mapper, times(1)).toDtoPage(any());
     }
