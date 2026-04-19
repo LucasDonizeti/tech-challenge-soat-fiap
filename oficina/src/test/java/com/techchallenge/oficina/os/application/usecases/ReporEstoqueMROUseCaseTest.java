@@ -1,0 +1,172 @@
+package com.techchallenge.oficina.os.application.usecases;
+
+import com.techchallenge.oficina.os.application.usecases.commands.ReporEstoqueMROCommand;
+import com.techchallenge.oficina.os.application.usecases.responses.MROResponse;
+import com.techchallenge.oficina.os.domain.model.entities.MRO;
+import com.techchallenge.oficina.os.domain.model.valueobjects.TipoMRO;
+import com.techchallenge.oficina.os.domain.repositories.MRORepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("Testes de ReporEstoqueMROUseCase - Application Layer")
+class ReporEstoqueMROUseCaseTest {
+
+    @Mock
+    private MRORepository repository;
+
+    @InjectMocks
+    private ReporEstoqueMROUseCase useCase;
+
+    private MRO mro;
+    private UUID mroId;
+    private ReporEstoqueMROCommand command;
+
+    @BeforeEach
+    void setUp() {
+        mroId = UUID.randomUUID();
+        mro = MRO.reconstruir(
+                mroId,
+                "Óleo Motor 5W30",
+                "Óleo para motor automotivo",
+                TipoMRO.INSUMO,
+                50,
+                new BigDecimal("45.90"),
+                true,
+                LocalDateTime.now().minusDays(1),
+                LocalDateTime.now()
+        );
+
+        command = new ReporEstoqueMROCommand(mroId, 50);
+    }
+
+    @Test
+    @DisplayName("Deve repor estoque do MRO com sucesso")
+    void deveReporEstoqueMROComSucesso() {
+        // Arrange
+        when(repository.findById(mroId)).thenReturn(Optional.of(mro));
+        when(repository.save(any(MRO.class))).thenReturn(mro);
+
+        // Act
+        MROResponse response = useCase.execute(command);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(mroId, response.getId());
+        assertEquals(100, response.getQuantidadeEstoque());
+
+        verify(repository, times(1)).findById(mroId);
+        verify(repository, times(1)).save(any(MRO.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando MRO não é encontrado")
+    void deveLancarExcecaoQuandoMroNaoEncontrado() {
+        // Arrange
+        UUID idNaoExistente = UUID.randomUUID();
+        ReporEstoqueMROCommand commandNaoExistente = new ReporEstoqueMROCommand(idNaoExistente, 50);
+        when(repository.findById(idNaoExistente)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> useCase.execute(commandNaoExistente)
+        );
+
+        assertTrue(exception.getMessage().contains("MRO não encontrado"));
+
+        verify(repository, times(1)).findById(idNaoExistente);
+        verify(repository, never()).save(any(MRO.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando comando é nulo")
+    void deveLancarExcecaoQuandoComandoNulo() {
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> useCase.execute(null));
+
+        verify(repository, never()).findById(any());
+        verify(repository, never()).save(any(MRO.class));
+    }
+
+    @Test
+    @DisplayName("Deve repor quantidade 1")
+    void deveReporQuantidade1() {
+        // Arrange
+        ReporEstoqueMROCommand command1 = new ReporEstoqueMROCommand(mroId, 1);
+        when(repository.findById(mroId)).thenReturn(Optional.of(mro));
+        when(repository.save(any(MRO.class))).thenReturn(mro);
+
+        // Act
+        MROResponse response = useCase.execute(command1);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(51, response.getQuantidadeEstoque());
+
+        verify(repository, times(1)).findById(mroId);
+        verify(repository, times(1)).save(any(MRO.class));
+    }
+
+    @Test
+    @DisplayName("Deve repor quantidade grande")
+    void deveReporQuantidadeGrande() {
+        // Arrange
+        MRO mroBaixo = MRO.reconstruir(
+                mroId,
+                "Produto Baixo",
+                "Descrição",
+                TipoMRO.PECA,
+                10,
+                new BigDecimal("10.00"),
+                true,
+                LocalDateTime.now(),
+                LocalDateTime.now()
+        );
+        ReporEstoqueMROCommand commandGrande = new ReporEstoqueMROCommand(mroId, 1000);
+        when(repository.findById(mroId)).thenReturn(Optional.of(mroBaixo));
+        when(repository.save(any(MRO.class))).thenReturn(mroBaixo);
+
+        // Act
+        MROResponse response = useCase.execute(commandGrande);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(1010, response.getQuantidadeEstoque());
+
+        verify(repository, times(1)).findById(mroId);
+        verify(repository, times(1)).save(any(MRO.class));
+    }
+
+    @Test
+    @DisplayName("Deve propagar exceção quando repository falha")
+    void devePropagarExcecaoQuandoRepositoryFalha() {
+        // Arrange
+        when(repository.findById(mroId)).thenThrow(new RuntimeException("Erro de conexão"));
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> useCase.execute(command)
+        );
+
+        assertEquals("Erro de conexão", exception.getMessage());
+
+        verify(repository, times(1)).findById(mroId);
+        verify(repository, never()).save(any(MRO.class));
+    }
+}
