@@ -28,7 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
-		<jacoco.skip.check>true</jacoco.skip.check>
+		<jacoco.skip.check>false</jacoco.skip.check>
 		<owasp.skip>true</owasp.skip>
 	</properties>
 	<dependencies>

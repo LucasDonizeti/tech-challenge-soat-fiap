@@ -1,6 +1,5 @@
 package e2e;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +30,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = com.techchallenge.oficina.OficinaApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @DirtiesContext
-@Disabled("E2E tests disabled due to Spring Security configuration issues - need to fix context loading")
 @DisplayName("Testes End-to-End - Fluxos Completos de Cliente")
 class ClienteFlowE2ETest {
 
