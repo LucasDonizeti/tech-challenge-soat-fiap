@@ -46,7 +46,7 @@ public class VeiculoEntity {
     private StatusVeiculoEntity status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cliente_id", nullable = false, columnDefinition = "BINARY(16)")
+    @JoinColumn(name = "cliente_id", nullable = false)
     private ClienteEntity cliente;
     
     @Column(name = "criado_em", columnDefinition = "DATETIME(6)", nullable = false)
