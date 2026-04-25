@@ -42,7 +42,7 @@ public class Veiculo {
     private StatusVeiculo status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cliente_id", nullable = false, columnDefinition = "BINARY(16)")
+    @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
     
     @Column(name = "criado_em", nullable = false)
