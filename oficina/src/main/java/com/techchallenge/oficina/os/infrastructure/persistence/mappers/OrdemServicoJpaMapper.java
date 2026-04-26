@@ -61,8 +61,7 @@ public class OrdemServicoJpaMapper {
         
         // Load and add items if they exist
         if (entity.getItensServico() != null && !entity.getItensServico().isEmpty()) {
-            var servicoRepository = itemServicoJpaMapper.getServicoRepository();
-            var items = itemServicoJpaMapper.toDomainList(entity.getItensServico(), servicoRepository);
+            var items = itemServicoJpaMapper.toDomainList(entity.getItensServico());
             items.forEach(ordemServico::adicionarItemServico);
         }
         

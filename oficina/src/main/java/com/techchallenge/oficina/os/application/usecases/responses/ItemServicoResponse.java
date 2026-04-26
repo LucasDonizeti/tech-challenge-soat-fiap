@@ -35,9 +35,6 @@ public class ItemServicoResponse {
             return null;
         }
         
-        String servicoNome = itemServico.getServico() != null ? itemServico.getServico().getNome() : null;
-        String servicoDescricao = itemServico.getServico() != null ? itemServico.getServico().getDescricao() : null;
-        
         List<ItemMROResponse> mroResponses = itemServico.getMrosServicos() != null ?
                 itemServico.getMrosServicos().stream()
                         .map(ItemMROResponse::from)
@@ -46,9 +43,9 @@ public class ItemServicoResponse {
         
         return ItemServicoResponse.builder()
                 .id(itemServico.getId())
-                .servicoId(itemServico.getServico() != null ? itemServico.getServico().getId() : null)
-                .servicoNome(servicoNome)
-                .servicoDescricao(servicoDescricao)
+                .servicoId(itemServico.getServicoId())
+                .servicoNome(itemServico.getServicoNome())
+                .servicoDescricao(itemServico.getServicoDescricao())
                 .status(itemServico.getStatus())
                 .observacoes(itemServico.getObservacoes())
                 .valorServico(itemServico.getValorServico())

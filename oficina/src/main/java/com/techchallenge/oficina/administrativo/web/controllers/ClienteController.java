@@ -8,6 +8,9 @@ import com.techchallenge.oficina.administrativo.web.mappers.ClienteWebMapper;
 import com.techchallenge.oficina.sharedkernel.common.PageableValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -47,9 +50,10 @@ public class ClienteController {
     private final PageableValidator pageableValidator;
     
     @PostMapping
-    @Operation(summary = "Criar novo cliente", description = "Cadastra um novo cliente no sistema")
+    @Operation(summary = "Criar novo cliente", description = "Cadastra um novo cliente no sistema. É necessário informar CPF ou CNPJ.")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Cliente criado com sucesso"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Cliente criado com sucesso",
+                    content = @Content(schema = @Schema(implementation = ClienteResponseDto.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Dados inválidos na requisição")
     })
         public ResponseEntity<ClienteResponseDto> criar(@Valid @RequestBody CriarClienteRequest request) {
@@ -64,10 +68,13 @@ public class ClienteController {
     @GetMapping("/{id}")
     @Operation(summary = "Buscar cliente por ID", description = "Retorna os dados de um cliente específico pelo seu UUID")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Cliente encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Cliente encontrado",
+                    content = @Content(schema = @Schema(implementation = ClienteResponseDto.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Cliente não encontrado")
     })
-        public ResponseEntity<ClienteResponseDto> buscar(@PathVariable UUID id) {
+        public ResponseEntity<ClienteResponseDto> buscar(
+            @Parameter(description = "UUID do cliente", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id) {
         log.info("Buscando cliente por ID: {}", id);
         
         ClienteResponse response = buscarClienteUseCase.execute(id);
@@ -81,7 +88,14 @@ public class ClienteController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista de clientes retornada com sucesso")
     })
-    public ResponseEntity<Page<ClienteResponseDto>> listar(Pageable pageable) {
+    public ResponseEntity<Page<ClienteResponseDto>> listar(
+            @Parameter(description = "Número da página (padrão: 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página (padrão: 10)", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo de ordenação (ex: nome, cpf, email, status)", example = "nome")
+            @RequestParam(defaultValue = "nome") String sort,
+            Pageable pageable) {
         log.info("Listando clientes com paginação");
 
         // Validar e limitar os campos de ordenação para evitar erros de Sort
@@ -101,6 +115,12 @@ public class ClienteController {
     })
     public ResponseEntity<Page<ClienteResponseDto>> buscarPorFiltro(
             @Parameter(description = "Filtros de busca de clientes") @ModelAttribute ClienteFilterRequest filter,
+            @Parameter(description = "Número da página (padrão: 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página (padrão: 10)", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo de ordenação (ex: nome, cpf, email, status)", example = "nome")
+            @RequestParam(defaultValue = "nome") String sort,
             Pageable pageable) {
         log.info("Buscando clientes com filtros: {}", filter);
         
@@ -113,12 +133,14 @@ public class ClienteController {
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar cliente", description = "Atualiza os dados de um cliente existente")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Cliente atualizado com sucesso"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Cliente atualizado com sucesso",
+                    content = @Content(schema = @Schema(implementation = ClienteResponseDto.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Dados inválidos na requisição"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Cliente não encontrado")
     })
         public ResponseEntity<ClienteResponseDto> atualizar(
-            @Parameter(description = "UUID do cliente") @PathVariable UUID id, 
+            @Parameter(description = "UUID do cliente", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id, 
             @Valid @RequestBody AtualizarClienteRequest request) {
         log.info("Atualizando cliente ID: {}", id);
         
@@ -131,10 +153,13 @@ public class ClienteController {
     @PatchMapping("/{id}/inativar")
     @Operation(summary = "Inativar cliente", description = "Inativa um cliente existente no sistema")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Cliente inativado com sucesso"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Cliente inativado com sucesso",
+                    content = @Content(schema = @Schema(implementation = ClienteResponseDto.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Cliente não encontrado")
     })
-        public ResponseEntity<ClienteResponseDto> inativar(@PathVariable UUID id) {
+        public ResponseEntity<ClienteResponseDto> inativar(
+            @Parameter(description = "UUID do cliente", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id) {
         log.info("Inativando cliente ID: {}", id);
         
         ClienteResponse response = inativarClienteUseCase.execute(id);
@@ -146,10 +171,13 @@ public class ClienteController {
     @PatchMapping("/{id}/reativar")
     @Operation(summary = "Reativar cliente", description = "Reativa um cliente inativado no sistema")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Cliente reativado com sucesso"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Cliente reativado com sucesso",
+                    content = @Content(schema = @Schema(implementation = ClienteResponseDto.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Cliente não encontrado")
     })
-        public ResponseEntity<ClienteResponseDto> reativar(@PathVariable UUID id) {
+        public ResponseEntity<ClienteResponseDto> reativar(
+            @Parameter(description = "UUID do cliente", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id) {
         log.info("Reativando cliente ID: {}", id);
         
         ClienteResponse response = reativarClienteUseCase.execute(id);
@@ -164,7 +192,9 @@ public class ClienteController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Cliente deletado com sucesso"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Cliente não encontrado")
     })
-        public ResponseEntity<Void> deletar(@PathVariable UUID id) {
+        public ResponseEntity<Void> deletar(
+            @Parameter(description = "UUID do cliente", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id) {
         log.info("Excluindo cliente ID: {}", id);
         
         deletarClienteUseCase.execute(id);
