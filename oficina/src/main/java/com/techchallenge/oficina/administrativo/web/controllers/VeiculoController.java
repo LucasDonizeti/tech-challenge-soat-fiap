@@ -8,6 +8,8 @@ import com.techchallenge.oficina.administrativo.web.mappers.VeiculoWebMapper;
 import com.techchallenge.oficina.sharedkernel.common.PageableValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -46,7 +48,8 @@ public class VeiculoController {
     @PostMapping
     @Operation(summary = "Criar novo veículo", description = "Cadastra um novo veículo vinculado a um cliente existente")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Veículo criado com sucesso"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Veículo criado com sucesso",
+                    content = @Content(schema = @Schema(implementation = VeiculoResponseDto.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Dados inválidos na requisição"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Cliente não encontrado")
     })
@@ -63,10 +66,13 @@ public class VeiculoController {
     @GetMapping("/{id}")
     @Operation(summary = "Buscar veículo por ID", description = "Retorna os dados de um veículo específico pelo seu UUID")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Veículo encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Veículo encontrado",
+                    content = @Content(schema = @Schema(implementation = VeiculoResponseDto.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Veículo não encontrado")
     })
-    public ResponseEntity<VeiculoResponseDto> buscar(@PathVariable UUID id) {
+    public ResponseEntity<VeiculoResponseDto> buscar(
+            @Parameter(description = "UUID do veículo", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id) {
         log.info("Buscando veículo por ID: {}", id);
 
         VeiculoResponse response = buscarVeiculoUseCase.execute(id);
@@ -81,7 +87,8 @@ public class VeiculoController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista de veículos retornada com sucesso")
     })
     public ResponseEntity<List<VeiculoResponseDto>> buscarPorCliente(
-            @Parameter(description = "UUID do cliente") @PathVariable UUID clienteId) {
+            @Parameter(description = "UUID do cliente", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID clienteId) {
         log.info("Buscando veículos do cliente: ID={}", clienteId);
 
         List<VeiculoResponse> responses = buscarVeiculosPorClienteUseCase.execute(clienteId);
@@ -95,7 +102,14 @@ public class VeiculoController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista de veículos retornada com sucesso")
     })
-    public ResponseEntity<Page<VeiculoResponseDto>> listar(Pageable pageable) {
+    public ResponseEntity<Page<VeiculoResponseDto>> listar(
+            @Parameter(description = "Número da página (padrão: 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página (padrão: 10)", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo de ordenação (ex: placa, marca, modelo, ano, status)", example = "placa")
+            @RequestParam(defaultValue = "placa") String sort,
+            Pageable pageable) {
         log.info("Listando veículos com paginação");
 
         // Validar e limitar os campos de ordenação para evitar erros de Sort
@@ -111,10 +125,13 @@ public class VeiculoController {
     @PatchMapping("/{id}/inativar")
     @Operation(summary = "Inativar veículo", description = "Inativa um veículo existente no sistema")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Veículo inativado com sucesso"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Veículo inativado com sucesso",
+                    content = @Content(schema = @Schema(implementation = VeiculoResponseDto.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Veículo não encontrado")
     })
-    public ResponseEntity<VeiculoResponseDto> inativar(@PathVariable UUID id) {
+    public ResponseEntity<VeiculoResponseDto> inativar(
+            @Parameter(description = "UUID do veículo", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id) {
         log.info("Inativando veículo ID: {}", id);
 
         VeiculoResponse response = inativarVeiculoUseCase.execute(id);
@@ -126,10 +143,13 @@ public class VeiculoController {
     @PatchMapping("/{id}/reativar")
     @Operation(summary = "Reativar veículo", description = "Reativa um veículo inativado no sistema")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Veículo reativado com sucesso"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Veículo reativado com sucesso",
+                    content = @Content(schema = @Schema(implementation = VeiculoResponseDto.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Veículo não encontrado")
     })
-    public ResponseEntity<VeiculoResponseDto> reativar(@PathVariable UUID id) {
+    public ResponseEntity<VeiculoResponseDto> reativar(
+            @Parameter(description = "UUID do veículo", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id) {
         log.info("Reativando veículo ID: {}", id);
 
         VeiculoResponse response = reativarVeiculoUseCase.execute(id);

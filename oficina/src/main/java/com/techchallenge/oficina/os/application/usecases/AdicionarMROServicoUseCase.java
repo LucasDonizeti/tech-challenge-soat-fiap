@@ -1,12 +1,16 @@
 package com.techchallenge.oficina.os.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.BuscarMROUseCase;
+import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
 import com.techchallenge.oficina.os.application.usecases.commands.AdicionarMROServicoCommand;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
+import com.techchallenge.oficina.os.domain.exceptions.ItemServicoNaoEncontradoException;
+import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
+import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoStatusInvalidoException;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
 import com.techchallenge.oficina.os.domain.model.entities.ItemServico;
-import com.techchallenge.oficina.os.domain.model.entities.MRO;
+import com.techchallenge.oficina.os.domain.model.valueobjects.StatusOS;
 import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
-import com.techchallenge.oficina.os.domain.repositories.MRORepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,7 +24,7 @@ import java.util.UUID;
 public class AdicionarMROServicoUseCase {
     
     private final OrdemServicoRepository ordemServicoRepository;
-    private final MRORepository mroRepository;
+    private final BuscarMROUseCase buscarMROUseCase;
     
     @Transactional
     public OrdemServicoResponse execute(AdicionarMROServicoCommand command) {
@@ -29,20 +33,31 @@ public class AdicionarMROServicoUseCase {
         
         // Buscar ordem de serviço
         OrdemServico ordemServico = ordemServicoRepository.findById(command.getOrdemServicoId())
-                .orElseThrow(() -> new RuntimeException("Ordem de Serviço não encontrada com ID: " + command.getOrdemServicoId()));
+                .orElseThrow(() -> new OrdemServicoNaoEncontradaException(command.getOrdemServicoId()));
+        
+        // Validar status - só permite adicionar MROs quando a OS está RECEBIDA
+        if (ordemServico.getStatus() != StatusOS.RECEBIDA) {
+            throw new OrdemServicoStatusInvalidoException("Só é possível adicionar MROs quando a Ordem de Serviço está no status RECEBIDA. Status atual: " + ordemServico.getStatus());
+        }
         
         // Buscar item de serviço
         ItemServico itemServico = ordemServico.getItensServico().stream()
                 .filter(item -> item.getId().equals(command.getItemServicoId()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Item de Serviço não encontrado com ID: " + command.getItemServicoId()));
+                .orElseThrow(() -> new ItemServicoNaoEncontradoException(command.getItemServicoId()));
         
-        // Buscar MRO
-        MRO mro = mroRepository.findById(command.getMroId())
-                .orElseThrow(() -> new RuntimeException("MRO não encontrado com ID: " + command.getMroId()));
+        // Buscar MRO via ACL (contexto administrativo)
+        MROResponse mroResponse = buscarMROUseCase.execute(command.getMroId());
         
-        // Adicionar MRO ao item de serviço
-        itemServico.adicionarMRO(mro, command.getQuantidade());
+        // Adicionar MRO ao item de serviço com dados do DTO
+        // Nota: O débito de estoque será feito em uma etapa posterior (ao iniciar a execução da OS)
+        itemServico.adicionarMRO(
+            mroResponse.getId(),
+            mroResponse.getNome(),
+            mroResponse.getDescricao(),
+            mroResponse.getPrecoUnitario(),
+            command.getQuantidade()
+        );
         
         // Persistência
         OrdemServico savedOrdemServico = ordemServicoRepository.save(ordemServico);

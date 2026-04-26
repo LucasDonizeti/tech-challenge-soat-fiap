@@ -1,6 +1,9 @@
 package com.techchallenge.oficina.administrativo.web.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,7 +21,8 @@ public class AdministrativoController {
     @GetMapping("/health")
     @Operation(summary = "Verificar saúde do serviço administrativo", description = "Endpoint para verificação de saúde do serviço administrativo")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Serviço funcionando normalmente")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Serviço funcionando normalmente",
+                    content = @Content(schema = @Schema(example = "service is running")))
     })
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("service is running");
@@ -27,7 +31,8 @@ public class AdministrativoController {
     @GetMapping("/ping")
     @Operation(summary = "Ping do serviço administrativo", description = "Endpoint simples para teste de conectividade")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Pong")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Pong",
+                    content = @Content(schema = @Schema(example = "GG")))
     })
     public ResponseEntity<String> ping() {
         return ResponseEntity.ok("GG");

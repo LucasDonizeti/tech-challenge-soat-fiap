@@ -42,7 +42,12 @@ public class AuthController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Credenciais inválidas",
                     content = @Content(schema = @Schema(example = "{\"error\": \"Credenciais inválidas\"}")))
     })
-    public ResponseEntity<Map<String, String>> createAuthenticationToken(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<Map<String, String>> createAuthenticationToken(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Credenciais de autenticação",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = AuthRequest.class)))
+            @RequestBody AuthRequest authRequest) {
         logger.info("Tentativa de login para o usuário: {}", authRequest.getUsername());
         
         try {

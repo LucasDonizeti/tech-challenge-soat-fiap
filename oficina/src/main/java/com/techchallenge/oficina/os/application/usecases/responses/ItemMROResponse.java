@@ -18,7 +18,7 @@ public class ItemMROResponse {
     private UUID id;
     private UUID mroId;
     private String mroNome;
-    private String mroTipo;
+    private String mroDescricao;
     private Integer quantidade;
     private BigDecimal valorUnitario;
     private BigDecimal valorTotal;
@@ -28,15 +28,11 @@ public class ItemMROResponse {
             return null;
         }
         
-        String mroNome = itemMRO.getMro() != null ? itemMRO.getMro().getNome() : null;
-        String mroTipo = itemMRO.getMro() != null && itemMRO.getMro().getTipo() != null ? 
-                itemMRO.getMro().getTipo().name() : null;
-        
         return ItemMROResponse.builder()
                 .id(itemMRO.getId())
-                .mroId(itemMRO.getMro() != null ? itemMRO.getMro().getId() : null)
-                .mroNome(mroNome)
-                .mroTipo(mroTipo)
+                .mroId(itemMRO.getMroId())
+                .mroNome(itemMRO.getMroNome())
+                .mroDescricao(itemMRO.getMroDescricao())
                 .quantidade(itemMRO.getQuantidade())
                 .valorUnitario(itemMRO.getValorUnitario())
                 .valorTotal(itemMRO.calcularValorTotal())
