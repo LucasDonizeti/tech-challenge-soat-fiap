@@ -9,6 +9,8 @@ import com.techchallenge.oficina.os.web.mappers.OrdemServicoWebMapper;
 import com.techchallenge.oficina.sharedkernel.common.PageableValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -46,7 +48,8 @@ public class OrdemServicoController {
     @PostMapping
     @Operation(summary = "Criar ordem de serviço", description = "Cria uma nova ordem de serviço com status RECEBIDA")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Ordem de serviço criada com sucesso"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Ordem de serviço criada com sucesso",
+                    content = @Content(schema = @Schema(implementation = OrdemServicoResponseDto.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Dados inválidos na requisição"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Cliente ou veículo não encontrado")
     })
@@ -66,11 +69,22 @@ public class OrdemServicoController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista de ordens de serviço retornada com sucesso")
     })
     public ResponseEntity<Page<OrdemServicoResponseDto>> listar(
-            @Parameter(description = "ID do cliente para filtro") @RequestParam(required = false) UUID clienteId,
-            @Parameter(description = "ID do veículo para filtro") @RequestParam(required = false) UUID veiculoId,
-            @Parameter(description = "Status da ordem de serviço para filtro") @RequestParam(required = false) StatusOS status,
-            @Parameter(description = "Data de início para filtro (dataCriacao >= dataInicio)") @RequestParam(required = false) LocalDateTime dataInicio,
-            @Parameter(description = "Data de fim para filtro (dataCriacao <= dataFim)") @RequestParam(required = false) LocalDateTime dataFim,
+            @Parameter(description = "ID do cliente para filtro", example = "550e8400-e29b-41d4-a716-446655440000")
+            @RequestParam(required = false) UUID clienteId,
+            @Parameter(description = "ID do veículo para filtro", example = "550e8400-e29b-41d4-a716-446655440000")
+            @RequestParam(required = false) UUID veiculoId,
+            @Parameter(description = "Status da ordem de serviço para filtro (RECEBIDA, EM_DIAGNOSTICO, AGUARDANDO_APROVACAO, EM_EXECUCAO, FINALIZADA, ENTREGUE)", example = "RECEBIDA")
+            @RequestParam(required = false) StatusOS status,
+            @Parameter(description = "Data de início para filtro (dataCriacao >= dataInicio)", example = "2024-01-01T00:00:00")
+            @RequestParam(required = false) LocalDateTime dataInicio,
+            @Parameter(description = "Data de fim para filtro (dataCriacao <= dataFim)", example = "2024-12-31T23:59:59")
+            @RequestParam(required = false) LocalDateTime dataFim,
+            @Parameter(description = "Número da página (padrão: 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página (padrão: 10)", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo de ordenação (ex: dataCriacao, status)", example = "dataCriacao")
+            @RequestParam(defaultValue = "dataCriacao") String sort,
             Pageable pageable) {
         log.info("Listando ordens de serviço com filtros: clienteId={}, veiculoId={}, status={}, dataInicio={}, dataFim={}", 
                 clienteId, veiculoId, status, dataInicio, dataFim);
@@ -89,12 +103,14 @@ public class OrdemServicoController {
     @PostMapping("/{id}/servicos")
     @Operation(summary = "Adicionar serviço à ordem de serviço", description = "Adiciona um serviço existente à ordem de serviço")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Serviço adicionado com sucesso"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Serviço adicionado com sucesso",
+                    content = @Content(schema = @Schema(implementation = OrdemServicoResponseDto.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Dados inválidos na requisição"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ordem de serviço ou serviço não encontrado")
     })
     public ResponseEntity<OrdemServicoResponseDto> adicionarServico(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable UUID id,
+            @Parameter(description = "ID da ordem de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id,
             @Valid @RequestBody AdicionarServicoOrdemRequest request) {
         log.info("Adicionando serviço à ordem de serviço: ordemServicoId={}, servicoId={}", id, request.getServicoId());
         
@@ -107,12 +123,15 @@ public class OrdemServicoController {
     @DeleteMapping("/{id}/servicos/{itemServicoId}")
     @Operation(summary = "Remover serviço da ordem de serviço", description = "Remove um serviço da ordem de serviço")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Serviço removido com sucesso"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Serviço removido com sucesso",
+                    content = @Content(schema = @Schema(implementation = OrdemServicoResponseDto.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ordem de serviço ou item de serviço não encontrado")
     })
     public ResponseEntity<OrdemServicoResponseDto> removerServico(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable UUID id,
-            @Parameter(description = "ID do item de serviço") @PathVariable UUID itemServicoId) {
+            @Parameter(description = "ID da ordem de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id,
+            @Parameter(description = "ID do item de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID itemServicoId) {
         log.info("Removendo serviço da ordem de serviço: ordemServicoId={}, itemServicoId={}", id, itemServicoId);
         
         RemoverServicoOrdemCommand command = new RemoverServicoOrdemCommand(id, itemServicoId);
@@ -125,12 +144,14 @@ public class OrdemServicoController {
     @PostMapping("/{id}/mros")
     @Operation(summary = "Adicionar MRO ao serviço", description = "Adiciona um item de MRO a um serviço dentro da ordem de serviço")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "MRO adicionado com sucesso"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "MRO adicionado com sucesso",
+                    content = @Content(schema = @Schema(implementation = OrdemServicoResponseDto.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Dados inválidos na requisição"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ordem de serviço, item de serviço ou MRO não encontrado")
     })
     public ResponseEntity<OrdemServicoResponseDto> adicionarMRO(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable UUID id,
+            @Parameter(description = "ID da ordem de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id,
             @Valid @RequestBody AdicionarMROServicoRequest request) {
         log.info("Adicionando MRO ao serviço: ordemServicoId={}, itemServicoId={}, mroId={}, quantidade={}", 
                 id, request.getItemServicoId(), request.getMroId(), request.getQuantidade());
@@ -144,13 +165,17 @@ public class OrdemServicoController {
     @DeleteMapping("/{id}/servicos/{itemServicoId}/mros/{itemMroId}")
     @Operation(summary = "Remover MRO do serviço", description = "Remove um item de MRO de um serviço dentro da ordem de serviço")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "MRO removido com sucesso"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "MRO removido com sucesso",
+                    content = @Content(schema = @Schema(implementation = OrdemServicoResponseDto.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ordem de serviço, item de serviço ou item de MRO não encontrado")
     })
     public ResponseEntity<OrdemServicoResponseDto> removerMRO(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable UUID id,
-            @Parameter(description = "ID do item de serviço") @PathVariable UUID itemServicoId,
-            @Parameter(description = "ID do item de MRO") @PathVariable UUID itemMroId) {
+            @Parameter(description = "ID da ordem de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id,
+            @Parameter(description = "ID do item de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID itemServicoId,
+            @Parameter(description = "ID do item de MRO", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID itemMroId) {
         log.info("Removendo MRO do serviço: ordemServicoId={}, itemServicoId={}, itemMroId={}", 
                 id, itemServicoId, itemMroId);
         
@@ -164,12 +189,14 @@ public class OrdemServicoController {
     @PutMapping("/{id}/mros/quantidade")
     @Operation(summary = "Atualizar quantidade de MRO", description = "Atualiza a quantidade de um item de MRO em um serviço")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Quantidade atualizada com sucesso"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Quantidade atualizada com sucesso",
+                    content = @Content(schema = @Schema(implementation = OrdemServicoResponseDto.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Dados inválidos na requisição"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ordem de serviço, item de serviço ou item de MRO não encontrado")
     })
     public ResponseEntity<OrdemServicoResponseDto> atualizarQuantidadeMRO(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable UUID id,
+            @Parameter(description = "ID da ordem de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id,
             @Valid @RequestBody AtualizarQuantidadeMRORequest request) {
         log.info("Atualizando quantidade de MRO: ordemServicoId={}, itemServicoId={}, itemMroId={}, novaQuantidade={}", 
                 id, request.getItemServicoId(), request.getItemMroId(), request.getQuantidade());

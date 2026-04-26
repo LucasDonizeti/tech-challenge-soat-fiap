@@ -1,5 +1,7 @@
 package com.techchallenge.oficina.os.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.BuscarMROUseCase;
+import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
 import com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CPF;
@@ -8,12 +10,13 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Nome;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa;
 import com.techchallenge.oficina.os.application.usecases.commands.AdicionarMROServicoCommand;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
+import com.techchallenge.oficina.os.domain.exceptions.ItemServicoNaoEncontradoException;
+import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
+import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoStatusInvalidoException;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
 import com.techchallenge.oficina.os.domain.model.entities.ItemServico;
-import com.techchallenge.oficina.os.domain.model.entities.MRO;
-import com.techchallenge.oficina.os.domain.model.entities.Servico;
+import com.techchallenge.oficina.os.domain.model.valueobjects.StatusOS;
 import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
-import com.techchallenge.oficina.os.domain.repositories.MRORepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,7 +41,7 @@ class AdicionarMROServicoUseCaseTest {
     private OrdemServicoRepository ordemServicoRepository;
 
     @Mock
-    private MRORepository mroRepository;
+    private BuscarMROUseCase buscarMROUseCase;
 
     @InjectMocks
     private AdicionarMROServicoUseCase useCase;
@@ -46,12 +49,12 @@ class AdicionarMROServicoUseCaseTest {
     private AdicionarMROServicoCommand command;
     private OrdemServico ordemServico;
     private ItemServico itemServico;
-    private MRO mro;
+    private MROResponse mroResponse;
 
     @BeforeEach
     void setUp() {
-        Servico servico = Servico.criar("Troca de Óleo", "Troca completa de óleo", new BigDecimal("150.00"));
-        itemServico = ItemServico.criar(servico);
+        UUID servicoId = UUID.randomUUID();
+        itemServico = ItemServico.criarComDados(servicoId, "Troca de Óleo", "Troca completa de óleo", new BigDecimal("150.00"));
 
         Cliente cliente = Cliente.criar(Nome.of("João Silva"), CPF.of("52998224725"), Email.of("joao@email.com"));
         Veiculo veiculo = new Veiculo(Placa.of("ABC1234"), "Fiat", "Uno", 2020, "Branco");
@@ -66,16 +69,23 @@ class AdicionarMROServicoUseCaseTest {
 
         command = new AdicionarMROServicoCommand(ordemServicoId, itemServicoId, mroId, 5);
 
-        mro = MRO.criar("Óleo Motor", "Óleo para motor", 
-                com.techchallenge.oficina.os.domain.model.valueobjects.TipoMRO.INSUMO, 100, new BigDecimal("45.90"));
+        mroResponse = MROResponse.builder()
+                .id(mroId)
+                .nome("Óleo Motor")
+                .descricao("Óleo para motor")
+                .tipo("INSUMO")
+                .quantidadeEstoque(100)
+                .precoUnitario(new BigDecimal("45.90"))
+                .ativo(true)
+                .build();
     }
 
     @Test
-    @DisplayName("Deve adicionar MRO ao serviço com sucesso")
+    @DisplayName("Deve adicionar MRO ao serviço com sucesso quando status é RECEBIDA")
     void deveAdicionarMROAoServicoComSucesso() {
         // Arrange
         when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
-        when(mroRepository.findById(command.getMroId())).thenReturn(Optional.of(mro));
+        when(buscarMROUseCase.execute(command.getMroId())).thenReturn(mroResponse);
         when(ordemServicoRepository.save(any(OrdemServico.class))).thenReturn(ordemServico);
 
         // Act
@@ -86,8 +96,28 @@ class AdicionarMROServicoUseCaseTest {
         assertEquals(ordemServico.getId(), response.getId());
 
         verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
-        verify(mroRepository, times(1)).findById(command.getMroId());
+        verify(buscarMROUseCase, times(1)).execute(command.getMroId());
         verify(ordemServicoRepository, times(1)).save(any(OrdemServico.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando ordem de serviço não está no status RECEBIDA")
+    void deveLancarExcecaoQuandoOrdemServicoNaoEstaRecebida() {
+        // Arrange
+        ordemServico.atualizarStatus(StatusOS.EM_DIAGNOSTICO);
+        when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
+
+        // Act & Assert
+        OrdemServicoStatusInvalidoException exception = assertThrows(
+                OrdemServicoStatusInvalidoException.class,
+                () -> useCase.execute(command)
+        );
+
+        assertTrue(exception.getMessage().contains("Só é possível adicionar MROs quando a Ordem de Serviço está no status RECEBIDA"));
+
+        verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
+        verify(buscarMROUseCase, never()).execute(any());
+        verify(ordemServicoRepository, never()).save(any());
     }
 
     @Test
@@ -97,15 +127,15 @@ class AdicionarMROServicoUseCaseTest {
         when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.empty());
 
         // Act & Assert
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
+        OrdemServicoNaoEncontradaException exception = assertThrows(
+                OrdemServicoNaoEncontradaException.class,
                 () -> useCase.execute(command)
         );
 
         assertTrue(exception.getMessage().contains("Ordem de Serviço não encontrada"));
 
         verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
-        verify(mroRepository, never()).findById(any());
+        verify(buscarMROUseCase, never()).execute(any());
         verify(ordemServicoRepository, never()).save(any());
     }
 
@@ -121,18 +151,17 @@ class AdicionarMROServicoUseCaseTest {
         when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServicoSemItem));
 
         // Act & Assert
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
+        ItemServicoNaoEncontradoException exception = assertThrows(
+                ItemServicoNaoEncontradoException.class,
                 () -> useCase.execute(command)
         );
 
         assertTrue(exception.getMessage().contains("Item de Serviço não encontrado"));
 
         verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
-        verify(mroRepository, never()).findById(any());
+        verify(buscarMROUseCase, never()).execute(any());
         verify(ordemServicoRepository, never()).save(any());
     }
-
 
     @Test
     @DisplayName("Deve lançar exceção quando comando é nulo")
@@ -141,7 +170,7 @@ class AdicionarMROServicoUseCaseTest {
         assertThrows(NullPointerException.class, () -> useCase.execute(null));
 
         verify(ordemServicoRepository, never()).findById(any());
-        verify(mroRepository, never()).findById(any());
+        verify(buscarMROUseCase, never()).execute(any());
         verify(ordemServicoRepository, never()).save(any());
     }
 

@@ -1,16 +1,13 @@
 package com.techchallenge.oficina.os.infrastructure.persistence.mappers;
 
 import com.techchallenge.oficina.os.domain.model.entities.ItemServico;
-import com.techchallenge.oficina.os.domain.model.entities.Servico;
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusItemServico;
-import com.techchallenge.oficina.os.domain.repositories.ServicoRepository;
 import com.techchallenge.oficina.os.infrastructure.persistence.entities.ItemServicoEntity;
 import com.techchallenge.oficina.os.infrastructure.persistence.entities.ItemServicoEntity.StatusItemServicoEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -18,12 +15,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ItemServicoJpaMapper {
     
-    private final ServicoRepository servicoRepository;
     private final ItemMROJpaMapper itemMROJpaMapper;
-    
-    public ServicoRepository getServicoRepository() {
-        return servicoRepository;
-    }
     
     public ItemServicoEntity toEntity(ItemServico itemServico, UUID ordemServicoId) {
         if (itemServico == null) {
@@ -33,7 +25,7 @@ public class ItemServicoJpaMapper {
         ItemServicoEntity entity = ItemServicoEntity.builder()
                 .id(itemServico.getId())
                 .ordemServicoId(ordemServicoId)
-                .servicoId(itemServico.getServico() != null ? itemServico.getServico().getId() : null)
+                .servicoId(itemServico.getServicoId())
                 .status(itemServico.getStatus() != null ? StatusItemServicoEntity.valueOf(itemServico.getStatus().name()) : null)
                 .observacoes(itemServico.getObservacoes())
                 .valorServico(itemServico.getValorServico())
@@ -47,18 +39,20 @@ public class ItemServicoJpaMapper {
         return entity;
     }
     
-    public ItemServico toDomain(ItemServicoEntity entity, ServicoRepository servicoRepo) {
+    public ItemServico toDomain(ItemServicoEntity entity) {
         if (entity == null) {
             return null;
         }
         
-        Optional<Servico> servico = servicoRepo.findById(entity.getServicoId());
-        
         StatusItemServico status = entity.getStatus() != null ? StatusItemServico.valueOf(entity.getStatus().name()) : null;
         
+        // Campos nome e descricao não são persistidos no banco, ficam null
+        // Devem ser preenchidos via ACL quando necessário
         ItemServico itemServico = ItemServico.reconstruir(
                 entity.getId(),
-                servico.orElse(null),
+                entity.getServicoId(),
+                null,  // servicoNome - não persistido no banco
+                null,  // servicoDescricao - não persistido no banco
                 status,
                 entity.getObservacoes(),
                 entity.getValorServico(),
@@ -67,8 +61,7 @@ public class ItemServicoJpaMapper {
         
         // Load and add MROs if they exist
         if (entity.getMros() != null && !entity.getMros().isEmpty()) {
-            var mroRepository = itemMROJpaMapper.getMroRepository();
-            var mros = itemMROJpaMapper.toDomainList(entity.getMros(), mroRepository);
+            var mros = itemMROJpaMapper.toDomainList(entity.getMros());
             mros.forEach(itemServico::adicionarMRO);
         }
         
@@ -85,13 +78,13 @@ public class ItemServicoJpaMapper {
                 .collect(Collectors.toList());
     }
     
-    public List<ItemServico> toDomainList(List<ItemServicoEntity> entities, ServicoRepository servicoRepo) {
+    public List<ItemServico> toDomainList(List<ItemServicoEntity> entities) {
         if (entities == null) {
             return List.of();
         }
         
         return entities.stream()
-                .map(entity -> toDomain(entity, servicoRepo))
+                .map(this::toDomain)
                 .collect(Collectors.toList());
     }
 }

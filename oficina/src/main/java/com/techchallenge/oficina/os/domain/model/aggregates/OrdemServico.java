@@ -9,38 +9,20 @@ import com.techchallenge.oficina.os.domain.model.valueobjects.StatusOS;
 import lombok.Getter;
 import org.springframework.data.domain.AbstractAggregateRoot;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Entity
-@Table(name = "ordens_servico")
 @Getter
 public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
     
-    @Id
-    @Column(name = "id", columnDefinition = "BINARY(16)")
     private UUID id;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "veiculo_id", nullable = false)
     private Veiculo veiculo;
-    
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
     private StatusOS status;
-    
-    @Column(name = "data_criacao", nullable = false)
     private LocalDateTime dataCriacao;
-    
-    @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ItemServico> itensServico = new ArrayList<>();
     
     // Construtor padrão para JPA

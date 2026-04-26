@@ -1,26 +1,15 @@
 package com.techchallenge.oficina.os.infrastructure.persistence.mappers;
 
 import com.techchallenge.oficina.os.domain.model.entities.ItemMRO;
-import com.techchallenge.oficina.os.domain.model.entities.MRO;
-import com.techchallenge.oficina.os.domain.repositories.MRORepository;
 import com.techchallenge.oficina.os.infrastructure.persistence.entities.ItemMROEntity;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
 public class ItemMROJpaMapper {
-    
-    private final MRORepository mroRepository;
-    
-    public MRORepository getMroRepository() {
-        return mroRepository;
-    }
     
     public ItemMROEntity toEntity(ItemMRO itemMRO, UUID itemServicoId) {
         if (itemMRO == null) {
@@ -30,22 +19,24 @@ public class ItemMROJpaMapper {
         return ItemMROEntity.builder()
                 .id(itemMRO.getId())
                 .itemServicoId(itemServicoId)
-                .mroId(itemMRO.getMro() != null ? itemMRO.getMro().getId() : null)
+                .mroId(itemMRO.getMroId())
                 .quantidade(itemMRO.getQuantidade())
                 .valorUnitario(itemMRO.getValorUnitario())
                 .build();
     }
     
-    public ItemMRO toDomain(ItemMROEntity entity, MRORepository mroRepo) {
+    public ItemMRO toDomain(ItemMROEntity entity) {
         if (entity == null) {
             return null;
         }
         
-        Optional<MRO> mro = mroRepo.findById(entity.getMroId());
-        
+        // Campos nome e descricao não são persistidos no banco, ficam null
+        // Devem ser preenchidos via ACL quando necessário
         return ItemMRO.reconstruir(
                 entity.getId(),
-                mro.orElse(null),
+                entity.getMroId(),
+                null,  // mroNome - não persistido no banco
+                null,  // mroDescricao - não persistido no banco
                 entity.getQuantidade(),
                 entity.getValorUnitario()
         );
@@ -61,13 +52,13 @@ public class ItemMROJpaMapper {
                 .collect(Collectors.toList());
     }
     
-    public List<ItemMRO> toDomainList(List<ItemMROEntity> entities, MRORepository mroRepo) {
+    public List<ItemMRO> toDomainList(List<ItemMROEntity> entities) {
         if (entities == null) {
             return List.of();
         }
         
         return entities.stream()
-                .map(entity -> toDomain(entity, mroRepo))
+                .map(this::toDomain)
                 .collect(Collectors.toList());
     }
 }

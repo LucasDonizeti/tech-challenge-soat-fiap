@@ -5,72 +5,57 @@ import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusItemServico;
 import lombok.Getter;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-@Entity
-@Table(name = "itens_servico")
 @Getter
 public class ItemServico {
     
-    @Id
-    @Column(name = "id", columnDefinition = "BINARY(16)")
     private UUID id;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "servico_id", nullable = false)
-    private Servico servico;
-    
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
+    private UUID servicoId;
+    private String servicoNome;
+    private String servicoDescricao;
     private StatusItemServico status;
-    
-    @Column(name = "observacoes", length = 500)
     private String observacoes;
-    
-    @Column(name = "valor_servico", nullable = false, precision = 10, scale = 2)
     private BigDecimal valorServico;
-    
-    @Column(name = "valor_mro", nullable = false, precision = 10, scale = 2)
     private BigDecimal valorMro;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ordem_servico_id", nullable = false)
     private OrdemServico ordemServico;
-    
-    @OneToMany(mappedBy = "itemServico", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ItemMRO> mrosServicos = new ArrayList<>();
     
     // Construtor padrão para JPA
     protected ItemServico() {}
     
-    // Factory method para criação
-    public static ItemServico criar(Servico servico) {
-        if (servico == null) {
-            throw new ValidacaoOrdemServicoException("Serviço não pode ser nulo");
+    // Factory method para criação com dados do serviço (ACL)
+    public static ItemServico criarComDados(UUID servicoId, String nome, String descricao, BigDecimal preco) {
+        if (servicoId == null) {
+            throw new ValidacaoOrdemServicoException("ID do serviço não pode ser nulo");
         }
         
         ItemServico itemServico = new ItemServico();
         itemServico.id = UUID.randomUUID();
-        itemServico.servico = servico;
+        itemServico.servicoId = servicoId;
+        itemServico.servicoNome = nome;
+        itemServico.servicoDescricao = descricao;
         itemServico.status = StatusItemServico.PENDENTE;
         itemServico.observacoes = null;
-        itemServico.valorServico = servico.getPreco();
+        itemServico.valorServico = preco;
         itemServico.valorMro = BigDecimal.ZERO;
         
         return itemServico;
     }
     
     // Factory method para reconstrução a partir de dados persistidos
-    public static ItemServico reconstruir(UUID id, Servico servico, StatusItemServico status, 
-                                          String observacoes, BigDecimal valorServico, BigDecimal valorMro) {
+    public static ItemServico reconstruir(UUID id, UUID servicoId, String servicoNome, String servicoDescricao, 
+                                          StatusItemServico status, String observacoes, 
+                                          BigDecimal valorServico, BigDecimal valorMro) {
         ItemServico itemServico = new ItemServico();
         itemServico.id = id;
-        itemServico.servico = servico;
+        itemServico.servicoId = servicoId;
+        itemServico.servicoNome = servicoNome;
+        itemServico.servicoDescricao = servicoDescricao;
         itemServico.status = status;
         itemServico.observacoes = observacoes;
         itemServico.valorServico = valorServico;
@@ -80,15 +65,15 @@ public class ItemServico {
     }
     
     // Comportamentos de negócio
-    public void adicionarMRO(MRO mro, Integer quantidade) {
-        if (mro == null) {
-            throw new ValidacaoOrdemServicoException("MRO não pode ser nulo");
+    public void adicionarMRO(UUID mroId, String mroNome, String mroDescricao, BigDecimal precoUnitario, Integer quantidade) {
+        if (mroId == null) {
+            throw new ValidacaoOrdemServicoException("ID do MRO não pode ser nulo");
         }
         if (quantidade == null || quantidade <= 0) {
             throw new ValidacaoOrdemServicoException("Quantidade deve ser maior que zero");
         }
         
-        ItemMRO itemMRO = ItemMRO.criar(mro, quantidade);
+        ItemMRO itemMRO = ItemMRO.criarComDados(mroId, mroNome, mroDescricao, precoUnitario, quantidade);
         mrosServicos.add(itemMRO);
         atualizarValorMRO();
     }
@@ -125,9 +110,9 @@ public class ItemServico {
         this.valorMro = totalMro;
     }
     
-    public void atualizarValorServico() {
-        if (servico != null) {
-            this.valorServico = servico.getPreco();
+    public void atualizarValorServico(BigDecimal novoPreco) {
+        if (novoPreco != null) {
+            this.valorServico = novoPreco;
         }
     }
     
