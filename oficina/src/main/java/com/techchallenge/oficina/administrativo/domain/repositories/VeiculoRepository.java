@@ -20,6 +20,10 @@ public interface VeiculoRepository {
 
     boolean existsByPlaca(Placa placa);
 
+    boolean existsByPlacaAndClienteId(Placa placa, UUID clienteId);
+
+    boolean existsByPlacaAndClienteIdAndIdNot(Placa placa, UUID clienteId, UUID veiculoId);
+
     List<Veiculo> findByClienteId(UUID clienteId);
 
     List<Veiculo> findByClienteIdAndStatus(UUID clienteId, StatusVeiculo status);

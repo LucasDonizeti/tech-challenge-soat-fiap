@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .requestMatchers("/v1/os/health").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/error").permitAll()
+                    .requestMatchers("/api/cliente/**").permitAll()
                 // Swagger UI e OpenAPI endpoints - Conforme ADR-014
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/v1/admin/**").authenticated()

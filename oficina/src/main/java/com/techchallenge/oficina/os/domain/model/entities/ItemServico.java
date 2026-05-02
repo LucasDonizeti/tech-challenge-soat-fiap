@@ -97,6 +97,11 @@ public class ItemServico {
             throw new ValidacaoOrdemServicoException("Status não pode ser nulo");
         }
         this.status = novoStatus;
+        
+        // Verificar se todos os serviços estão concluídos para finalizar automaticamente
+        if (novoStatus == StatusItemServico.CONCLUIDO && ordemServico != null) {
+            ordemServico.verificarEFinalizarAutomaticamente();
+        }
     }
     
     public void atualizarObservacoes(String observacoes) {

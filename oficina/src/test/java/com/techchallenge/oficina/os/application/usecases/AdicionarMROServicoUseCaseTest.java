@@ -101,10 +101,31 @@ class AdicionarMROServicoUseCaseTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando ordem de serviço não está no status RECEBIDA")
+    @DisplayName("Deve adicionar MRO ao serviço com sucesso quando status é EM_DIAGNOSTICO")
+    void deveAdicionarMROAoServicoComSucessoEmDiagnostico() {
+        // Arrange
+        ordemServico.enviarParaDiagnostico();
+        when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
+        when(buscarMROUseCase.execute(command.getMroId())).thenReturn(mroResponse);
+        when(ordemServicoRepository.save(any(OrdemServico.class))).thenReturn(ordemServico);
+
+        // Act
+        OrdemServicoResponse response = useCase.execute(command);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(ordemServico.getId(), response.getId());
+
+        verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
+        verify(buscarMROUseCase, times(1)).execute(command.getMroId());
+        verify(ordemServicoRepository, times(1)).save(any(OrdemServico.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando ordem de serviço não está no status RECEBIDA ou EM_DIAGNOSTICO")
     void deveLancarExcecaoQuandoOrdemServicoNaoEstaRecebida() {
         // Arrange
-        ordemServico.atualizarStatus(StatusOS.EM_DIAGNOSTICO);
+        ordemServico.atualizarStatus(StatusOS.EM_EXECUCAO);
         when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
 
         // Act & Assert
@@ -113,7 +134,7 @@ class AdicionarMROServicoUseCaseTest {
                 () -> useCase.execute(command)
         );
 
-        assertTrue(exception.getMessage().contains("Só é possível adicionar MROs quando a Ordem de Serviço está no status RECEBIDA"));
+        assertTrue(exception.getMessage().contains("Só é possível adicionar MROs quando a Ordem de Serviço está nos status RECEBIDA ou EM_DIAGNOSTICO"));
 
         verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
         verify(buscarMROUseCase, never()).execute(any());

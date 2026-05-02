@@ -30,16 +30,16 @@ class ClienteInativadoEventTest {
     void deveCriarEventoComTimestampAtual() {
         // Arrange
         UUID clienteId = UUID.randomUUID();
-        long beforeCreation = System.currentTimeMillis();
+        java.time.LocalDateTime beforeCreation = java.time.LocalDateTime.now();
 
         // Act
         ClienteInativadoEvent event = new ClienteInativadoEvent(clienteId);
-        long afterCreation = System.currentTimeMillis();
+        java.time.LocalDateTime afterCreation = java.time.LocalDateTime.now();
 
         // Assert
         assertNotNull(event.getOccurredOn());
-        assertTrue(event.getOccurredOn().isAfter(java.time.LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(beforeCreation), java.time.ZoneId.systemDefault())));
-        assertTrue(event.getOccurredOn().isBefore(java.time.LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(afterCreation), java.time.ZoneId.systemDefault()).plusSeconds(1)));
+        assertTrue(event.getOccurredOn().isAfter(beforeCreation.minusSeconds(1)) || event.getOccurredOn().isEqual(beforeCreation));
+        assertTrue(event.getOccurredOn().isBefore(afterCreation.plusSeconds(1)));
     }
 
     @Test

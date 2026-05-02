@@ -3,6 +3,8 @@ package com.techchallenge.oficina.os.web.controllers;
 import com.techchallenge.oficina.os.application.usecases.*;
 import com.techchallenge.oficina.os.application.usecases.commands.*;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
+import com.techchallenge.oficina.os.web.dto.OrdemServicoResponseDto;
+import com.techchallenge.oficina.os.web.dto.TempoMedioExecucaoResponseDto;
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusOS;
 import com.techchallenge.oficina.os.web.dto.*;
 import com.techchallenge.oficina.os.web.mappers.OrdemServicoWebMapper;
@@ -37,11 +39,20 @@ public class OrdemServicoController {
 
     private final CriarOrdemServicoUseCase criarOrdemServicoUseCase;
     private final ListarOrdensServicoUseCase listarOrdensServicoUseCase;
+    private final BuscarOrdemServicoUseCase buscarOrdemServicoUseCase;
     private final AdicionarServicoOrdemUseCase adicionarServicoOrdemUseCase;
     private final RemoverServicoOrdemUseCase removerServicoOrdemUseCase;
     private final AdicionarMROServicoUseCase adicionarMROServicoUseCase;
     private final RemoverMROServicoUseCase removerMROServicoUseCase;
     private final AtualizarQuantidadeMROUseCase atualizarQuantidadeMROUseCase;
+    private final EnviarParaDiagnosticoUseCase enviarParaDiagnosticoUseCase;
+    private final EnviarOrcamentoAoClienteUseCase enviarOrcamentoAoClienteUseCase;
+    private final AtualizarObservacoesServicoUseCase atualizarObservacoesServicoUseCase;
+    private final IniciarServicoUseCase iniciarServicoUseCase;
+    private final ConcluirServicoUseCase concluirServicoUseCase;
+    private final CancelarServicoUseCase cancelarServicoUseCase;
+    private final EntregarOrdemServicoUseCase entregarOrdemServicoUseCase;
+    private final CalcularTempoMedioExecucaoUseCase calcularTempoMedioExecucaoUseCase;
     private final OrdemServicoWebMapper mapper;
     private final PageableValidator pageableValidator;
 
@@ -61,6 +72,24 @@ public class OrdemServicoController {
         OrdemServicoResponseDto dto = mapper.toDto(response);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Buscar ordem de serviço por ID", description = "Retorna os detalhes de uma ordem de serviço específica")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Ordem de serviço encontrada",
+                    content = @Content(schema = @Schema(implementation = OrdemServicoResponseDto.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
+    })
+    public ResponseEntity<OrdemServicoResponseDto> buscarPorId(
+            @Parameter(description = "ID da ordem de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id) {
+        log.info("Buscando ordem de serviço por ID: ordemServicoId={}", id);
+        
+        OrdemServicoResponse response = buscarOrdemServicoUseCase.execute(id);
+        OrdemServicoResponseDto dto = mapper.toDto(response);
+        
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping
@@ -207,6 +236,167 @@ public class OrdemServicoController {
         return ResponseEntity.ok(dto);
     }
 
+    @PostMapping("/{id}/enviar-para-diagnostico")
+    @Operation(summary = "Enviar ordem de serviço para diagnóstico", description = "Envia a ordem de serviço do status RECEBIDA para EM_DIAGNOSTICO")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Ordem de serviço enviada para diagnóstico com sucesso",
+                    content = @Content(schema = @Schema(implementation = OrdemServicoResponseDto.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Status inválido ou OS sem serviços"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
+    })
+    public ResponseEntity<OrdemServicoResponseDto> enviarParaDiagnostico(
+            @Parameter(description = "ID da ordem de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id) {
+        log.info("Enviando ordem de serviço para diagnóstico: ordemServicoId={}", id);
+        
+        EnviarParaDiagnosticoCommand command = new EnviarParaDiagnosticoCommand(id);
+        OrdemServicoResponse response = enviarParaDiagnosticoUseCase.execute(command);
+        OrdemServicoResponseDto dto = mapper.toDto(response);
+        
+        return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping("/{id}/enviar-orcamento-ao-cliente")
+    @Operation(summary = "Enviar orçamento ao cliente", description = "Envia a ordem de serviço do status EM_DIAGNOSTICO para AGUARDANDO_APROVACAO")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Orçamento enviado ao cliente com sucesso",
+                    content = @Content(schema = @Schema(implementation = OrdemServicoResponseDto.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Status inválido ou OS sem serviços"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
+    })
+    public ResponseEntity<OrdemServicoResponseDto> enviarOrcamentoAoCliente(
+            @Parameter(description = "ID da ordem de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id) {
+        log.info("Enviando orçamento ao cliente: ordemServicoId={}", id);
+        
+        EnviarOrcamentoAoClienteCommand command = new EnviarOrcamentoAoClienteCommand(id);
+        OrdemServicoResponse response = enviarOrcamentoAoClienteUseCase.execute(command);
+        OrdemServicoResponseDto dto = mapper.toDto(response);
+        
+        return ResponseEntity.ok(dto);
+    }
+
+    @PutMapping("/{id}/servicos/{itemServicoId}/observacoes")
+    @Operation(summary = "Atualizar observações do serviço", description = "Atualiza as observações de um item de serviço na ordem de serviço")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Observações atualizadas com sucesso",
+                    content = @Content(schema = @Schema(implementation = OrdemServicoResponseDto.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Dados inválidos na requisição ou status inválido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ordem de serviço ou item de serviço não encontrado")
+    })
+    public ResponseEntity<OrdemServicoResponseDto> atualizarObservacoesServico(
+            @Parameter(description = "ID da ordem de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id,
+            @Parameter(description = "ID do item de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID itemServicoId,
+            @Valid @RequestBody AtualizarObservacoesServicoRequest request) {
+        log.info("Atualizando observações do serviço: ordemServicoId={}, itemServicoId={}", id, itemServicoId);
+        
+        request.setItemServicoId(itemServicoId);
+        OrdemServicoResponse response = atualizarObservacoesServicoUseCase.execute(request.toCommand(id));
+        OrdemServicoResponseDto dto = mapper.toDto(response);
+        
+        return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping("/{id}/servicos/{itemServicoId}/iniciar")
+    @Operation(summary = "Iniciar serviço", description = "Inicia um item de serviço, mudando seu status para EM_ANDAMENTO e debitando o estoque dos MROs associados")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Serviço iniciado com sucesso",
+                    content = @Content(schema = @Schema(implementation = OrdemServicoResponseDto.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Transição de status inválida ou estoque insuficiente"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ordem de serviço ou item de serviço não encontrado")
+    })
+    public ResponseEntity<OrdemServicoResponseDto> iniciarServico(
+            @Parameter(description = "ID da ordem de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id,
+            @Parameter(description = "ID do item de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID itemServicoId) {
+        log.info("Iniciando serviço: ordemServicoId={}, itemServicoId={}", id, itemServicoId);
+        
+        IniciarServicoCommand command = IniciarServicoCommand.builder()
+                .ordemServicoId(id)
+                .itemServicoId(itemServicoId)
+                .build();
+        
+        OrdemServicoResponse response = iniciarServicoUseCase.execute(command);
+        OrdemServicoResponseDto dto = mapper.toDto(response);
+        
+        return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping("/{id}/servicos/{itemServicoId}/concluir")
+    @Operation(summary = "Concluir serviço", description = "Conclui um item de serviço, mudando seu status para CONCLUIDO. Se todos serviços estiverem concluídos, a OS é finalizada automaticamente")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Serviço concluído com sucesso",
+                    content = @Content(schema = @Schema(implementation = OrdemServicoResponseDto.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Transição de status inválida"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ordem de serviço ou item de serviço não encontrado")
+    })
+    public ResponseEntity<OrdemServicoResponseDto> concluirServico(
+            @Parameter(description = "ID da ordem de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id,
+            @Parameter(description = "ID do item de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID itemServicoId) {
+        log.info("Concluindo serviço: ordemServicoId={}, itemServicoId={}", id, itemServicoId);
+        
+        ConcluirServicoCommand command = ConcluirServicoCommand.builder()
+                .ordemServicoId(id)
+                .itemServicoId(itemServicoId)
+                .build();
+        
+        OrdemServicoResponse response = concluirServicoUseCase.execute(command);
+        OrdemServicoResponseDto dto = mapper.toDto(response);
+        
+        return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping("/{id}/servicos/{itemServicoId}/cancelar")
+    @Operation(summary = "Cancelar serviço", description = "Cancela um item de serviço, mudando seu status para CANCELADO")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Serviço cancelado com sucesso",
+                    content = @Content(schema = @Schema(implementation = OrdemServicoResponseDto.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Transição de status inválida"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ordem de serviço ou item de serviço não encontrado")
+    })
+    public ResponseEntity<OrdemServicoResponseDto> cancelarServico(
+            @Parameter(description = "ID da ordem de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id,
+            @Parameter(description = "ID do item de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID itemServicoId) {
+        log.info("Cancelando serviço: ordemServicoId={}, itemServicoId={}", id, itemServicoId);
+        
+        CancelarServicoCommand command = CancelarServicoCommand.builder()
+                .ordemServicoId(id)
+                .itemServicoId(itemServicoId)
+                .build();
+        
+        OrdemServicoResponse response = cancelarServicoUseCase.execute(command);
+        OrdemServicoResponseDto dto = mapper.toDto(response);
+        
+        return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping("/{id}/entregar")
+    @Operation(summary = "Entregar ordem de serviço", description = "Entrega a ordem de serviço, mudando seu status de FINALIZADA para ENTREGUE")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Ordem de serviço entregue com sucesso",
+                    content = @Content(schema = @Schema(implementation = OrdemServicoResponseDto.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Transição de status inválida"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
+    })
+    public ResponseEntity<OrdemServicoResponseDto> entregar(
+            @Parameter(description = "ID da ordem de serviço", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id) {
+        log.info("Entregando ordem de serviço: ordemServicoId={}", id);
+        
+        EntregarOrdemServicoCommand command = new EntregarOrdemServicoCommand(id);
+        OrdemServicoResponse response = entregarOrdemServicoUseCase.execute(command);
+        OrdemServicoResponseDto dto = mapper.toDto(response);
+        
+        return ResponseEntity.ok(dto);
+    }
+
     @GetMapping("/health")
     @Operation(summary = "Verificar saúde do serviço", description = "Endpoint para verificação de saúde do serviço de Ordem de Serviço")
     @ApiResponses(value = {
@@ -223,5 +413,26 @@ public class OrdemServicoController {
     })
     public ResponseEntity<String> ping() {
         return ResponseEntity.ok("GG");
+    }
+
+    @GetMapping("/admin/tempo-medio-execucao")
+    @Operation(summary = "Calcular tempo médio de execução", description = "Calcula o tempo médio de execução das ordens de serviço finalizadas")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Métricas calculadas com sucesso",
+                    content = @Content(schema = @Schema(implementation = TempoMedioExecucaoResponseDto.class)))
+    })
+    public ResponseEntity<TempoMedioExecucaoResponseDto> calcularTempoMedioExecucao(
+            @Parameter(description = "ID do serviço para filtro (opcional)", example = "550e8400-e29b-41d4-a716-446655440000")
+            @RequestParam(required = false) UUID servicoId,
+            @Parameter(description = "Data de início para filtro (opcional)", example = "2024-01-01T00:00:00")
+            @RequestParam(required = false) LocalDateTime dataInicio,
+            @Parameter(description = "Data de fim para filtro (opcional)", example = "2024-12-31T23:59:59")
+            @RequestParam(required = false) LocalDateTime dataFim) {
+        log.info("Calculando tempo médio de execução: servicoId={}, dataInicio={}, dataFim={}", 
+                servicoId, dataInicio, dataFim);
+        
+        TempoMedioExecucaoResponseDto response = calcularTempoMedioExecucaoUseCase.execute(servicoId, dataInicio, dataFim);
+        
+        return ResponseEntity.ok(response);
     }
 }

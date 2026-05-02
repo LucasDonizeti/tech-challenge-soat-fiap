@@ -11,7 +11,7 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa;
 import com.techchallenge.oficina.os.application.usecases.commands.AdicionarServicoOrdemCommand;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
-import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoStatusInvalidoException;
+import com.techchallenge.oficina.os.domain.exceptions.ValidacaoOrdemServicoException;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusOS;
 import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
@@ -96,17 +96,18 @@ class AdicionarServicoOrdemUseCaseTest {
         // Arrange
         ordemServico.atualizarStatus(StatusOS.EM_DIAGNOSTICO);
         when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
+        when(buscarServicoUseCase.execute(command.getServicoId())).thenReturn(servicoResponse);
 
         // Act & Assert
-        OrdemServicoStatusInvalidoException exception = assertThrows(
-                OrdemServicoStatusInvalidoException.class,
+        ValidacaoOrdemServicoException exception = assertThrows(
+                ValidacaoOrdemServicoException.class,
                 () -> useCase.execute(command)
         );
 
-        assertTrue(exception.getMessage().contains("Só é possível adicionar serviços quando a Ordem de Serviço está no status RECEBIDA"));
+        assertTrue(exception.getMessage().contains("Não é permitido adicionar ou remover serviços quando a OS está no status"));
 
         verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
-        verify(buscarServicoUseCase, never()).execute(any());
+        verify(buscarServicoUseCase, times(1)).execute(command.getServicoId());
         verify(ordemServicoRepository, never()).save(any());
     }
 

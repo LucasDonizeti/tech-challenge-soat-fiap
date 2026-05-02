@@ -34,6 +34,12 @@ public class OrdemServicoResponseDto {
     @Schema(description = "Data de criação da ordem", example = "2024-01-15T10:30:00")
     private LocalDateTime dataCriacao;
     
+    @Schema(description = "Data de início da execução", example = "2024-01-15T11:00:00")
+    private LocalDateTime dataInicioExecucao;
+    
+    @Schema(description = "Data de finalização", example = "2024-01-15T14:30:00")
+    private LocalDateTime dataFinalizacao;
+    
     @Schema(description = "Valor total da ordem de serviço", example = "500.00")
     private BigDecimal valorTotal;
     
@@ -60,6 +66,8 @@ public class OrdemServicoResponseDto {
                 .veiculo(veiculoDto)
                 .status(response.getStatus())
                 .dataCriacao(response.getDataCriacao())
+                .dataInicioExecucao(response.getDataInicioExecucao())
+                .dataFinalizacao(response.getDataFinalizacao())
                 .valorTotal(response.getValorTotal())
                 .itensServico(itensServicoDtos)
                 .build();

@@ -41,6 +41,8 @@ public class MROController {
     private final AtivarMROUseCase ativarMROUseCase;
     private final AtualizarPrecoMROUseCase atualizarPrecoMROUseCase;
     private final AtualizarDadosMROUseCase atualizarDadosMROUseCase;
+    private final ReporEstoqueMROUseCase reporEstoqueMROUseCase;
+    private final DebitarEstoqueMROUseCase debitarEstoqueMROUseCase;
     private final MROWebMapper mapper;
     private final PageableValidator pageableValidator;
     
@@ -174,6 +176,52 @@ public class MROController {
         log.info("Atualizando dados do MRO ID: {}", id);
         
         MROResponse response = atualizarDadosMROUseCase.execute(request.toCommand(id));
+        MROResponseDto dto = mapper.toDto(response);
+        
+        return ResponseEntity.ok(dto);
+    }
+    
+    @PostMapping("/{id}/estoque/incrementar")
+    @Operation(summary = "Incrementar estoque do MRO", description = "Adiciona uma quantidade ao estoque atual do MRO")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Estoque incrementado com sucesso",
+                    content = @Content(schema = @Schema(implementation = MROResponseDto.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Dados inválidos na requisição"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "MRO não encontrado")
+    })
+    public ResponseEntity<MROResponseDto> incrementarEstoque(
+            @Parameter(description = "UUID do MRO", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id,
+            @Valid @RequestBody IncrementarEstoqueMRORequest request) {
+        log.info("Incrementando estoque do MRO ID: {}, Quantidade: {}", id, request.getQuantidade());
+        
+        com.techchallenge.oficina.administrativo.application.usecases.commands.ReporEstoqueMROCommand command = 
+                new com.techchallenge.oficina.administrativo.application.usecases.commands.ReporEstoqueMROCommand(id, request.getQuantidade());
+        
+        MROResponse response = reporEstoqueMROUseCase.execute(command);
+        MROResponseDto dto = mapper.toDto(response);
+        
+        return ResponseEntity.ok(dto);
+    }
+    
+    @PostMapping("/{id}/estoque/retirar")
+    @Operation(summary = "Retirar estoque do MRO", description = "Remove uma quantidade do estoque atual do MRO")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Estoque retirado com sucesso",
+                    content = @Content(schema = @Schema(implementation = MROResponseDto.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Dados inválidos na requisição ou estoque insuficiente"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "MRO não encontrado")
+    })
+    public ResponseEntity<MROResponseDto> retirarEstoque(
+            @Parameter(description = "UUID do MRO", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
+            @PathVariable UUID id,
+            @Valid @RequestBody RetirarEstoqueMRORequest request) {
+        log.info("Retirando estoque do MRO ID: {}, Quantidade: {}", id, request.getQuantidade());
+        
+        com.techchallenge.oficina.administrativo.application.usecases.commands.DebitarEstoqueMROCommand command = 
+                new com.techchallenge.oficina.administrativo.application.usecases.commands.DebitarEstoqueMROCommand(id, request.getQuantidade());
+        
+        MROResponse response = debitarEstoqueMROUseCase.execute(command);
         MROResponseDto dto = mapper.toDto(response);
         
         return ResponseEntity.ok(dto);
