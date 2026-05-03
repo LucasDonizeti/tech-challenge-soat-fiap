@@ -52,23 +52,7 @@ class OrdemServicoControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(ordemServicoController).build();
     }
 
-    @Test
-    @DisplayName("Deve retornar status 200 e mensagem de health check")
-    void deveRetornarHealthCheckComSucesso() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get("/v1/os/health"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("service is running"));
-    }
 
-    @Test
-    @DisplayName("Deve retornar status 200 e resposta GG no endpoint ping")
-    void deveRetornarPingComSucesso() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get("/v1/os/ping"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("GG"));
-    }
 
     @Test
     @DisplayName("Deve enviar orçamento ao cliente com sucesso")

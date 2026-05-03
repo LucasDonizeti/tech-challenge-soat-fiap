@@ -397,23 +397,7 @@ public class OrdemServicoController {
         return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("/health")
-    @Operation(summary = "Verificar saúde do serviço", description = "Endpoint para verificação de saúde do serviço de Ordem de Serviço")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Serviço funcionando normalmente")
-    })
-    public ResponseEntity<String> healthCheck() {
-        return ResponseEntity.ok("service is running");
-    }
 
-    @GetMapping("/ping")
-    @Operation(summary = "Ping do serviço", description = "Endpoint simples para teste de conectividade")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Pong")
-    })
-    public ResponseEntity<String> ping() {
-        return ResponseEntity.ok("GG");
-    }
 
     @GetMapping("/admin/tempo-medio-execucao")
     @Operation(summary = "Calcular tempo médio de execução", description = "Calcula o tempo médio de execução das ordens de serviço finalizadas")
