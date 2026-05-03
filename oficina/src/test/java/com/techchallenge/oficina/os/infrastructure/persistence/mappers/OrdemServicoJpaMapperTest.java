@@ -241,7 +241,9 @@ class OrdemServicoJpaMapperTest {
                 StatusItemServico.PENDENTE,
                 null,
                 itemEntity.getValorServico(),
-                itemEntity.getValorMro()
+                itemEntity.getValorMro(),
+                null,
+                null
         );
 
         when(clienteRepository.findById(clienteId)).thenReturn(Optional.of(cliente));

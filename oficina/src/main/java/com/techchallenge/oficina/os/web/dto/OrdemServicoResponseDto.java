@@ -192,6 +192,12 @@ public class OrdemServicoResponseDto {
         @Schema(description = "Valor total do item", example = "195.90")
         private BigDecimal valorTotal;
         
+        @Schema(description = "Data de início da execução do serviço", example = "2024-01-15T11:00:00")
+        private LocalDateTime dataInicioExecucao;
+        
+        @Schema(description = "Data de finalização do serviço", example = "2024-01-15T11:30:00")
+        private LocalDateTime dataFinalizacao;
+        
         @Schema(description = "Lista de MROs do item")
         private List<ItemMroDto> mros;
         
@@ -216,6 +222,8 @@ public class OrdemServicoResponseDto {
                     .valorServico(itemServico.getValorServico())
                     .valorMro(itemServico.getValorMro())
                     .valorTotal(itemServico.getValorTotal())
+                    .dataInicioExecucao(itemServico.getDataInicioExecucao())
+                    .dataFinalizacao(itemServico.getDataFinalizacao())
                     .mros(mroDtos)
                     .build();
         }

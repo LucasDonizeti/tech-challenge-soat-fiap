@@ -24,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -90,6 +91,7 @@ class ConcluirServicoUseCaseTest {
 
         // Assert
         assertEquals(StatusItemServico.CONCLUIDO, itemServico.getStatus());
+        assertNotNull(itemServico.getDataFinalizacao());
         verify(ordemServicoRepository, times(1)).save(ordemServico);
     }
 

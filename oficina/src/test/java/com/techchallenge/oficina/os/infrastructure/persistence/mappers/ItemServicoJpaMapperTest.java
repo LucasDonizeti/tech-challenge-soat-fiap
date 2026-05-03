@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,6 +49,8 @@ class ItemServicoJpaMapperTest {
         UUID id = UUID.randomUUID();
         UUID ordemServicoId = UUID.randomUUID();
         UUID servicoId = UUID.randomUUID();
+        LocalDateTime dataInicio = LocalDateTime.of(2024, 1, 1, 10, 0);
+        LocalDateTime dataFim = LocalDateTime.of(2024, 1, 1, 11, 30);
         
         ItemServico itemServico = ItemServico.reconstruir(
             id,
@@ -57,7 +60,9 @@ class ItemServicoJpaMapperTest {
             StatusItemServico.PENDENTE,
             null,
             new BigDecimal("150.00"),
-            new BigDecimal("50.00")
+            new BigDecimal("50.00"),
+            dataInicio,
+            dataFim
         );
 
         // Act
@@ -71,6 +76,8 @@ class ItemServicoJpaMapperTest {
         assertEquals(StatusItemServicoEntity.PENDENTE, entity.getStatus());
         assertEquals(new BigDecimal("150.00"), entity.getValorServico());
         assertEquals(new BigDecimal("50.00"), entity.getValorMro());
+        assertEquals(dataInicio, entity.getDataInicioExecucao());
+        assertEquals(dataFim, entity.getDataFinalizacao());
     }
 
     @Test
@@ -79,6 +86,8 @@ class ItemServicoJpaMapperTest {
         // Arrange
         UUID id = UUID.randomUUID();
         UUID servicoId = UUID.randomUUID();
+        LocalDateTime dataInicio = LocalDateTime.of(2024, 1, 1, 10, 0);
+        LocalDateTime dataFim = LocalDateTime.of(2024, 1, 1, 11, 30);
         
         ItemServicoEntity entity = ItemServicoEntity.builder()
                 .id(id)
@@ -88,6 +97,8 @@ class ItemServicoJpaMapperTest {
                 .observacoes("Observação")
                 .valorServico(new BigDecimal("200.00"))
                 .valorMro(new BigDecimal("75.00"))
+                .dataInicioExecucao(dataInicio)
+                .dataFinalizacao(dataFim)
                 .mros(List.of())
                 .build();
 
@@ -112,6 +123,8 @@ class ItemServicoJpaMapperTest {
         assertEquals(new BigDecimal("75.00"), itemServico.getValorMro());
         assertEquals("Troca de Óleo", itemServico.getServicoNome());
         assertEquals("Troca completa de óleo", itemServico.getServicoDescricao());
+        assertEquals(dataInicio, itemServico.getDataInicioExecucao());
+        assertEquals(dataFim, itemServico.getDataFinalizacao());
     }
 
     @Test
@@ -148,7 +161,9 @@ class ItemServicoJpaMapperTest {
             StatusItemServico.PENDENTE,
             null,
             new BigDecimal("100.00"),
-            new BigDecimal("30.00")
+            new BigDecimal("30.00"),
+            null,
+            null
         );
         
         ItemServico itemServico2 = ItemServico.reconstruir(
@@ -159,7 +174,9 @@ class ItemServicoJpaMapperTest {
             StatusItemServico.EM_ANDAMENTO,
             null,
             new BigDecimal("150.00"),
-            new BigDecimal("50.00")
+            new BigDecimal("50.00"),
+            null,
+            null
         );
         
         List<ItemServico> itens = List.of(itemServico1, itemServico2);
@@ -236,7 +253,9 @@ class ItemServicoJpaMapperTest {
             StatusItemServico.PENDENTE,
             null,
             new BigDecimal("100.00"),
-            BigDecimal.ZERO
+            BigDecimal.ZERO,
+            null,
+            null
         );
 
         // Act
@@ -259,7 +278,9 @@ class ItemServicoJpaMapperTest {
             StatusItemServico.EM_ANDAMENTO,
             null,
             new BigDecimal("100.00"),
-            BigDecimal.ZERO
+            BigDecimal.ZERO,
+            null,
+            null
         );
 
         // Act
@@ -282,7 +303,9 @@ class ItemServicoJpaMapperTest {
             StatusItemServico.CONCLUIDO,
             null,
             new BigDecimal("100.00"),
-            BigDecimal.ZERO
+            BigDecimal.ZERO,
+            null,
+            null
         );
 
         // Act
@@ -305,7 +328,9 @@ class ItemServicoJpaMapperTest {
             null,
             null,
             new BigDecimal("100.00"),
-            BigDecimal.ZERO
+            BigDecimal.ZERO,
+            null,
+            null
         );
 
         // Act
@@ -337,7 +362,9 @@ class ItemServicoJpaMapperTest {
             StatusItemServico.PENDENTE,
             null,
             new BigDecimal("100.00"),
-            new BigDecimal("50.00")
+            new BigDecimal("50.00"),
+            null,
+            null
         );
         itemServico.adicionarMRO(itemMRO);
 

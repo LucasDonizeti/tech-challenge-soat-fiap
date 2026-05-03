@@ -16,20 +16,20 @@ import java.util.Map;
 @Schema(description = "DTO de resposta para métricas de tempo médio de execução")
 public class TempoMedioExecucaoResponseDto {
     
-    @Schema(description = "Tempo médio de execução em minutos")
-    private Long tempoMedioMinutos;
+    @Schema(description = "Tempo médio de execução em segundos")
+    private Long tempoMedioSegundos;
     
     @Schema(description = "Tempo médio de execução formatado (HH:mm:ss)")
     private String tempoMedioFormatado;
     
-    @Schema(description = "Tempo mínimo de execução em minutos")
-    private Long tempoMinimoMinutos;
+    @Schema(description = "Tempo mínimo de execução em segundos")
+    private Long tempoMinimoSegundos;
     
     @Schema(description = "Tempo mínimo de execução formatado (HH:mm:ss)")
     private String tempoMinimoFormatado;
     
-    @Schema(description = "Tempo máximo de execução em minutos")
-    private Long tempoMaximoMinutos;
+    @Schema(description = "Tempo máximo de execução em segundos")
+    private Long tempoMaximoSegundos;
     
     @Schema(description = "Tempo máximo de execução formatado (HH:mm:ss)")
     private String tempoMaximoFormatado;
@@ -37,6 +37,34 @@ public class TempoMedioExecucaoResponseDto {
     @Schema(description = "Quantidade de ordens de serviço consideradas")
     private Integer quantidadeOS;
     
-    @Schema(description = "Tempo médio por tipo de serviço (opcional)")
-    private Map<String, Long> tempoMedioPorServico;
+    @Schema(description = "Tempo médio por tipo de serviço")
+    private Map<String, TempoServicoMetricas> tempoMedioPorServico;
+    
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "Métricas de tempo para um tipo de serviço específico")
+    public static class TempoServicoMetricas {
+        @Schema(description = "Tempo médio em segundos")
+        private Long tempoMedioSegundos;
+        
+        @Schema(description = "Tempo médio formatado (HH:mm:ss)")
+        private String tempoMedioFormatado;
+        
+        @Schema(description = "Tempo mínimo em segundos")
+        private Long tempoMinimoSegundos;
+        
+        @Schema(description = "Tempo mínimo formatado (HH:mm:ss)")
+        private String tempoMinimoFormatado;
+        
+        @Schema(description = "Tempo máximo em segundos")
+        private Long tempoMaximoSegundos;
+        
+        @Schema(description = "Tempo máximo formatado (HH:mm:ss)")
+        private String tempoMaximoFormatado;
+        
+        @Schema(description = "Quantidade de serviços considerados")
+        private Integer quantidade;
+    }
 }

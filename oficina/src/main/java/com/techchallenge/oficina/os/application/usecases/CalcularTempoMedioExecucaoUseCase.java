@@ -3,15 +3,19 @@ package com.techchallenge.oficina.os.application.usecases;
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusOS;
 import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
 import com.techchallenge.oficina.os.web.dto.TempoMedioExecucaoResponseDto;
+import com.techchallenge.oficina.os.web.dto.TempoMedioExecucaoResponseDto.TempoServicoMetricas;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,66 +43,94 @@ public class CalcularTempoMedioExecucaoUseCase {
         if (osFiltradas.isEmpty()) {
             log.warn("Nenhuma OS encontrada com os critérios especificados");
             return TempoMedioExecucaoResponseDto.builder()
-                    .tempoMedioMinutos(0L)
+                    .tempoMedioSegundos(0L)
                     .tempoMedioFormatado("00:00:00")
-                    .tempoMinimoMinutos(0L)
+                    .tempoMinimoSegundos(0L)
                     .tempoMinimoFormatado("00:00:00")
-                    .tempoMaximoMinutos(0L)
+                    .tempoMaximoSegundos(0L)
                     .tempoMaximoFormatado("00:00:00")
                     .quantidadeOS(0)
                     .tempoMedioPorServico(new HashMap<>())
                     .build();
         }
         
-        // Calcular tempos de execução
-        var temposMinutos = osFiltradas.stream()
-                .map(os -> Duration.between(os.getDataInicioExecucao(), os.getDataFinalizacao()).toMinutes())
+        // Calcular tempos de execução da OS (baseado nas datas da OS)
+        var temposSegundos = osFiltradas.stream()
+                .map(os -> Duration.between(os.getDataInicioExecucao(), os.getDataFinalizacao()).toSeconds())
                 .toList();
         
-        long tempoMedio = temposMinutos.stream()
+        long tempoMedio = temposSegundos.stream()
                 .mapToLong(Long::longValue)
-                .sum() / temposMinutos.size();
+                .sum() / temposSegundos.size();
         
-        long tempoMinimo = temposMinutos.stream()
+        long tempoMinimo = temposSegundos.stream()
                 .mapToLong(Long::longValue)
                 .min()
                 .orElse(0L);
         
-        long tempoMaximo = temposMinutos.stream()
+        long tempoMaximo = temposSegundos.stream()
                 .mapToLong(Long::longValue)
                 .max()
                 .orElse(0L);
         
-        // Calcular tempo médio por tipo de serviço (agrupando por ItemServico)
-        Map<String, Long> tempoMedioPorServico = new HashMap<>();
+        // Calcular tempo médio por tipo de serviço (usando datas do próprio ItemServico)
+        Map<String, List<Long>> temposPorServico = new HashMap<>();
         osFiltradas.forEach(os -> {
             os.getItensServico().forEach(item -> {
-                String servicoNome = item.getServicoNome();
-                Duration duracao = Duration.between(os.getDataInicioExecucao(), os.getDataFinalizacao());
-                long minutos = duracao.toMinutes();
+                // Ignorar serviços sem tempos registrados
+                if (item.getDataInicioExecucao() == null || item.getDataFinalizacao() == null) {
+                    return;
+                }
                 
-                tempoMedioPorServico.merge(servicoNome, minutos, (existing, novo) -> (existing + novo) / 2);
+                String servicoNome = item.getServicoNome();
+                Duration duracao = Duration.between(item.getDataInicioExecucao(), item.getDataFinalizacao());
+                long segundos = duracao.toSeconds();
+                
+                temposPorServico.computeIfAbsent(servicoNome, k -> new ArrayList<>()).add(segundos);
             });
         });
         
-        log.info("Tempo médio calculado: média={} min, mínimo={} min, máximo={} min, quantidade={}", 
+        // Calcular métricas por tipo de serviço
+        Map<String, TempoServicoMetricas> tempoMedioPorServico = temposPorServico.entrySet().stream()
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    entry -> {
+                        List<Long> tempos = entry.getValue();
+                        long media = tempos.stream().mapToLong(Long::longValue).sum() / tempos.size();
+                        long min = tempos.stream().mapToLong(Long::longValue).min().orElse(0L);
+                        long max = tempos.stream().mapToLong(Long::longValue).max().orElse(0L);
+                        
+                        return TempoServicoMetricas.builder()
+                                .tempoMedioSegundos(media)
+                                .tempoMedioFormatado(formatarDuracao(media))
+                                .tempoMinimoSegundos(min)
+                                .tempoMinimoFormatado(formatarDuracao(min))
+                                .tempoMaximoSegundos(max)
+                                .tempoMaximoFormatado(formatarDuracao(max))
+                                .quantidade(tempos.size())
+                                .build();
+                    }
+                ));
+        
+        log.info("Tempo médio calculado: média={} seg, mínimo={} seg, máximo={} seg, quantidade={}", 
                 tempoMedio, tempoMinimo, tempoMaximo, osFiltradas.size());
         
         return TempoMedioExecucaoResponseDto.builder()
-                .tempoMedioMinutos(tempoMedio)
+                .tempoMedioSegundos(tempoMedio)
                 .tempoMedioFormatado(formatarDuracao(tempoMedio))
-                .tempoMinimoMinutos(tempoMinimo)
+                .tempoMinimoSegundos(tempoMinimo)
                 .tempoMinimoFormatado(formatarDuracao(tempoMinimo))
-                .tempoMaximoMinutos(tempoMaximo)
+                .tempoMaximoSegundos(tempoMaximo)
                 .tempoMaximoFormatado(formatarDuracao(tempoMaximo))
                 .quantidadeOS(osFiltradas.size())
                 .tempoMedioPorServico(tempoMedioPorServico)
                 .build();
     }
     
-    private String formatarDuracao(long minutos) {
-        long horas = minutos / 60;
-        long minutosRestantes = minutos % 60;
-        return String.format("%02d:%02d:00", horas, minutosRestantes);
+    private String formatarDuracao(long segundos) {
+        long horas = segundos / 3600;
+        long minutos = (segundos % 3600) / 60;
+        long segundosRestantes = segundos % 60;
+        return String.format("%02d:%02d:%02d", horas, minutos, segundosRestantes);
     }
 }

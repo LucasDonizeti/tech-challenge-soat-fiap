@@ -35,6 +35,8 @@ public class ItemServicoJpaMapper {
                 .observacoes(itemServico.getObservacoes())
                 .valorServico(itemServico.getValorServico())
                 .valorMro(itemServico.getValorMro())
+                .dataInicioExecucao(itemServico.getDataInicioExecucao())
+                .dataFinalizacao(itemServico.getDataFinalizacao())
                 .build();
         
         if (itemServico.getMrosServicos() != null && !itemServico.getMrosServicos().isEmpty()) {
@@ -75,7 +77,9 @@ public class ItemServicoJpaMapper {
                 status,
                 entity.getObservacoes(),
                 entity.getValorServico(),
-                entity.getValorMro()
+                entity.getValorMro(),
+                entity.getDataInicioExecucao(),
+                entity.getDataFinalizacao()
         );
         
         // Load and add MROs if they exist

@@ -6,6 +6,7 @@ import com.techchallenge.oficina.os.domain.model.valueobjects.StatusItemServico;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -22,6 +23,8 @@ public class ItemServico {
     private String observacoes;
     private BigDecimal valorServico;
     private BigDecimal valorMro;
+    private LocalDateTime dataInicioExecucao;
+    private LocalDateTime dataFinalizacao;
     private OrdemServico ordemServico;
     private List<ItemMRO> mrosServicos = new ArrayList<>();
     
@@ -50,7 +53,8 @@ public class ItemServico {
     // Factory method para reconstrução a partir de dados persistidos
     public static ItemServico reconstruir(UUID id, UUID servicoId, String servicoNome, String servicoDescricao, 
                                           StatusItemServico status, String observacoes, 
-                                          BigDecimal valorServico, BigDecimal valorMro) {
+                                          BigDecimal valorServico, BigDecimal valorMro,
+                                          LocalDateTime dataInicioExecucao, LocalDateTime dataFinalizacao) {
         ItemServico itemServico = new ItemServico();
         itemServico.id = id;
         itemServico.servicoId = servicoId;
@@ -60,6 +64,8 @@ public class ItemServico {
         itemServico.observacoes = observacoes;
         itemServico.valorServico = valorServico;
         itemServico.valorMro = valorMro;
+        itemServico.dataInicioExecucao = dataInicioExecucao;
+        itemServico.dataFinalizacao = dataFinalizacao;
         
         return itemServico;
     }
@@ -96,6 +102,17 @@ public class ItemServico {
         if (novoStatus == null) {
             throw new ValidacaoOrdemServicoException("Status não pode ser nulo");
         }
+        
+        // Registrar data de início quando status muda para EM_ANDAMENTO
+        if (novoStatus == StatusItemServico.EM_ANDAMENTO && this.status != StatusItemServico.EM_ANDAMENTO) {
+            this.dataInicioExecucao = LocalDateTime.now();
+        }
+        
+        // Registrar data de finalização quando status muda para CONCLUIDO
+        if (novoStatus == StatusItemServico.CONCLUIDO && this.status != StatusItemServico.CONCLUIDO) {
+            this.dataFinalizacao = LocalDateTime.now();
+        }
+        
         this.status = novoStatus;
         
         // Verificar se todos os serviços estão concluídos para finalizar automaticamente
