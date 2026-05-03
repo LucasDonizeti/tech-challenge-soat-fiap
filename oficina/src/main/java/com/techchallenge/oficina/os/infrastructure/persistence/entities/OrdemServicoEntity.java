@@ -36,6 +36,12 @@ public class OrdemServicoEntity {
     @Column(name = "data_criacao", nullable = false)
     private LocalDateTime dataCriacao;
     
+    @Column(name = "data_inicio_execucao")
+    private LocalDateTime dataInicioExecucao;
+    
+    @Column(name = "data_finalizacao")
+    private LocalDateTime dataFinalizacao;
+    
     @OneToMany(mappedBy = "ordemServicoId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<ItemServicoEntity> itensServico = new ArrayList<>();

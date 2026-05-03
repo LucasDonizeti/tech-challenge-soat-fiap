@@ -2,6 +2,9 @@ package com.techchallenge.oficina.os.application.usecases;
 
 import com.techchallenge.oficina.os.application.usecases.commands.AtualizarQuantidadeMROCommand;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
+import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
+import com.techchallenge.oficina.os.domain.exceptions.ItemServicoNaoEncontradoException;
+import com.techchallenge.oficina.os.domain.exceptions.ValidacaoOrdemServicoException;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
 import com.techchallenge.oficina.os.domain.model.entities.ItemMRO;
 import com.techchallenge.oficina.os.domain.model.entities.ItemServico;
@@ -27,19 +30,19 @@ public class AtualizarQuantidadeMROUseCase {
         
         // Buscar ordem de serviço
         OrdemServico ordemServico = ordemServicoRepository.findById(command.getOrdemServicoId())
-                .orElseThrow(() -> new RuntimeException("Ordem de Serviço não encontrada com ID: " + command.getOrdemServicoId()));
+                .orElseThrow(() -> new OrdemServicoNaoEncontradaException(command.getOrdemServicoId()));
         
         // Buscar item de serviço
         ItemServico itemServico = ordemServico.getItensServico().stream()
                 .filter(item -> item.getId().equals(command.getItemServicoId()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Item de Serviço não encontrado com ID: " + command.getItemServicoId()));
+                .orElseThrow(() -> new ItemServicoNaoEncontradoException(command.getItemServicoId()));
         
         // Buscar item de MRO
         ItemMRO itemMRO = itemServico.getMrosServicos().stream()
                 .filter(mro -> mro.getId().equals(command.getItemMroId()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Item de MRO não encontrado com ID: " + command.getItemMroId()));
+                .orElseThrow(() -> new ValidacaoOrdemServicoException("Item de MRO não encontrado com ID: " + command.getItemMroId()));
         
         // Atualizar quantidade
         itemMRO.atualizarQuantidade(command.getNovaQuantidade());

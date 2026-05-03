@@ -32,6 +32,8 @@ public class OrdemServicoJpaMapper {
                 .veiculoId(ordemServico.getVeiculo() != null ? ordemServico.getVeiculo().getId() : null)
                 .status(ordemServico.getStatus() != null ? StatusOSEntity.valueOf(ordemServico.getStatus().name()) : null)
                 .dataCriacao(ordemServico.getDataCriacao())
+                .dataInicioExecucao(ordemServico.getDataInicioExecucao())
+                .dataFinalizacao(ordemServico.getDataFinalizacao())
                 .build();
         
         if (ordemServico.getItensServico() != null && !ordemServico.getItensServico().isEmpty()) {
@@ -56,13 +58,14 @@ public class OrdemServicoJpaMapper {
                 cliente.orElse(null),
                 veiculo.orElse(null),
                 statusOS,
-                entity.getDataCriacao()
+                entity.getDataCriacao(),
+                entity.getDataInicioExecucao(),
+                entity.getDataFinalizacao()
         );
         
-        // Load and add items if they exist
         if (entity.getItensServico() != null && !entity.getItensServico().isEmpty()) {
             var items = itemServicoJpaMapper.toDomainList(entity.getItensServico());
-            items.forEach(ordemServico::adicionarItemServico);
+            items.forEach(ordemServico::adicionarItemServicoSemValidacao);
         }
         
         return ordemServico;

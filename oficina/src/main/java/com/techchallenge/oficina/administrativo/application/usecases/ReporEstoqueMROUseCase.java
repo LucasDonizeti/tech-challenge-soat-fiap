@@ -2,6 +2,7 @@ package com.techchallenge.oficina.administrativo.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.commands.ReporEstoqueMROCommand;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoMROException;
 import com.techchallenge.oficina.administrativo.domain.model.entities.MRO;
 import com.techchallenge.oficina.administrativo.domain.repositories.MRORepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class ReporEstoqueMROUseCase {
         
         // Busca do MRO
         MRO mro = repository.findById(command.getId())
-                .orElseThrow(() -> new RuntimeException("MRO não encontrado com ID: " + command.getId()));
+                .orElseThrow(() -> new ValidacaoMROException("MRO não encontrado com ID: " + command.getId()));
         
         // Reposição do estoque
         mro.reporEstoque(command.getQuantidade());

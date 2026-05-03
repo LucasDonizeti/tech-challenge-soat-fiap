@@ -34,10 +34,8 @@ public class AdicionarServicoOrdemUseCase {
         OrdemServico ordemServico = ordemServicoRepository.findById(command.getOrdemServicoId())
                 .orElseThrow(() -> new OrdemServicoNaoEncontradaException(command.getOrdemServicoId()));
         
-        // Validar status - só permite adicionar serviços quando a OS está RECEBIDA
-        if (ordemServico.getStatus() != StatusOS.RECEBIDA) {
-            throw new OrdemServicoStatusInvalidoException("Só é possível adicionar serviços quando a Ordem de Serviço está no status RECEBIDA. Status atual: " + ordemServico.getStatus());
-        }
+        // A validação de status é feita dentro do próprio aggregate (adicionarItemServico)
+        // que só permite adicionar serviços quando a OS está RECEBIDA
         
         // Buscar serviço via ACL (contexto administrativo)
         ServicoResponse servicoResponse = buscarServicoUseCase.execute(command.getServicoId());
@@ -50,7 +48,7 @@ public class AdicionarServicoOrdemUseCase {
             servicoResponse.getPreco()
         );
         
-        // Adicionar à ordem de serviço
+        // Adicionar à ordem de serviço (validação acontece dentro do método)
         ordemServico.adicionarItemServico(itemServico);
         
         // Persistência

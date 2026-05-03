@@ -18,6 +18,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -334,5 +338,146 @@ class ClienteRepositoryImplTest {
         // Assert
         assertNotNull(result);
         verify(jpaRepository, times(1)).findByStatus(StatusClienteEntity.INATIVO);
+    }
+
+    @Test
+    @DisplayName("Deve buscar clientes com paginação")
+    void deveBuscarClientesComPaginacao() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<ClienteEntity> entityPage = new PageImpl<>(List.of(entity));
+        Page<Cliente> clientePage = new PageImpl<>(List.of(cliente));
+        
+        when(jpaRepository.findAll(pageable)).thenReturn(entityPage);
+        when(mapper.toDomain(any(ClienteEntity.class))).thenReturn(cliente);
+
+        // Act
+        Page<Cliente> result = repository.findAll(pageable);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(EXPECTED_ONE_ELEMENT, result.getContent().size());
+        verify(jpaRepository, times(1)).findAll(pageable);
+    }
+
+    @Test
+    @DisplayName("Deve buscar clientes com paginação vazia")
+    void deveBuscarClientesComPaginacaoVazia() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<ClienteEntity> entityPage = Page.empty();
+        
+        when(jpaRepository.findAll(pageable)).thenReturn(entityPage);
+
+        // Act
+        Page<Cliente> result = repository.findAll(pageable);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.getContent().isEmpty());
+        verify(jpaRepository, times(1)).findAll(pageable);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando filtro legacy não é ClienteFilterRequest")
+    void deveLancarExcecaoQuandoFiltroLegacyNaoEClienteFilterRequest() {
+        // Arrange
+        Object filtroInvalido = "string qualquer";
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> repository.findByFilter(filtroInvalido));
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando ocorre erro ao processar filtro legacy")
+    void deveLancarExcecaoQuandoOcorreErroAoProcessarFiltroLegacy() {
+        // Arrange
+        ClienteFilter filter = ClienteFilter.builder().build();
+        
+        // Simulate reflection error by making jpaRepository throw exception
+        when(jpaRepository.findByFilter(any(), any(), any(), any(), any()))
+                .thenThrow(new RuntimeException("Erro de reflexão"));
+
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> repository.findByFilter(filter));
+    }
+
+    @Test
+    @DisplayName("Deve buscar clientes por filtro com todos os parâmetros")
+    void deveBuscarClientesPorFiltroComTodosOsParametros() {
+        // Arrange
+        ClienteFilter filter = ClienteFilter.builder()
+                .nome("João")
+                .cpf("12345678909")
+                .cnpj("11444777000161")
+                .email("joao@email.com")
+                .status(StatusCliente.ATIVO)
+                .build();
+        
+        List<ClienteEntity> entities = List.of(entity);
+        List<Cliente> clientes = List.of(cliente);
+        
+        when(jpaRepository.findByFilter(
+                "João", "12345678909", "11444777000161", "joao@email.com", StatusClienteEntity.ATIVO))
+                .thenReturn(entities);
+        when(mapper.toDomainList(entities)).thenReturn(clientes);
+
+        // Act
+        List<Cliente> result = repository.findByFilter(filter);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(EXPECTED_ONE_ELEMENT, result.size());
+        verify(jpaRepository, times(1)).findByFilter(
+                "João", "12345678909", "11444777000161", "joao@email.com", StatusClienteEntity.ATIVO);
+    }
+
+    @Test
+    @DisplayName("Deve buscar clientes por filtro com status nulo")
+    void deveBuscarClientesPorFiltroComStatusNulo() {
+        // Arrange
+        ClienteFilter filter = ClienteFilter.builder()
+                .nome("João")
+                .status(null)
+                .build();
+        
+        List<ClienteEntity> entities = List.of(entity);
+        List<Cliente> clientes = List.of(cliente);
+        
+        when(jpaRepository.findByFilter("João", null, null, null, null))
+                .thenReturn(entities);
+        when(mapper.toDomainList(entities)).thenReturn(clientes);
+
+        // Act
+        List<Cliente> result = repository.findByFilter(filter);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(EXPECTED_ONE_ELEMENT, result.size());
+        verify(jpaRepository, times(1)).findByFilter("João", null, null, null, null);
+    }
+
+    @Test
+    @DisplayName("Deve retornar lista vazia quando filtro não encontra resultados")
+    void deveRetornarListaVaziaQuandoFiltroNaoEncontraResultados() {
+        // Arrange
+        ClienteFilter filter = ClienteFilter.builder()
+                .nome("Inexistente")
+                .build();
+        
+        List<ClienteEntity> entities = List.of();
+        List<Cliente> clientes = List.of();
+        
+        when(jpaRepository.findByFilter("Inexistente", null, null, null, null))
+                .thenReturn(entities);
+        when(mapper.toDomainList(entities)).thenReturn(clientes);
+
+        // Act
+        List<Cliente> result = repository.findByFilter(filter);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(jpaRepository, times(1)).findByFilter("Inexistente", null, null, null, null);
     }
 }

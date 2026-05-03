@@ -58,6 +58,16 @@ public class VeiculoRepositoryImpl implements VeiculoRepository {
     }
 
     @Override
+    public boolean existsByPlacaAndClienteId(Placa placa, UUID clienteId) {
+        return jpaRepository.existsByPlacaAndClienteId(placa.getValor(), clienteId);
+    }
+
+    @Override
+    public boolean existsByPlacaAndClienteIdAndIdNot(Placa placa, UUID clienteId, UUID veiculoId) {
+        return jpaRepository.existsByPlacaAndClienteIdAndIdNot(placa.getValor(), clienteId, veiculoId);
+    }
+
+    @Override
     public List<Veiculo> findByClienteId(UUID clienteId) {
         List<VeiculoEntity> entities = jpaRepository.findByClienteId(clienteId);
         return mapper.toDomainList(entities);

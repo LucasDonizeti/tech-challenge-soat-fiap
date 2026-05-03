@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -41,6 +42,12 @@ public class ItemServicoEntity {
     
     @Column(name = "valor_mro", nullable = false, precision = 10, scale = 2)
     private BigDecimal valorMro;
+    
+    @Column(name = "data_inicio_execucao")
+    private LocalDateTime dataInicioExecucao;
+    
+    @Column(name = "data_finalizacao")
+    private LocalDateTime dataFinalizacao;
     
     @OneToMany(mappedBy = "itemServicoId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default

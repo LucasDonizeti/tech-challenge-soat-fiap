@@ -3,35 +3,43 @@ package com.techchallenge.oficina.os.infrastructure.persistence.mappers;
 import com.techchallenge.oficina.os.domain.model.entities.ItemMRO;
 import com.techchallenge.oficina.os.domain.model.entities.ItemServico;
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusItemServico;
+import com.techchallenge.oficina.os.infrastructure.acl.dto.ServicoIntegrationDto;
+import com.techchallenge.oficina.os.infrastructure.acl.servico.ServicoAdapter;
 import com.techchallenge.oficina.os.infrastructure.persistence.entities.ItemMROEntity;
 import com.techchallenge.oficina.os.infrastructure.persistence.entities.ItemServicoEntity;
 import com.techchallenge.oficina.os.infrastructure.persistence.entities.ItemServicoEntity.StatusItemServicoEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 @DisplayName("Testes Unitários - ItemServicoJpaMapper")
 class ItemServicoJpaMapperTest {
 
     @Mock
     private ItemMROJpaMapper itemMROJpaMapper;
 
+    @Mock
+    private ServicoAdapter servicoAdapter;
+
     private ItemServicoJpaMapper mapper;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        mapper = new ItemServicoJpaMapper(itemMROJpaMapper);
+        mapper = new ItemServicoJpaMapper(itemMROJpaMapper, servicoAdapter);
     }
 
     @Test
@@ -41,6 +49,8 @@ class ItemServicoJpaMapperTest {
         UUID id = UUID.randomUUID();
         UUID ordemServicoId = UUID.randomUUID();
         UUID servicoId = UUID.randomUUID();
+        LocalDateTime dataInicio = LocalDateTime.of(2024, 1, 1, 10, 0);
+        LocalDateTime dataFim = LocalDateTime.of(2024, 1, 1, 11, 30);
         
         ItemServico itemServico = ItemServico.reconstruir(
             id,
@@ -50,10 +60,10 @@ class ItemServicoJpaMapperTest {
             StatusItemServico.PENDENTE,
             null,
             new BigDecimal("150.00"),
-            new BigDecimal("50.00")
+            new BigDecimal("50.00"),
+            dataInicio,
+            dataFim
         );
-
-        when(itemMROJpaMapper.toEntityList(any(), any())).thenReturn(List.of());
 
         // Act
         ItemServicoEntity entity = mapper.toEntity(itemServico, ordemServicoId);
@@ -66,6 +76,8 @@ class ItemServicoJpaMapperTest {
         assertEquals(StatusItemServicoEntity.PENDENTE, entity.getStatus());
         assertEquals(new BigDecimal("150.00"), entity.getValorServico());
         assertEquals(new BigDecimal("50.00"), entity.getValorMro());
+        assertEquals(dataInicio, entity.getDataInicioExecucao());
+        assertEquals(dataFim, entity.getDataFinalizacao());
     }
 
     @Test
@@ -74,6 +86,8 @@ class ItemServicoJpaMapperTest {
         // Arrange
         UUID id = UUID.randomUUID();
         UUID servicoId = UUID.randomUUID();
+        LocalDateTime dataInicio = LocalDateTime.of(2024, 1, 1, 10, 0);
+        LocalDateTime dataFim = LocalDateTime.of(2024, 1, 1, 11, 30);
         
         ItemServicoEntity entity = ItemServicoEntity.builder()
                 .id(id)
@@ -83,10 +97,18 @@ class ItemServicoJpaMapperTest {
                 .observacoes("Observação")
                 .valorServico(new BigDecimal("200.00"))
                 .valorMro(new BigDecimal("75.00"))
+                .dataInicioExecucao(dataInicio)
+                .dataFinalizacao(dataFim)
                 .mros(List.of())
                 .build();
 
-        when(itemMROJpaMapper.toDomainList(any())).thenReturn(List.of());
+        ServicoIntegrationDto servicoDto = ServicoIntegrationDto.builder()
+                .id(servicoId)
+                .nome("Troca de Óleo")
+                .descricao("Troca completa de óleo")
+                .build();
+        
+        when(servicoAdapter.buscarPorId(servicoId)).thenReturn(Optional.of(servicoDto));
 
         // Act
         ItemServico itemServico = mapper.toDomain(entity);
@@ -99,8 +121,10 @@ class ItemServicoJpaMapperTest {
         assertEquals("Observação", itemServico.getObservacoes());
         assertEquals(new BigDecimal("200.00"), itemServico.getValorServico());
         assertEquals(new BigDecimal("75.00"), itemServico.getValorMro());
-        assertNull(itemServico.getServicoNome());
-        assertNull(itemServico.getServicoDescricao());
+        assertEquals("Troca de Óleo", itemServico.getServicoNome());
+        assertEquals("Troca completa de óleo", itemServico.getServicoDescricao());
+        assertEquals(dataInicio, itemServico.getDataInicioExecucao());
+        assertEquals(dataFim, itemServico.getDataFinalizacao());
     }
 
     @Test
@@ -137,7 +161,9 @@ class ItemServicoJpaMapperTest {
             StatusItemServico.PENDENTE,
             null,
             new BigDecimal("100.00"),
-            new BigDecimal("30.00")
+            new BigDecimal("30.00"),
+            null,
+            null
         );
         
         ItemServico itemServico2 = ItemServico.reconstruir(
@@ -148,12 +174,12 @@ class ItemServicoJpaMapperTest {
             StatusItemServico.EM_ANDAMENTO,
             null,
             new BigDecimal("150.00"),
-            new BigDecimal("50.00")
+            new BigDecimal("50.00"),
+            null,
+            null
         );
         
         List<ItemServico> itens = List.of(itemServico1, itemServico2);
-
-        when(itemMROJpaMapper.toEntityList(any(), any())).thenReturn(List.of());
 
         // Act
         List<ItemServicoEntity> entities = mapper.toEntityList(itens, ordemServicoId);
@@ -184,8 +210,6 @@ class ItemServicoJpaMapperTest {
                 .build();
         
         List<ItemServicoEntity> entities = List.of(entity1, entity2);
-
-        when(itemMROJpaMapper.toDomainList(any())).thenReturn(List.of());
 
         // Act
         List<ItemServico> itens = mapper.toDomainList(entities);
@@ -229,10 +253,10 @@ class ItemServicoJpaMapperTest {
             StatusItemServico.PENDENTE,
             null,
             new BigDecimal("100.00"),
-            BigDecimal.ZERO
+            BigDecimal.ZERO,
+            null,
+            null
         );
-
-        when(itemMROJpaMapper.toEntityList(any(), any())).thenReturn(List.of());
 
         // Act
         ItemServicoEntity entity = mapper.toEntity(itemServico, UUID.randomUUID());
@@ -254,10 +278,10 @@ class ItemServicoJpaMapperTest {
             StatusItemServico.EM_ANDAMENTO,
             null,
             new BigDecimal("100.00"),
-            BigDecimal.ZERO
+            BigDecimal.ZERO,
+            null,
+            null
         );
-
-        when(itemMROJpaMapper.toEntityList(any(), any())).thenReturn(List.of());
 
         // Act
         ItemServicoEntity entity = mapper.toEntity(itemServico, UUID.randomUUID());
@@ -279,10 +303,10 @@ class ItemServicoJpaMapperTest {
             StatusItemServico.CONCLUIDO,
             null,
             new BigDecimal("100.00"),
-            BigDecimal.ZERO
+            BigDecimal.ZERO,
+            null,
+            null
         );
-
-        when(itemMROJpaMapper.toEntityList(any(), any())).thenReturn(List.of());
 
         // Act
         ItemServicoEntity entity = mapper.toEntity(itemServico, UUID.randomUUID());
@@ -304,10 +328,10 @@ class ItemServicoJpaMapperTest {
             null,
             null,
             new BigDecimal("100.00"),
-            BigDecimal.ZERO
+            BigDecimal.ZERO,
+            null,
+            null
         );
-
-        when(itemMROJpaMapper.toEntityList(any(), any())).thenReturn(List.of());
 
         // Act
         ItemServicoEntity entity = mapper.toEntity(itemServico, UUID.randomUUID());
@@ -338,7 +362,9 @@ class ItemServicoJpaMapperTest {
             StatusItemServico.PENDENTE,
             null,
             new BigDecimal("100.00"),
-            new BigDecimal("50.00")
+            new BigDecimal("50.00"),
+            null,
+            null
         );
         itemServico.adicionarMRO(itemMRO);
 

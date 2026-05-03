@@ -24,6 +24,8 @@ public class OrdemServicoResponse {
     private VeiculoResponse veiculo;
     private String status;
     private LocalDateTime dataCriacao;
+    private LocalDateTime dataInicioExecucao;
+    private LocalDateTime dataFinalizacao;
     private BigDecimal valorTotal;
     private List<ItemServicoResponse> itensServico;
     
@@ -47,6 +49,8 @@ public class OrdemServicoResponse {
                 .veiculo(veiculoResponse)
                 .status(ordemServico.getStatus() != null ? ordemServico.getStatus().name() : null)
                 .dataCriacao(ordemServico.getDataCriacao())
+                .dataInicioExecucao(ordemServico.getDataInicioExecucao())
+                .dataFinalizacao(ordemServico.getDataFinalizacao())
                 .valorTotal(ordemServico.calcularValorTotal())
                 .itensServico(itensServicoResponses)
                 .build();

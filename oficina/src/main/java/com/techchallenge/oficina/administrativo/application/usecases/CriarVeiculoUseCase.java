@@ -25,12 +25,6 @@ public class CriarVeiculoUseCase {
         log.info("Iniciando criação de veículo: Placa={}, ClienteID={}",
                 command.getPlaca().getFormatada(), command.getClienteId());
 
-        // Validar se placa já existe
-        if (veiculoRepository.existsByPlaca(command.getPlaca())) {
-            log.warn("Placa já cadastrada: {}", command.getPlaca().getFormatada());
-            throw new ValidacaoVeiculoException("Placa já cadastrada: " + command.getPlaca().getFormatada());
-        }
-
         // Buscar cliente existente
         Cliente cliente = clienteRepository.findById(command.getClienteId())
                 .orElseThrow(() -> {
@@ -42,6 +36,13 @@ public class CriarVeiculoUseCase {
         if (!cliente.isAtivo()) {
             log.warn("Cliente inativo não pode ter veículos cadastrados: ID={}", command.getClienteId());
             throw new ValidacaoVeiculoException("Cliente inativo não pode ter veículos cadastrados");
+        }
+
+        // Validar se placa já existe para o mesmo cliente
+        if (veiculoRepository.existsByPlacaAndClienteId(command.getPlaca(), command.getClienteId())) {
+            log.warn("Placa já cadastrada para o mesmo cliente: Placa={}, ClienteID={}", 
+                    command.getPlaca().getFormatada(), command.getClienteId());
+            throw new ValidacaoVeiculoException("Placa já cadastrada para este cliente: " + command.getPlaca().getFormatada());
         }
 
         // Criar veículo

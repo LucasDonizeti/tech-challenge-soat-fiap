@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
+import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoMROException;
 import com.techchallenge.oficina.administrativo.domain.model.entities.MRO;
 import com.techchallenge.oficina.administrativo.domain.repositories.MRORepository;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ public class BuscarMROUseCase {
         log.info("Buscando MRO: ID={}", id);
         
         MRO mro = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("MRO não encontrado com ID: " + id));
+                .orElseThrow(() -> new ValidacaoMROException("MRO não encontrado com ID: " + id));
         
         log.info("MRO encontrado: ID={}, Nome={}", mro.getId(), mro.getNome());
         
