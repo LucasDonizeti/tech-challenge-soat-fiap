@@ -1,7 +1,11 @@
 package com.techchallenge.oficina.os.infrastructure.persistence.mappers;
 
 import com.techchallenge.oficina.os.domain.model.entities.ItemMRO;
+import com.techchallenge.oficina.os.infrastructure.acl.dto.MROIntegrationDto;
+import com.techchallenge.oficina.os.infrastructure.acl.mro.MROAdapter;
 import com.techchallenge.oficina.os.infrastructure.persistence.entities.ItemMROEntity;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -9,7 +13,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class ItemMROJpaMapper {
+    
+    private final MROAdapter mroAdapter;
     
     public ItemMROEntity toEntity(ItemMRO itemMRO, UUID itemServicoId) {
         if (itemMRO == null) {
@@ -30,13 +38,27 @@ public class ItemMROJpaMapper {
             return null;
         }
         
-        // Campos nome e descricao não são persistidos no banco, ficam null
-        // Devem ser preenchidos via ACL quando necessário
+        // Buscar dados do MRO via ACL para preencher nome e descricao
+        String mroNome = null;
+        String mroDescricao = null;
+        if (entity.getMroId() != null) {
+            try {
+                var mroOptional = mroAdapter.buscarPorId(entity.getMroId());
+                if (mroOptional.isPresent()) {
+                    MROIntegrationDto mro = mroOptional.get();
+                    mroNome = mro.getNome();
+                    mroDescricao = mro.getDescricao();
+                }
+            } catch (Exception e) {
+                log.warn("Erro ao buscar MRO via ACL para enriquecimento: mroId={}", entity.getMroId(), e);
+            }
+        }
+        
         return ItemMRO.reconstruir(
                 entity.getId(),
                 entity.getMroId(),
-                null,  // mroNome - não persistido no banco
-                null,  // mroDescricao - não persistido no banco
+                mroNome,
+                mroDescricao,
                 entity.getQuantidade(),
                 entity.getValorUnitario()
         );

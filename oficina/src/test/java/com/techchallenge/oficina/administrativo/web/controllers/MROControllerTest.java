@@ -60,6 +60,12 @@ class MROControllerTest {
     private AtualizarDadosMROUseCase atualizarDadosMROUseCase;
 
     @Mock
+    private ReporEstoqueMROUseCase reporEstoqueMROUseCase;
+
+    @Mock
+    private DebitarEstoqueMROUseCase debitarEstoqueMROUseCase;
+
+    @Mock
     private MROWebMapper mapper;
 
     @Mock
@@ -261,6 +267,70 @@ class MROControllerTest {
                 .andExpect(jsonPath("$.descricao").value("Óleo para motor diesel"));
 
         verify(atualizarDadosMROUseCase, times(1)).execute(any());
+        verify(mapper, times(1)).toDto(any(MROResponse.class));
+    }
+
+    @Test
+    @DisplayName("Deve incrementar estoque do MRO com sucesso")
+    void deveIncrementarEstoqueDoMroComSucesso() throws Exception {
+        // Arrange
+        IncrementarEstoqueMRORequest request = new IncrementarEstoqueMRORequest();
+        request.setQuantidade(10);
+
+        MROResponse responseComEstoqueIncrementado = MROResponse.builder()
+                .id(mroId)
+                .nome("Óleo Motor 5W30")
+                .quantidadeEstoque(110)
+                .build();
+        MROResponseDto dtoComEstoqueIncrementado = MROResponseDto.builder()
+                .id(mroId)
+                .nome("Óleo Motor 5W30")
+                .quantidadeEstoque(110)
+                .build();
+
+        when(reporEstoqueMROUseCase.execute(any())).thenReturn(responseComEstoqueIncrementado);
+        when(mapper.toDto(any(MROResponse.class))).thenReturn(dtoComEstoqueIncrementado);
+
+        // Act & Assert
+        mockMvc.perform(post("/v1/admin/mros/{id}/estoque/incrementar", mroId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.quantidadeEstoque").value(110));
+
+        verify(reporEstoqueMROUseCase, times(1)).execute(any());
+        verify(mapper, times(1)).toDto(any(MROResponse.class));
+    }
+
+    @Test
+    @DisplayName("Deve retirar estoque do MRO com sucesso")
+    void deveRetirarEstoqueDoMroComSucesso() throws Exception {
+        // Arrange
+        RetirarEstoqueMRORequest request = new RetirarEstoqueMRORequest();
+        request.setQuantidade(5);
+
+        MROResponse responseComEstoqueRetirado = MROResponse.builder()
+                .id(mroId)
+                .nome("Óleo Motor 5W30")
+                .quantidadeEstoque(95)
+                .build();
+        MROResponseDto dtoComEstoqueRetirado = MROResponseDto.builder()
+                .id(mroId)
+                .nome("Óleo Motor 5W30")
+                .quantidadeEstoque(95)
+                .build();
+
+        when(debitarEstoqueMROUseCase.execute(any())).thenReturn(responseComEstoqueRetirado);
+        when(mapper.toDto(any(MROResponse.class))).thenReturn(dtoComEstoqueRetirado);
+
+        // Act & Assert
+        mockMvc.perform(post("/v1/admin/mros/{id}/estoque/retirar", mroId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.quantidadeEstoque").value(95));
+
+        verify(debitarEstoqueMROUseCase, times(1)).execute(any());
         verify(mapper, times(1)).toDto(any(MROResponse.class));
     }
 }

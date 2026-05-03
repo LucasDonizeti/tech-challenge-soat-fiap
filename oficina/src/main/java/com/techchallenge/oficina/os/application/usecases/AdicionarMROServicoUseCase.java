@@ -35,9 +35,9 @@ public class AdicionarMROServicoUseCase {
         OrdemServico ordemServico = ordemServicoRepository.findById(command.getOrdemServicoId())
                 .orElseThrow(() -> new OrdemServicoNaoEncontradaException(command.getOrdemServicoId()));
         
-        // Validar status - só permite adicionar MROs quando a OS está RECEBIDA
-        if (ordemServico.getStatus() != StatusOS.RECEBIDA) {
-            throw new OrdemServicoStatusInvalidoException("Só é possível adicionar MROs quando a Ordem de Serviço está no status RECEBIDA. Status atual: " + ordemServico.getStatus());
+        // Validar status - permite adicionar MROs quando a OS está RECEBIDA ou EM_DIAGNOSTICO
+        if (ordemServico.getStatus() != StatusOS.RECEBIDA && ordemServico.getStatus() != StatusOS.EM_DIAGNOSTICO) {
+            throw new OrdemServicoStatusInvalidoException("Só é possível adicionar MROs quando a Ordem de Serviço está nos status RECEBIDA ou EM_DIAGNOSTICO. Status atual: " + ordemServico.getStatus());
         }
         
         // Buscar item de serviço

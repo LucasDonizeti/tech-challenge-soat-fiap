@@ -76,7 +76,7 @@ class CriarVeiculoUseCaseTest {
     @DisplayName("Deve criar veículo com sucesso")
     void deveCriarVeiculoComSucesso() {
         // Arrange
-        when(veiculoRepository.existsByPlaca(any(Placa.class))).thenReturn(false);
+        when(veiculoRepository.existsByPlacaAndClienteId(any(Placa.class), eq(clienteId))).thenReturn(false);
         when(clienteRepository.findById(clienteId)).thenReturn(Optional.of(cliente));
         when(veiculoRepository.save(any(Veiculo.class))).thenAnswer(invocation -> {
             Veiculo savedVeiculo = invocation.getArgument(0);
@@ -97,7 +97,7 @@ class CriarVeiculoUseCaseTest {
         assertNotNull(response.getClienteId());
         assertEquals("João Silva", response.getClienteNome());
 
-        verify(veiculoRepository, times(1)).existsByPlaca(any(Placa.class));
+        verify(veiculoRepository, times(1)).existsByPlacaAndClienteId(any(Placa.class), eq(clienteId));
         verify(clienteRepository, times(1)).findById(clienteId);
         verify(veiculoRepository, times(1)).save(any(Veiculo.class));
     }
@@ -106,7 +106,8 @@ class CriarVeiculoUseCaseTest {
     @DisplayName("Deve lançar exceção quando placa já cadastrada")
     void deveLancarExcecaoQuandoPlacaJaCadastrada() {
         // Arrange
-        when(veiculoRepository.existsByPlaca(any(Placa.class))).thenReturn(true);
+        when(clienteRepository.findById(clienteId)).thenReturn(Optional.of(cliente));
+        when(veiculoRepository.existsByPlacaAndClienteId(any(Placa.class), eq(clienteId))).thenReturn(true);
 
         // Act & Assert
         ValidacaoVeiculoException exception = assertThrows(
@@ -116,8 +117,8 @@ class CriarVeiculoUseCaseTest {
 
         assertTrue(exception.getMessage().contains("Placa já cadastrada"));
 
-        verify(veiculoRepository, times(1)).existsByPlaca(any(Placa.class));
-        verify(clienteRepository, never()).findById(any(UUID.class));
+        verify(veiculoRepository, times(1)).existsByPlacaAndClienteId(any(Placa.class), eq(clienteId));
+        verify(clienteRepository, times(1)).findById(clienteId);
         verify(veiculoRepository, never()).save(any(Veiculo.class));
     }
 
@@ -125,7 +126,6 @@ class CriarVeiculoUseCaseTest {
     @DisplayName("Deve lançar exceção quando cliente não encontrado")
     void deveLancarExcecaoQuandoClienteNaoEncontrado() {
         // Arrange
-        when(veiculoRepository.existsByPlaca(any(Placa.class))).thenReturn(false);
         when(clienteRepository.findById(clienteId)).thenReturn(Optional.empty());
 
         // Act & Assert
@@ -136,7 +136,7 @@ class CriarVeiculoUseCaseTest {
 
         assertTrue(exception.getMessage().contains("Cliente não encontrado"));
 
-        verify(veiculoRepository, times(1)).existsByPlaca(any(Placa.class));
+        verify(veiculoRepository, never()).existsByPlacaAndClienteId(any(Placa.class), any(UUID.class));
         verify(clienteRepository, times(1)).findById(clienteId);
         verify(veiculoRepository, never()).save(any(Veiculo.class));
     }
@@ -146,7 +146,6 @@ class CriarVeiculoUseCaseTest {
     void deveLancarExcecaoQuandoClienteInativo() {
         // Arrange
         cliente.inativar();
-        when(veiculoRepository.existsByPlaca(any(Placa.class))).thenReturn(false);
         when(clienteRepository.findById(clienteId)).thenReturn(Optional.of(cliente));
 
         // Act & Assert
@@ -157,7 +156,7 @@ class CriarVeiculoUseCaseTest {
 
         assertTrue(exception.getMessage().contains("Cliente inativo"));
 
-        verify(veiculoRepository, times(1)).existsByPlaca(any(Placa.class));
+        verify(veiculoRepository, never()).existsByPlacaAndClienteId(any(Placa.class), any(UUID.class));
         verify(clienteRepository, times(1)).findById(clienteId);
         verify(veiculoRepository, never()).save(any(Veiculo.class));
     }
@@ -168,7 +167,7 @@ class CriarVeiculoUseCaseTest {
         // Act & Assert
         assertThrows(NullPointerException.class, () -> useCase.execute(null));
 
-        verify(veiculoRepository, never()).existsByPlaca(any(Placa.class));
+        verify(veiculoRepository, never()).existsByPlacaAndClienteId(any(Placa.class), any(UUID.class));
         verify(clienteRepository, never()).findById(any(UUID.class));
         verify(veiculoRepository, never()).save(any(Veiculo.class));
     }

@@ -1,25 +1,36 @@
 package com.techchallenge.oficina.os.infrastructure.persistence.mappers;
 
 import com.techchallenge.oficina.os.domain.model.entities.ItemMRO;
+import com.techchallenge.oficina.os.infrastructure.acl.dto.MROIntegrationDto;
+import com.techchallenge.oficina.os.infrastructure.acl.mro.MROAdapter;
 import com.techchallenge.oficina.os.infrastructure.persistence.entities.ItemMROEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 @DisplayName("Testes Unitários - ItemMROJpaMapper")
 class ItemMROJpaMapperTest {
+
+    @Mock
+    private MROAdapter mroAdapter;
 
     private ItemMROJpaMapper mapper;
 
     @BeforeEach
     void setUp() {
-        mapper = new ItemMROJpaMapper();
+        mapper = new ItemMROJpaMapper(mroAdapter);
     }
 
     @Test
@@ -66,6 +77,14 @@ class ItemMROJpaMapperTest {
                 .valorUnitario(new BigDecimal("30.00"))
                 .build();
 
+        MROIntegrationDto mroDto = MROIntegrationDto.builder()
+                .id(mroId)
+                .nome("Óleo Motor")
+                .descricao("Óleo sintético 5W-30")
+                .build();
+        
+        when(mroAdapter.buscarPorId(mroId)).thenReturn(Optional.of(mroDto));
+
         // Act
         ItemMRO itemMRO = mapper.toDomain(entity);
 
@@ -75,8 +94,8 @@ class ItemMROJpaMapperTest {
         assertEquals(mroId, itemMRO.getMroId());
         assertEquals(3, itemMRO.getQuantidade());
         assertEquals(new BigDecimal("30.00"), itemMRO.getValorUnitario());
-        assertNull(itemMRO.getMroNome());
-        assertNull(itemMRO.getMroDescricao());
+        assertEquals("Óleo Motor", itemMRO.getMroNome());
+        assertEquals("Óleo sintético 5W-30", itemMRO.getMroDescricao());
     }
 
     @Test

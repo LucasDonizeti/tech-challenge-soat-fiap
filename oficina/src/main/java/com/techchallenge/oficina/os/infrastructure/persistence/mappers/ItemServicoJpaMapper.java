@@ -2,9 +2,12 @@ package com.techchallenge.oficina.os.infrastructure.persistence.mappers;
 
 import com.techchallenge.oficina.os.domain.model.entities.ItemServico;
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusItemServico;
+import com.techchallenge.oficina.os.infrastructure.acl.dto.ServicoIntegrationDto;
+import com.techchallenge.oficina.os.infrastructure.acl.servico.ServicoAdapter;
 import com.techchallenge.oficina.os.infrastructure.persistence.entities.ItemServicoEntity;
 import com.techchallenge.oficina.os.infrastructure.persistence.entities.ItemServicoEntity.StatusItemServicoEntity;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -13,9 +16,11 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ItemServicoJpaMapper {
     
     private final ItemMROJpaMapper itemMROJpaMapper;
+    private final ServicoAdapter servicoAdapter;
     
     public ItemServicoEntity toEntity(ItemServico itemServico, UUID ordemServicoId) {
         if (itemServico == null) {
@@ -30,6 +35,8 @@ public class ItemServicoJpaMapper {
                 .observacoes(itemServico.getObservacoes())
                 .valorServico(itemServico.getValorServico())
                 .valorMro(itemServico.getValorMro())
+                .dataInicioExecucao(itemServico.getDataInicioExecucao())
+                .dataFinalizacao(itemServico.getDataFinalizacao())
                 .build();
         
         if (itemServico.getMrosServicos() != null && !itemServico.getMrosServicos().isEmpty()) {
@@ -46,17 +53,33 @@ public class ItemServicoJpaMapper {
         
         StatusItemServico status = entity.getStatus() != null ? StatusItemServico.valueOf(entity.getStatus().name()) : null;
         
-        // Campos nome e descricao não são persistidos no banco, ficam null
-        // Devem ser preenchidos via ACL quando necessário
+        // Buscar dados do serviço via ACL para preencher nome e descricao
+        String servicoNome = null;
+        String servicoDescricao = null;
+        if (entity.getServicoId() != null) {
+            try {
+                var servicoOptional = servicoAdapter.buscarPorId(entity.getServicoId());
+                if (servicoOptional.isPresent()) {
+                    ServicoIntegrationDto servico = servicoOptional.get();
+                    servicoNome = servico.getNome();
+                    servicoDescricao = servico.getDescricao();
+                }
+            } catch (Exception e) {
+                log.warn("Erro ao buscar serviço via ACL para enriquecimento: servicoId={}", entity.getServicoId(), e);
+            }
+        }
+        
         ItemServico itemServico = ItemServico.reconstruir(
                 entity.getId(),
                 entity.getServicoId(),
-                null,  // servicoNome - não persistido no banco
-                null,  // servicoDescricao - não persistido no banco
+                servicoNome,
+                servicoDescricao,
                 status,
                 entity.getObservacoes(),
                 entity.getValorServico(),
-                entity.getValorMro()
+                entity.getValorMro(),
+                entity.getDataInicioExecucao(),
+                entity.getDataFinalizacao()
         );
         
         // Load and add MROs if they exist

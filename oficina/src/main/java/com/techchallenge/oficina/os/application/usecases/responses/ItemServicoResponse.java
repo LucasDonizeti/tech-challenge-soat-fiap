@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -28,6 +29,8 @@ public class ItemServicoResponse {
     private BigDecimal valorServico;
     private BigDecimal valorMro;
     private BigDecimal valorTotal;
+    private LocalDateTime dataInicioExecucao;
+    private LocalDateTime dataFinalizacao;
     private List<ItemMROResponse> mros;
     
     public static ItemServicoResponse from(ItemServico itemServico) {
@@ -51,6 +54,8 @@ public class ItemServicoResponse {
                 .valorServico(itemServico.getValorServico())
                 .valorMro(itemServico.getValorMro())
                 .valorTotal(itemServico.calcularValorTotal())
+                .dataInicioExecucao(itemServico.getDataInicioExecucao())
+                .dataFinalizacao(itemServico.getDataFinalizacao())
                 .mros(mroResponses)
                 .build();
     }

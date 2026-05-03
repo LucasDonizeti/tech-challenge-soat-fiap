@@ -53,9 +53,7 @@ public class SwaggerConfig {
                 .tags(List.of(
                         createTag("Autenticação", "Endpoints de autenticação e geração de tokens JWT"),
                         createTag("Cliente", "Endpoints de gestão de clientes"),
-                        createTag("Ordem de Serviço", "Endpoints de gestão de ordens de serviço"),
-                        createTag("Administrativo", "Endpoints administrativos do sistema"),
-                        createTag("Saúde", "Endpoints de verificação de saúde do sistema")
+                        createTag("Ordem de Serviço", "Endpoints de gestão de ordens de serviço")
                 ));
     }
 
