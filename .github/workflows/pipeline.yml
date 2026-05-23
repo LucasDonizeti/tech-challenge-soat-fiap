@@ -31,3 +31,12 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
       working-directory: ./oficina
+      
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy
+        run: echo "Fazendo deploy..."
