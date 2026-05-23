@@ -41,10 +41,15 @@ public class ServicoJpaMapper {
             entity.getAtualizadoEm()
         );
     }
-    
+
     public List<Servico> toDomainList(List<ServicoEntity> entities) {
+        if (entities == null) {
+            throw new IllegalArgumentException("List of ServicoEntities cannot be null");
+        }
+
         return entities.stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
     }
+
 }
