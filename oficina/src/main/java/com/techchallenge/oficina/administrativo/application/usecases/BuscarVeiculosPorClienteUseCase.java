@@ -27,6 +27,7 @@ public class BuscarVeiculosPorClienteUseCase {
 
         return veiculos.stream()
                 .map(VeiculoResponse::from)
-                .collect(Collectors.toList());
+                .toList();
     }
 }
+

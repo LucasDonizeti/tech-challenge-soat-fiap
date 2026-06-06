@@ -4,6 +4,7 @@ import com.techchallenge.oficina.administrativo.domain.model.entities.MRO;
 import com.techchallenge.oficina.administrativo.infrastructure.persistence.entities.MROEntity;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,10 +46,15 @@ public class MROJpaMapper {
             entity.getAtualizadoEm()
         );
     }
-    
+
     public List<MRO> toDomainList(List<MROEntity> entities) {
+        if (entities == null || entities.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         return entities.stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
     }
+
 }
