@@ -120,7 +120,7 @@ public class MRO extends AbstractAggregateRoot<MRO> {
         
         registerEvent(new MROAtualizadoEvent(this.id, this.nome));
     }
-    
+
     public void debitarEstoque(Integer quantidade) {
         if (quantidade == null) {
             throw new ValidacaoMROException("Quantidade a debitar não pode ser nula");
@@ -131,11 +131,10 @@ public class MRO extends AbstractAggregateRoot<MRO> {
         if (this.quantidadeEstoque < quantidade) {
             throw new ValidacaoMROException("Estoque insuficiente. Estoque atual: " + this.quantidadeEstoque + ", Quantidade solicitada: " + quantidade);
         }
-        
-        Integer estoqueAnterior = this.quantidadeEstoque;
+
         this.quantidadeEstoque -= quantidade;
         this.atualizadoEm = LocalDateTime.now();
-        
+
         registerEvent(new EstoqueDebitadoEvent(this.id, this.nome, quantidade, this.quantidadeEstoque));
     }
     

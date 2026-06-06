@@ -7,20 +7,20 @@ import java.math.BigDecimal;
 
 @Getter
 public class CriarServicoCommand {
-    
+
     private final String nome;
     private final String descricao;
     private final BigDecimal preco;
-    
+
     public CriarServicoCommand(String nome, String descricao, BigDecimal preco) {
-        validate(nome, descricao, preco);
-        
+        validate(nome, preco);
+
         this.nome = nome;
         this.descricao = descricao;
         this.preco = preco;
     }
-    
-    private void validate(String nome, String descricao, BigDecimal preco) {
+
+    private void validate(String nome, BigDecimal preco) {
         if (nome == null || nome.isBlank()) {
             throw new ValidacaoServicoException("Nome é obrigatório");
         }
