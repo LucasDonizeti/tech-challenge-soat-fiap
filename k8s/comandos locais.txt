@@ -1,0 +1,12 @@
+kind create cluster --name oficina-local
+
+Docker build -t oficina-api:2.0.0 .
+kind load docker-image oficina-api:2.0.0 --name oficina-local
+
+kubectl apply -f ./local/secret-local.yaml
+kubectl apply -f ./local/configmap-local.yaml
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+
+kubectl logs deployment/oficina-api --tail=50
+kubectl port-forward svc/oficina-api-service 8080:8080
