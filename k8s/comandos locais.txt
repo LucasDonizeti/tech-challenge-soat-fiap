@@ -1,12 +1,14 @@
-kind create cluster --name oficina-local
+kind create cluster --name oficina-api-cluster-2
 
-Docker build -t oficina-api:2.0.0 .
-kind load docker-image oficina-api:2.0.0 --name oficina-local
+Docker build -t oficina-api:2.0.5 .
+kind load docker-image oficina-api:2.0.5 --name oficina-api-cluster-2
 
-kubectl apply -f ./local/secret-local.yaml
-kubectl apply -f ./local/configmap-local.yaml
-kubectl apply -f deployment.yaml
-kubectl apply -f service.yaml
 
 kubectl logs deployment/oficina-api --tail=50
 kubectl port-forward svc/oficina-api-service 8080:8080
+
+
+
+helm package oficina
+helm install oficina-0.1.5 ./k8s/oficina-0.1.0.tgz
+helm uninstall oficina-0.1.5

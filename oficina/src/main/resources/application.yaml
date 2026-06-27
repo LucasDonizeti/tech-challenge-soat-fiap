@@ -45,6 +45,15 @@ spring:
       password: ${SECURITY_USER_PASSWORD:secret123}
       roles: ${SECURITY_USER_ROLES:ADMIN}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
 logging:
   level:
     com.techchallenge.oficina: ${LOG_LEVEL:INFO}
