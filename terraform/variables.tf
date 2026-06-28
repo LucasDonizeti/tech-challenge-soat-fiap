@@ -4,19 +4,27 @@ variable "region" {
   default     = "us-east-1"
 }
 
+variable "app_name" {
+  description = "Nome da aplicação (usado como prefixo nos recursos)"
+  type        = string
+  default     = "oficina"
+}
+
 variable "vpc_cidr" {
-  description = "CIDR da VPC"
+  description = "Bloco CIDR da VPC"
   type        = string
   default     = "10.0.0.0/16"
 }
 
-variable "app_name" {
-  description = "Nome da aplicação"
+variable "db_username" {
+  description = "Usuário master do RDS"
   type        = string
-  default     = "api-java"
+  default     = "admindb"
+  sensitive   = true
 }
 
-variable "container_image" {
-  description = "Docker container image for ECS"
+variable "db_name" {
+  description = "Nome do banco de dados"
   type        = string
+  default     = "oficina"
 }

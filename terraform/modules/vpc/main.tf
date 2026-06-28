@@ -11,22 +11,25 @@ module "vpc" {
   public_subnets   = var.public_subnets
   database_subnets = var.database_subnets
 
+  # NAT Gateway para as subnets privadas (EKS nodes e RDS)
   enable_nat_gateway = true
-  single_nat_gateway = true
-  enable_vpn_gateway = false
+  single_nat_gateway = true # economiza custo em ambiente de estudo
 
-  enable_dns_hostnames = false 
-  enable_dns_support   = false
+  # DNS obrigatório para ECR, EKS, RDS e Secrets Manager funcionarem
+  enable_dns_hostnames = true
+  enable_dns_support   = true
 
+  # Subnet group do RDS criado automaticamente
   create_database_subnet_group = true
 
-  create_flow_log_cloudwatch_iam_role  = false
-  create_flow_log_cloudwatch_log_group = false
+  # Tags necessárias para o AWS Load Balancer Controller descobrir as subnets
+  public_subnet_tags = {
+    "kubernetes.io/role/elb" = "1"
+  }
 
-  tags = merge(
-    var.tags,
-    {
-      Project = var.project
-    }
-  )
+  private_subnet_tags = {
+    "kubernetes.io/role/internal-elb" = "1"
+  }
+
+  tags = merge(var.tags, { Name = var.name })
 }
