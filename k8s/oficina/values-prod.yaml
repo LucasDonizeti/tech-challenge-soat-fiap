@@ -20,8 +20,9 @@ image:
   tag: "latest"
 
 service:
-  type: ClusterIP
-  port: 8080
+  type: LoadBalancer
+  port: 80
+  targetPort: 8080
 
 ingress:
   enabled: true
