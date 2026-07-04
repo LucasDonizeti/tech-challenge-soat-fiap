@@ -109,21 +109,3 @@ resource "aws_eks_access_policy_association" "lab_role_admin" {
   }
 }
 
-# 6. Acesso para a role voclabs (terminal do AWS Academy)
-resource "aws_eks_access_entry" "voclabs" {
-  cluster_name  = aws_eks_cluster.this.name
-  principal_arn = "arn:aws:iam::${var.account_id}:role/voclabs"
-  type          = "STANDARD"
-
-  depends_on = [aws_eks_cluster.this]
-}
-
-resource "aws_eks_access_policy_association" "voclabs_admin" {
-  cluster_name  = aws_eks_cluster.this.name
-  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-  principal_arn = aws_eks_access_entry.voclabs.principal_arn
-
-  access_scope {
-    type = "cluster"
-  }
-}
