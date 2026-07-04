@@ -23,13 +23,28 @@ service:
   type: NodePort
   port: 8080
 
+imagePullSecrets:
+  - name: aws-ecr-secret
+
+nameOverride: ""
+fullnameOverride: "oficina-api"
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
 ingress:
-  enabled: false     # usando LoadBalancer diretamente, sem Ingress/ALB Controller
+  enabled: false
+
+httpRoute:
+  enabled: false
 
 autoscaling:
   enabled: true
-  minReplicas: 2
-  maxReplicas: 10
+  minReplicas: 1
+  maxReplicas: 5
   targetCPUUtilizationPercentage: 70
   targetMemoryUtilizationPercentage: 80
 
@@ -44,8 +59,8 @@ resources:
 livenessProbe:
   httpGet:
     path: /actuator/health/liveness
-    port: 8080
-  initialDelaySeconds: 60
+    port: http
+  initialDelaySeconds: 30
   periodSeconds: 15
   failureThreshold: 3
   timeoutSeconds: 5
@@ -53,8 +68,8 @@ livenessProbe:
 readinessProbe:
   httpGet:
     path: /actuator/health/readiness
-    port: 8080
-  initialDelaySeconds: 30
+    port: http
+  initialDelaySeconds: 20
   periodSeconds: 10
   failureThreshold: 3
   timeoutSeconds: 5
