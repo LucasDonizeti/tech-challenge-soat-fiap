@@ -12,6 +12,6 @@ output "cluster_certificate_authority_data" {
 }
 
 output "node_security_group_id" {
-  description = "Security group dos nodes — usado pelo RDS para permitir acesso"
-  value       = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
+  description = "SG dos nodes — usado pelo RDS para permitir acesso na porta 3306"
+  value       = aws_security_group.nodes.id
 }
