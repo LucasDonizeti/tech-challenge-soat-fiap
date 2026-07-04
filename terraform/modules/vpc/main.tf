@@ -22,13 +22,15 @@ module "vpc" {
   # Subnet group do RDS criado automaticamente
   create_database_subnet_group = true
 
-  # Tags necessárias para o AWS Load Balancer Controller descobrir as subnets
+  # Tags necessárias para o EKS encontrar as subnets e para o ALB Controller
   public_subnet_tags = {
-    "kubernetes.io/role/elb" = "1"
+    "kubernetes.io/role/elb"                    = "1"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
 
   private_subnet_tags = {
-    "kubernetes.io/role/internal-elb" = "1"
+    "kubernetes.io/role/internal-elb"           = "1"
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
   }
 
   tags = merge(var.tags, { Name = var.name })

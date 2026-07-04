@@ -1,3 +1,8 @@
+# ==============================================================================
+# EKS — Recursos nativos AWS (sem módulo de terceiros)
+# AWS Academy: usa LabRole para cluster e nodes
+# ==============================================================================
+
 # 1. Cluster EKS
 resource "aws_eks_cluster" "this" {
   name     = var.cluster_name
@@ -5,20 +10,55 @@ resource "aws_eks_cluster" "this" {
   role_arn = "arn:aws:iam::${var.account_id}:role/LabRole"
 
   vpc_config {
-    subnet_ids              = var.private_subnets
+    # Passar subnets públicas + privadas para o control plane ter conectividade
+    # durante a criação. Nodes são restritos às privadas no node group.
+    subnet_ids              = concat(var.public_subnets, var.private_subnets)
     endpoint_public_access  = true
     endpoint_private_access = true
   }
 
   access_config {
-    authentication_mode                         = "API_AND_CONFIG_MAP"
-    bootstrap_cluster_creator_admin_permissions = false
+    authentication_mode = "API"
+    # Permite que a role que criou o cluster (LabRole via Terraform) tenha acesso admin
+    bootstrap_cluster_creator_admin_permissions = true
   }
 
   tags = var.tags
 }
 
-# 2. Node Group Gerenciado (Equivalente ao eks_managed_node_groups)
+# 2. Security Group para os nodes
+resource "aws_security_group" "nodes" {
+  name        = "${var.cluster_name}-nodes-sg"
+  description = "Security group dos nodes EKS"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    description = "Comunicacao interna entre nodes"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    self        = true
+  }
+
+  ingress {
+    description = "Control plane para nodes"
+    from_port   = 1025
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(var.tags, { Name = "${var.cluster_name}-nodes-sg" })
+}
+
+# 3. Node Group Gerenciado — nodes ficam nas subnets privadas
 resource "aws_eks_node_group" "main" {
   cluster_name    = aws_eks_cluster.this.name
   node_group_name = "main"
@@ -33,47 +73,57 @@ resource "aws_eks_node_group" "main" {
 
   instance_types = ["t3.medium"]
 
+  tags = var.tags
+
   depends_on = [aws_eks_cluster.this]
-  tags       = var.tags
 }
 
-# 3. Add-ons do EKS (vpc-cni, kube-proxy, coredns)
+# 4. Add-ons
 resource "aws_eks_addon" "addons" {
-  for_each     = toset(["vpc-cni", "kube-proxy", "coredns"])
-  cluster_name = aws_eks_cluster.this.name
-  addon_name   = each.value
+  for_each = toset(["vpc-cni", "kube-proxy", "coredns"])
 
-  depends_on = [aws_eks_cluster.this]
+  cluster_name                = aws_eks_cluster.this.name
+  addon_name                  = each.value
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+
+  depends_on = [aws_eks_node_group.main]
 }
 
-# ==============================================================================
-# PERMISSÕES DE ACESSO (Substituindo o access_entries do módulo)
-# ==============================================================================
-
-# Entrada para a LabRole
+# 5. Acesso para a LabRole
 resource "aws_eks_access_entry" "lab_role" {
   cluster_name  = aws_eks_cluster.this.name
   principal_arn = "arn:aws:iam::${var.account_id}:role/LabRole"
   type          = "STANDARD"
+
+  depends_on = [aws_eks_cluster.this]
 }
 
 resource "aws_eks_access_policy_association" "lab_role_admin" {
   cluster_name  = aws_eks_cluster.this.name
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
   principal_arn = aws_eks_access_entry.lab_role.principal_arn
-  access_scope  { type = "cluster" }
+
+  access_scope {
+    type = "cluster"
+  }
 }
 
-# Entrada para a sua Role atual do Vocareum (para rodar o kubectl de fora)
-resource "aws_eks_access_entry" "voclabs_user" {
+# 6. Acesso para a role voclabs (terminal do AWS Academy)
+resource "aws_eks_access_entry" "voclabs" {
   cluster_name  = aws_eks_cluster.this.name
   principal_arn = "arn:aws:iam::${var.account_id}:role/voclabs"
   type          = "STANDARD"
+
+  depends_on = [aws_eks_cluster.this]
 }
 
 resource "aws_eks_access_policy_association" "voclabs_admin" {
   cluster_name  = aws_eks_cluster.this.name
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-  principal_arn = aws_eks_access_entry.voclabs_user.principal_arn
-  access_scope  { type = "cluster" }
+  principal_arn = aws_eks_access_entry.voclabs.principal_arn
+
+  access_scope {
+    type = "cluster"
+  }
 }
