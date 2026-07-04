@@ -65,7 +65,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.9.0
+          terraform_version: 1.15.7
 
       - name: Verificar se o bucket S3 já existe
         id: check-bucket
@@ -209,7 +209,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.9.0
+          terraform_version: 1.15.7
 
       - name: Download Terraform Plan
         uses: actions/download-artifact@v4
