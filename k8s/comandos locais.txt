@@ -1,0 +1,55 @@
+kind create cluster --name oficina-api-cluster-2
+
+Docker build -t oficina-api:2.0.5 .
+kind load docker-image oficina-api:2.0.5 --name oficina-api-cluster-2
+
+
+kubectl logs deployment/oficina-api --tail=50
+kubectl port-forward svc/oficina-api 8080:8080
+
+
+
+helm package oficina
+helm install oficina-0.1.5 ./k8s/oficina-0.1.0.tgz
+helm uninstall oficina-0.1.5
+
+
+
+
+--- remoto
+em terraform/bootstrap
+terraform init
+terraform apply
+
+em terraform
+terraform init
+terraform plan
+terraform apply
+
+configurar kubectl
+aws eks update-kubeconfig --name oficina-cluster --region us-east-1
+kubectl cluster-info
+kubectl get nodes
+
+em k8s
+helm package oficina
+
+no padrao
+helm install oficina-0.1.5 ./k8s/oficina-0.1.0.tgz
+
+helm upgrade --install oficina ./k8s/oficina-prod-0.1.0.tgz -f k8s/oficina/values-prod.yaml --set image.tag=$IMAGE_TAG --set secret.SPRING_DATASOURCE_URL=$SPRING_DATASOURCE_URL --set secret.SPRING_DATASOURCE_USERNAME=$SPRING_DATASOURCE_USERNAME --set secret.SPRING_DATASOURCE_PASSWORD=$SPRING_DATASOURCE_PASSWORD --set secret.JWT_SECRET=$JWT_SECRET --set secret.SECURITY_USER_NAME=$SECURITY_USER_NAME --set secret.SECURITY_USER_PASSWORD=$SECURITY_USER_PASSWORD
+
+
+obs: 
+agora falta fazer push da imagem no ecr
+ver como faço o comando para rodar o helm com config de produção
+ver notes:
+NOTES:
+1. Get the application URL by running these commands:
+  export NODE_PORT=$(kubectl get --namespace default -o jsonpath="{.spec.ports[0].nodePort}" services oficina-api)
+  export NODE_IP=$(kubectl get nodes --namespace default -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+
+
+comandos uteis:
+aws eks describe-cluster --name oficina-cluster --region us-east-1
