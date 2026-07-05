@@ -36,22 +36,17 @@ module "db" {
   username = var.db_username
   port     = 3306
 
-  # Senha gerenciada pelo Secrets Manager — sem senha em texto claro
   manage_master_user_password = true
 
-  # Subnet group e security group
   db_subnet_group_name   = var.db_subnet_group_name
   vpc_security_group_ids = [aws_security_group.rds.id]
 
-  # Sem Multi-AZ para ambiente de estudo (economia de custo)
   multi_az = false
 
-  # Backup mínimo
   backup_retention_period = 1
   backup_window           = "03:00-06:00"
   maintenance_window      = "Mon:00:00-Mon:03:00"
 
-  # Parâmetros
   family               = "mysql8.0"
   major_engine_version = "8.0"
 
@@ -60,10 +55,8 @@ module "db" {
     { name = "character_set_server", value = "utf8mb4" }
   ]
 
-  # Sem deletion protection em dev/estudo para facilitar destroy
   deletion_protection = false
 
-  # Sem monitoramento extra (economiza custo)
   create_monitoring_role = false
 
   tags = var.tags

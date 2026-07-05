@@ -11,18 +11,14 @@ module "vpc" {
   public_subnets   = var.public_subnets
   database_subnets = var.database_subnets
 
-  # NAT Gateway para as subnets privadas (EKS nodes e RDS)
   enable_nat_gateway = true
-  single_nat_gateway = true # economiza custo em ambiente de estudo
+  single_nat_gateway = true
 
-  # DNS obrigatório para ECR, EKS, RDS e Secrets Manager funcionarem
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  # Subnet group do RDS criado automaticamente
   create_database_subnet_group = true
 
-  # Tags necessárias para o EKS encontrar as subnets e para o ALB Controller
   public_subnet_tags = {
     "kubernetes.io/role/elb"                    = "1"
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"

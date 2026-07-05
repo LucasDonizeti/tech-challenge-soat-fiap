@@ -45,7 +45,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "state" {
   }
 }
 
-# DynamoDB mantido para compatibilidade com pipelines que usam dynamodb_table
 resource "aws_dynamodb_table" "terraform_locks" {
   name         = "meu-terraform-state-lock"
   billing_mode = "PAY_PER_REQUEST"
@@ -96,9 +95,6 @@ module "ecr" {
   }
 }
 
-# ------------------------------------------------------------------------------
-# Outputs
-# ------------------------------------------------------------------------------
 output "ecr_repository_url" {
   description = "URL do repositório ECR para usar na pipeline"
   value       = module.ecr.repository_url
