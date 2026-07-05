@@ -10,16 +10,13 @@ resource "aws_eks_cluster" "this" {
   role_arn = "arn:aws:iam::${var.account_id}:role/LabRole"
 
   vpc_config {
-    # Passar subnets públicas + privadas para o control plane ter conectividade
-    # durante a criação. Nodes são restritos às privadas no node group.
     subnet_ids              = concat(var.public_subnets, var.private_subnets)
     endpoint_public_access  = true
     endpoint_private_access = true
   }
 
   access_config {
-    authentication_mode = "API"
-    # Permite que a role que criou o cluster (LabRole via Terraform) tenha acesso admin
+    authentication_mode                         = "API"
     bootstrap_cluster_creator_admin_permissions = true
   }
 

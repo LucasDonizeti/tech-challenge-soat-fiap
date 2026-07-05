@@ -38,7 +38,6 @@ module "eks" {
 
 # ------------------------------------------------------------------------------
 # RDS — MySQL 8.0
-# Depende do EKS para usar o SG dos nodes na regra de ingress
 # ------------------------------------------------------------------------------
 module "rds" {
   source = "./modules/rds"

@@ -21,7 +21,8 @@ image:
 
 service:
   type: LoadBalancer
-  port: 8080
+  port: 80
+  targetPort: 8080
 
 imagePullSecrets:
   - name: aws-ecr-secret
@@ -87,7 +88,6 @@ configmap:
   JWT_EXPIRATION: "3600"
   SECURITY_USER_ROLES: "ADMIN"
 
-# Os valores de secret são injetados pela pipeline via --set
 secret:
   SPRING_DATASOURCE_URL: ""
   SPRING_DATASOURCE_USERNAME: ""
