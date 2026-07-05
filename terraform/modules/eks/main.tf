@@ -45,6 +45,14 @@ resource "aws_security_group" "nodes" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    description = "Permitir tráfego do Load Balancer para NodePorts"
+    from_port   = 30000
+    to_port     = 32767
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Libera a entrada para o tráfego vindo do LB externo
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
