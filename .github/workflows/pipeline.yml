@@ -311,7 +311,7 @@ jobs:
             -f ${{ env.HELM_CHART_PATH }}/values-prod.yaml \
             --set image.repository=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }} \
             --set image.tag=$IMAGE_TAG \
-            --set secret.SPRING_DATASOURCE_URL="jdbc:mysql://${RDS_ENDPOINT}:3306/oficina?useSSL=true&requireSSL=true" \
+            --set secret.SPRING_DATASOURCE_URL="jdbc:mysql://${RDS_ENDPOINT}:3306/oficina" \
             --set secret.SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}" \
             --set secret.SPRING_DATASOURCE_PASSWORD="$DB_PASSWORD" \
             --set secret.JWT_SECRET="${{ secrets.JWT_SECRET }}" \
