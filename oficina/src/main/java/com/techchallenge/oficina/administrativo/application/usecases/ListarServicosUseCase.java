@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.ListarServicosInput;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ServicoResponse;
 import com.techchallenge.oficina.administrativo.domain.model.entities.Servico;
 import com.techchallenge.oficina.administrativo.domain.repositories.ServicoRepository;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ListarServicosUseCase {
+public class ListarServicosUseCase implements ListarServicosInput {
 
     private final ServicoRepository repository;
 

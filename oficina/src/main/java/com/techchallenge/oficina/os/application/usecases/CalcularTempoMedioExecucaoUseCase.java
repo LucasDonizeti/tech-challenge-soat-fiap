@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.os.application.usecases;
 
+import com.techchallenge.oficina.os.application.usecases.ports.input.CalcularTempoMedioExecucaoInput;
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusOS;
 import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
 import com.techchallenge.oficina.os.web.dto.TempoMedioExecucaoResponseDto;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CalcularTempoMedioExecucaoUseCase {
+public class CalcularTempoMedioExecucaoUseCase implements CalcularTempoMedioExecucaoInput {
     
     private final OrdemServicoRepository ordemServicoRepository;
     

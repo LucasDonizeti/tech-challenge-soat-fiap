@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.ReativarVeiculoInput;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.VeiculoResponse;
 import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoVeiculoException;
 import com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo;
@@ -14,7 +15,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ReativarVeiculoUseCase {
+public class ReativarVeiculoUseCase implements ReativarVeiculoInput {
 
     private final VeiculoRepository repository;
 

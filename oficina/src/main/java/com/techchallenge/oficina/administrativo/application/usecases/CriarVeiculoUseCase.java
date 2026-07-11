@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.commands.CriarVeiculoCommand;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.CriarVeiculoInput;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.VeiculoResponse;
 import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoVeiculoException;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
@@ -15,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CriarVeiculoUseCase {
+public class CriarVeiculoUseCase implements CriarVeiculoInput {
 
     private final VeiculoRepository veiculoRepository;
     private final ClienteRepository clienteRepository;

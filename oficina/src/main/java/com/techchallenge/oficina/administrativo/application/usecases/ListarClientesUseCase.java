@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.ListarClientesInput;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ClienteResponse;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
 import com.techchallenge.oficina.administrativo.domain.repositories.ClienteRepository;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ListarClientesUseCase {
+public class ListarClientesUseCase implements ListarClientesInput {
 
     private final ClienteRepository repository;
 
@@ -29,7 +30,4 @@ public class ListarClientesUseCase {
 
         return clientes.map(ClienteResponse::from);
     }
-
-    // Métodos removidos - substituídos por BuscarClientesPorFiltroUseCase
-    // executePorStatus, executePorNome, executePorTermo foram migrados para o novo use case genérico
 }

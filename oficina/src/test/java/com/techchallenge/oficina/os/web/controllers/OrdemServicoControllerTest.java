@@ -9,6 +9,7 @@ import com.techchallenge.oficina.os.domain.exceptions.ValidacaoOrdemServicoExcep
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusOS;
 import com.techchallenge.oficina.os.web.dto.OrdemServicoResponseDto;
 import com.techchallenge.oficina.os.web.mappers.OrdemServicoWebMapper;
+import com.techchallenge.oficina.os.web.presenters.OrdemServicoPresenter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ class OrdemServicoControllerTest {
     private EntregarOrdemServicoUseCase entregarOrdemServicoUseCase;
 
     @Mock
-    private OrdemServicoWebMapper mapper;
+    private OrdemServicoPresenter presenter;
 
     @InjectMocks
     private OrdemServicoController ordemServicoController;
@@ -70,7 +71,7 @@ class OrdemServicoControllerTest {
         dto.setStatus(StatusOS.AGUARDANDO_APROVACAO.toString());
 
         when(enviarOrcamentoAoClienteUseCase.execute(any(EnviarOrcamentoAoClienteCommand.class))).thenReturn(response);
-        when(mapper.toDto(response)).thenReturn(dto);
+        when(presenter.prepararViewModel(response)).thenReturn(dto);
 
         // Act & Assert
         mockMvc.perform(post("/v1/os/{id}/enviar-orcamento-ao-cliente", ordemServicoId))
@@ -95,7 +96,7 @@ class OrdemServicoControllerTest {
         dto.setStatus(StatusOS.ENTREGUE.toString());
 
         when(entregarOrdemServicoUseCase.execute(any())).thenReturn(response);
-        when(mapper.toDto(response)).thenReturn(dto);
+        when(presenter.prepararViewModel(response)).thenReturn(dto);
 
         // Act & Assert
         mockMvc.perform(post("/v1/os/{id}/entregar", ordemServicoId))

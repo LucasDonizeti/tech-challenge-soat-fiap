@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.os.application.usecases;
 
+import com.techchallenge.oficina.os.application.usecases.ports.input.ListarOrdensServicoPorClienteInput;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ListarOrdensServicoPorClienteUseCase {
+public class ListarOrdensServicoPorClienteUseCase implements ListarOrdensServicoPorClienteInput {
     
     private final OrdemServicoRepository ordemServicoRepository;
     

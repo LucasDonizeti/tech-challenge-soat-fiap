@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.commands.DebitarEstoqueMROCommand;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.DebitarEstoqueMROInput;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
 import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoMROException;
 import com.techchallenge.oficina.administrativo.domain.model.entities.MRO;
@@ -13,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class DebitarEstoqueMROUseCase {
+public class DebitarEstoqueMROUseCase implements DebitarEstoqueMROInput {
     
     private final MRORepository repository;
     

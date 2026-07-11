@@ -7,6 +7,7 @@ import com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo;
 import com.techchallenge.oficina.administrativo.domain.repositories.ClienteRepository;
 import com.techchallenge.oficina.administrativo.domain.repositories.VeiculoRepository;
 import com.techchallenge.oficina.os.application.usecases.commands.CriarOrdemServicoCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.input.CriarOrdemServicoInpuit;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
 import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
@@ -20,7 +21,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CriarOrdemServicoUseCase {
+public class CriarOrdemServicoUseCase implements CriarOrdemServicoInpuit {
     
     private final OrdemServicoRepository ordemServicoRepository;
     private final ClienteRepository clienteRepository;

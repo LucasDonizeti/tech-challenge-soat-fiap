@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.BuscarClientesPorFiltroInput;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ClienteResponse;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
 import com.techchallenge.oficina.administrativo.domain.repositories.ClienteRepository;
@@ -16,7 +17,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BuscarClientesPorFiltroUseCase {
+public class BuscarClientesPorFiltroUseCase implements BuscarClientesPorFiltroInput {
     
     private final ClienteRepository repository;
     

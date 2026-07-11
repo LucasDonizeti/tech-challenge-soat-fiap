@@ -10,6 +10,7 @@ import com.techchallenge.oficina.os.domain.exceptions.ValidacaoOrdemServicoExcep
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusOS;
 import com.techchallenge.oficina.os.web.dto.OrdemServicoResponseDto;
 import com.techchallenge.oficina.os.web.mappers.OrdemServicoWebMapper;
+import com.techchallenge.oficina.os.web.presenters.ClienteOSPresenter;
 import com.techchallenge.oficina.sharedkernel.common.PageableValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -54,7 +55,7 @@ class ClienteOSControllerTest {
     private ListarOrdensServicoPorClienteUseCase listarOrdensServicoPorClienteUseCase;
 
     @Mock
-    private OrdemServicoWebMapper mapper;
+    private ClienteOSPresenter presenter;
 
     @Mock
     private PageableValidator pageableValidator;
@@ -94,7 +95,7 @@ class ClienteOSControllerTest {
         dto.setStatus(StatusOS.AGUARDANDO_APROVACAO.toString());
         
         Page<OrdemServicoResponseDto> dtoPage = new PageImpl<>(Collections.singletonList(dto));
-        when(mapper.toDtoPage(responsePage)).thenReturn(dtoPage);
+        when(presenter.prepararViewModelPage(responsePage)).thenReturn(dtoPage);
         
         // Mock pageableValidator to return the same pageable
         when(pageableValidator.validate(any(Pageable.class), any(Set.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -122,7 +123,7 @@ class ClienteOSControllerTest {
         dto.setStatus(StatusOS.EM_EXECUCAO.toString());
 
         when(aprovarOrcamentoUseCase.execute(any(AprovarOrcamentoCommand.class))).thenReturn(response);
-        when(mapper.toDto(response)).thenReturn(dto);
+        when(presenter.prepararViewModel(response)).thenReturn(dto);
 
         // Act & Assert
         mockMvc.perform(post("/api/cliente/os/{osId}/aprovar-orcamento", ordemServicoId))

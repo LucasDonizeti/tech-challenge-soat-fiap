@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.ListarVeiculosInput;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.VeiculoResponse;
 import com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo;
 import com.techchallenge.oficina.administrativo.domain.repositories.VeiculoRepository;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ListarVeiculosUseCase {
+public class ListarVeiculosUseCase implements ListarVeiculosInput {
 
     private final VeiculoRepository repository;
 

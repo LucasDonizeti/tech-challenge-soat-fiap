@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.os.application.usecases;
 
 import com.techchallenge.oficina.os.application.usecases.commands.AtualizarQuantidadeMROCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.input.AtualizarQuantidadeMROInput;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
 import com.techchallenge.oficina.os.domain.exceptions.ItemServicoNaoEncontradoException;
@@ -19,7 +20,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AtualizarQuantidadeMROUseCase {
+public class AtualizarQuantidadeMROUseCase implements AtualizarQuantidadeMROInput {
     
     private final OrdemServicoRepository ordemServicoRepository;
     

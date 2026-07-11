@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.BuscarClienteInput;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ClienteResponse;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
 import com.techchallenge.oficina.administrativo.domain.repositories.ClienteRepository;
@@ -11,7 +12,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BuscarClienteUseCase {
+public class BuscarClienteUseCase implements BuscarClienteInput {
     
     private final ClienteRepository repository;
     

@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.InativarMROInput;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
 import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoMROException;
 import com.techchallenge.oficina.administrativo.domain.model.entities.MRO;
@@ -14,7 +15,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class InativarMROUseCase {
+public class InativarMROUseCase implements InativarMROInput {
     
     private final MRORepository repository;
     

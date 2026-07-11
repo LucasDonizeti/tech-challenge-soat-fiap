@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.os.application.usecases;
 
 import com.techchallenge.oficina.os.application.usecases.commands.AtualizarObservacoesServicoCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.input.AtualizarObservacoesServicoInput;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.ItemServicoNaoEncontradoException;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
@@ -17,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AtualizarObservacoesServicoUseCase {
+public class AtualizarObservacoesServicoUseCase implements AtualizarObservacoesServicoInput {
     
     private final OrdemServicoRepository ordemServicoRepository;
     

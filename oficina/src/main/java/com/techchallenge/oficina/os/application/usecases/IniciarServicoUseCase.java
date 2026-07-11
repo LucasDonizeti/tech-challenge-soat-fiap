@@ -2,7 +2,9 @@ package com.techchallenge.oficina.os.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.DebitarEstoqueMROUseCase;
 import com.techchallenge.oficina.administrativo.application.usecases.commands.DebitarEstoqueMROCommand;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.DebitarEstoqueMROInput;
 import com.techchallenge.oficina.os.application.usecases.commands.IniciarServicoCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.input.IniciarServicoInput;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.ItemServicoNaoEncontradoException;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
@@ -20,10 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class IniciarServicoUseCase {
+public class IniciarServicoUseCase implements IniciarServicoInput {
     
     private final OrdemServicoRepository ordemServicoRepository;
-    private final DebitarEstoqueMROUseCase debitarEstoqueMROUseCase;
+    private final DebitarEstoqueMROInput debitarEstoqueMROInput;
     
     @Transactional
     public OrdemServicoResponse execute(IniciarServicoCommand command) {
@@ -71,8 +73,8 @@ public class IniciarServicoUseCase {
                         itemMRO.getMroId(),
                         itemMRO.getQuantidade()
                 );
-                
-                debitarEstoqueMROUseCase.execute(command);
+
+                debitarEstoqueMROInput.execute(command);
                 
                 log.info("Estoque debitado para MRO: mroId={}, quantidade={}", itemMRO.getMroId(), itemMRO.getQuantidade());
             } catch (Exception e) {

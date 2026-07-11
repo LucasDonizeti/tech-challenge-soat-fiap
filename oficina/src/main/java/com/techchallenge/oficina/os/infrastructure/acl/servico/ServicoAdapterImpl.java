@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.os.infrastructure.acl.servico;
 
 import com.techchallenge.oficina.administrativo.application.usecases.BuscarServicoUseCase;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.BuscarServicoInput;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ServicoResponse;
 import com.techchallenge.oficina.os.infrastructure.acl.dto.ServicoIntegrationDto;
 import lombok.RequiredArgsConstructor;
@@ -19,13 +20,13 @@ import java.util.UUID;
 @Slf4j
 public class ServicoAdapterImpl implements ServicoAdapter {
     
-    private final BuscarServicoUseCase buscarServicoUseCase;
+    private final BuscarServicoInput buscarServicoInput;
     
     @Override
     public Optional<ServicoIntegrationDto> buscarPorId(UUID id) {
         log.debug("Buscando Serviço por ID via ACL: {}", id);
         try {
-            ServicoResponse response = buscarServicoUseCase.execute(id);
+            ServicoResponse response = buscarServicoInput.execute(id);
             return Optional.of(toIntegrationDto(response));
         } catch (Exception e) {
             log.warn("Serviço não encontrado ao buscar via ACL: {}", id);

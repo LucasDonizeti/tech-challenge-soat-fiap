@@ -2,8 +2,11 @@ package com.techchallenge.oficina.os.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.BuscarMROUseCase;
 import com.techchallenge.oficina.administrativo.application.usecases.BuscarServicoUseCase;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.BuscarMROInput;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.BuscarServicoInput;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ServicoResponse;
+import com.techchallenge.oficina.os.application.usecases.ports.input.ListarOrdensServicoInput;
 import com.techchallenge.oficina.os.application.usecases.responses.ItemMROResponse;
 import com.techchallenge.oficina.os.application.usecases.responses.ItemServicoResponse;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
@@ -26,11 +29,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ListarOrdensServicoUseCase {
+public class ListarOrdensServicoUseCase implements ListarOrdensServicoInput {
     
     private final OrdemServicoRepository ordemServicoRepository;
-    private final BuscarServicoUseCase buscarServicoUseCase;
-    private final BuscarMROUseCase buscarMROUseCase;
+    private final BuscarServicoInput buscarServicoInput;
+    private final BuscarMROInput buscarMROInput;
     
     @Transactional(readOnly = true)
     public Page<OrdemServicoResponse> execute(UUID clienteId, UUID veiculoId, StatusOS status, 
@@ -65,14 +68,14 @@ public class ListarOrdensServicoUseCase {
             Map<UUID, ServicoResponse> servicosMap = servicoIds.stream()
                     .collect(Collectors.toMap(
                             id -> id,
-                            id -> buscarServicoUseCase.execute(id)
+                            id -> buscarServicoInput.execute(id)
                     ));
             
             // Buscar MROs em lote
             Map<UUID, MROResponse> mrosMap = mroIds.stream()
                     .collect(Collectors.toMap(
                             id -> id,
-                            id -> buscarMROUseCase.execute(id)
+                            id -> buscarMROInput.execute(id)
                     ));
             
             // Preencher dados nos itens de serviço

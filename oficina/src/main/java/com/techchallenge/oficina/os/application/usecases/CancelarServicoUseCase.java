@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.os.application.usecases;
 
 import com.techchallenge.oficina.os.application.usecases.commands.CancelarServicoCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.input.CancelarServicoInput;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.ItemServicoNaoEncontradoException;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
@@ -17,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CancelarServicoUseCase {
+public class CancelarServicoUseCase implements CancelarServicoInput {
     
     private final OrdemServicoRepository ordemServicoRepository;
     

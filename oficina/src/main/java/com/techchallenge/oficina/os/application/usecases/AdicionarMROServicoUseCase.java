@@ -1,8 +1,10 @@
 package com.techchallenge.oficina.os.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.BuscarMROUseCase;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.BuscarMROInput;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
 import com.techchallenge.oficina.os.application.usecases.commands.AdicionarMROServicoCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.input.AdicionarMROServicoInput;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.ItemServicoNaoEncontradoException;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
@@ -21,10 +23,10 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AdicionarMROServicoUseCase {
+public class AdicionarMROServicoUseCase implements AdicionarMROServicoInput {
     
     private final OrdemServicoRepository ordemServicoRepository;
-    private final BuscarMROUseCase buscarMROUseCase;
+    private final BuscarMROInput buscarMROInput;
     
     @Transactional
     public OrdemServicoResponse execute(AdicionarMROServicoCommand command) {
@@ -47,7 +49,7 @@ public class AdicionarMROServicoUseCase {
                 .orElseThrow(() -> new ItemServicoNaoEncontradoException(command.getItemServicoId()));
         
         // Buscar MRO via ACL (contexto administrativo)
-        MROResponse mroResponse = buscarMROUseCase.execute(command.getMroId());
+        MROResponse mroResponse = buscarMROInput.execute(command.getMroId());
         
         // Adicionar MRO ao item de serviço com dados do DTO
         // Nota: O débito de estoque será feito em uma etapa posterior (ao iniciar a execução da OS)

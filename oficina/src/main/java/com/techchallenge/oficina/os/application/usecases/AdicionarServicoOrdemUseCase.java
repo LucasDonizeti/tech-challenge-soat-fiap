@@ -1,8 +1,10 @@
 package com.techchallenge.oficina.os.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.BuscarServicoUseCase;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.BuscarServicoInput;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ServicoResponse;
 import com.techchallenge.oficina.os.application.usecases.commands.AdicionarServicoOrdemCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.input.AdicionarServicoOrdemInput;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoStatusInvalidoException;
@@ -20,10 +22,10 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AdicionarServicoOrdemUseCase {
+public class AdicionarServicoOrdemUseCase implements AdicionarServicoOrdemInput {
     
     private final OrdemServicoRepository ordemServicoRepository;
-    private final BuscarServicoUseCase buscarServicoUseCase;
+    private final BuscarServicoInput buscarServicoInput;
     
     @Transactional
     public OrdemServicoResponse execute(AdicionarServicoOrdemCommand command) {
@@ -38,7 +40,7 @@ public class AdicionarServicoOrdemUseCase {
         // que só permite adicionar serviços quando a OS está RECEBIDA
         
         // Buscar serviço via ACL (contexto administrativo)
-        ServicoResponse servicoResponse = buscarServicoUseCase.execute(command.getServicoId());
+        ServicoResponse servicoResponse = buscarServicoInput.execute(command.getServicoId());
         
         // Criar item de serviço com dados do DTO
         ItemServico itemServico = ItemServico.criarComDados(

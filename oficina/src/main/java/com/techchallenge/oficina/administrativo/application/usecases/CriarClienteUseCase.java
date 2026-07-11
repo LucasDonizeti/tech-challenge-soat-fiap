@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.commands.CriarClienteCommand;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.CriarClienteInput;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ClienteResponse;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
 import com.techchallenge.oficina.administrativo.domain.repositories.ClienteRepository;
@@ -13,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CriarClienteUseCase {
+public class CriarClienteUseCase implements CriarClienteInput {
     
     private final ClienteRepository repository;
     private final ClienteDomainService domainService;

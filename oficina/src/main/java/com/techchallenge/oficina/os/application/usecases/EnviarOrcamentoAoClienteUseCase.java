@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.os.application.usecases;
 
 import com.techchallenge.oficina.os.application.usecases.commands.EnviarOrcamentoAoClienteCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.input.EnviarOrcamentoAoClienteInput;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
@@ -13,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class EnviarOrcamentoAoClienteUseCase {
+public class EnviarOrcamentoAoClienteUseCase implements EnviarOrcamentoAoClienteInput {
     
     private final OrdemServicoRepository ordemServicoRepository;
     

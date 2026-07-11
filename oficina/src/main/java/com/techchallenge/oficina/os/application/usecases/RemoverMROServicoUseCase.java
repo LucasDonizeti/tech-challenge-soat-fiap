@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.os.application.usecases;
 
 import com.techchallenge.oficina.os.application.usecases.commands.RemoverMROServicoCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.input.RemoverMROServicoInput;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.ItemServicoNaoEncontradoException;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
@@ -19,7 +20,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RemoverMROServicoUseCase {
+public class RemoverMROServicoUseCase implements RemoverMROServicoInput {
     
     private final OrdemServicoRepository ordemServicoRepository;
     

@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.BuscarVeiculosPorClienteInput;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.VeiculoResponse;
 import com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo;
 import com.techchallenge.oficina.administrativo.domain.repositories.VeiculoRepository;
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BuscarVeiculosPorClienteUseCase {
+public class BuscarVeiculosPorClienteUseCase implements BuscarVeiculosPorClienteInput {
 
     private final VeiculoRepository repository;
 

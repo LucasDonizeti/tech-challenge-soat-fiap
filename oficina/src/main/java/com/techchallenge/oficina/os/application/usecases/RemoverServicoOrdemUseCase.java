@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.os.application.usecases;
 
 import com.techchallenge.oficina.os.application.usecases.commands.RemoverServicoOrdemCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.input.RemoverServicoOrdemInput;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoStatusInvalidoException;
@@ -17,7 +18,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RemoverServicoOrdemUseCase {
+public class RemoverServicoOrdemUseCase implements RemoverServicoOrdemInput {
     
     private final OrdemServicoRepository ordemServicoRepository;
     

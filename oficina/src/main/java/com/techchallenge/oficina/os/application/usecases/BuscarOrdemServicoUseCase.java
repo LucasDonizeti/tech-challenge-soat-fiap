@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.os.application.usecases;
 
+import com.techchallenge.oficina.os.application.usecases.ports.input.BuscarOrdemServicoInput;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
@@ -13,7 +14,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BuscarOrdemServicoUseCase {
+public class BuscarOrdemServicoUseCase implements BuscarOrdemServicoInput {
     
     private final OrdemServicoRepository ordemServicoRepository;
     
