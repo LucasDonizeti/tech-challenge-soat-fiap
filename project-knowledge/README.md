@@ -31,11 +31,9 @@ When working with this project, follow these guidelines:
 
 2. **Reference ADRs First**: Check `adr.md` for any existing architectural decisions that might impact your work. Do not contradict established decisions without explicit justification.
 
-3. **Follow Established Patterns**: Use the patterns and guidelines documented in `architecture-patterns.md` and `development-guidelines.md`.
+3. **Domain & Architecture Understanding**: Review the architecture specifications in `architecture.md` and requirements in `tech-challenge.md` and `tech-challange-parte-2.md`.
 
-4. **Domain Understanding**: Review `tech-challenge.md` and `domain-model.md` to understand the business context and domain boundaries.
-
-5. **Consistency is Key**: Maintain consistency with existing code, naming conventions, and architectural decisions.
+4. **Consistency is Key**: Maintain consistency with existing code, naming conventions, and architectural decisions.
 
 ### Key Principles for AI-Assisted Development
 
@@ -54,26 +52,26 @@ This project implements:
 
 ## 📚 Important Documents
 
-### Essential Reading (in order of priority):
-1. **Project Requirements** - Business needs, specifications, and deliverables
-2. **Architecture Decision Records** - Architectural decisions and their rationale  
-3. **Domain Documentation** - Domain understanding and bounded contexts
-4. **Architecture Patterns** - Design patterns and implementation guidelines
-5. **Development Guidelines** - Coding standards and conventions
+### Essential Reading:
+1. **Requirements & Context:**
+   - [Fase 1 Requirements](tech-challenge.md) - Business needs, specifications, and deliverables of Phase 1.
+   - [Fase 2 Requirements](tech-challange-parte-2.md) - Requirements and objectives of Phase 2 (In Progress).
+2. **Architecture & Decisions:**
+   - [Project Architecture (Clean Arch)](architecture.md) - Project package structure, layers, and context mapping.
+   - [Architecture Decision Records (ADRs)](adr.md) - Record of architectural decisions made.
 
-### For Quick Reference:
-- **Usage Instructions** - This README for how to use the knowledge base
-- **Core Documents** - Most referenced architectural and domain information
+### Technical & DevOps Guides:
+- [CI/CD Deployment Flow](ci-cd.md) - Details of GitHub Actions pipeline, AWS EKS, and Terraform setup.
+- [Local Setup & Testing Guide](local-setup-testing.md) - Guide for running the app without Docker, testing with JaCoCo, SonarQube, and OWASP.
+- [API Security & Authentication](api-authentication.md) - JWT configurations, login endpoints, public and private API details.
 
 ## 🚀 Getting Started
 
 When you (as an AI model or developer) start working on this project:
 
-1. **Read the project requirements** to understand business needs and constraints
-2. **Review architectural decisions** to understand established patterns and choices
-3. **Study the domain model** to grasp bounded contexts and business rules
-4. **Follow architecture patterns** for consistent implementation approaches
-5. **Apply coding standards** to maintain code quality and consistency
+1. **Read the project requirements** (`tech-challenge.md` and `tech-challange-parte-2.md`) to understand business needs and constraints.
+2. **Review architectural decisions** (`adr.md`) and specifications (`architecture.md`) to understand established patterns and choices.
+3. **Follow the CI/CD and Local Setup guides** (`ci-cd.md` and `local-setup-testing.md`) to prepare your development and deployment environment.
 
 ## ⚠️ Important Notes
 
