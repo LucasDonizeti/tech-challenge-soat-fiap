@@ -88,61 +88,6 @@ com.techchallenge.oficina/
     └── swagger/
 ```
 
----
-
-## 🔄 Fluxo de Dependência Atual
-
-```mermaid
-flowchart LR
-    subgraph Web[Web Layer]
-        C[Controllers]
-        DTO[Request DTOs]
-        MAP[Mappers]
-        PRES[Presenters]
-        RESDTO[Response DTOs]
-    end
-
-    subgraph App[Application Layer]
-        U[Use Cases]
-        INP[Input Ports\nex.: CriarOrdemServicoInput]
-        OUT[Output Ports / Gateways\nex.: OrdemServicoGateway]
-        CMD[Commands]
-        RES[Application Responses]
-    end
-
-    subgraph Domain[Domain Layer]
-        AGG[Aggregates / Entities]
-        VAL[Value Objects]
-        SRV[Domain Services]
-        REPO[Domain Repositories]
-    end
-
-    subgraph Infra[Infrastructure Layer]
-        JPA[JPA Repositories]
-        ACL[Adapters / ACL]
-        DB[(Database)]
-        SEC[Security / JWT / Swagger]
-    end
-
-    DTO --> MAP
-    MAP --> CMD
-    CMD --> U
-    U --> INP
-    U --> AGG
-    U --> SRV
-    U --> OUT
-    OUT --> JPA
-    OUT --> ACL
-    JPA --> DB
-    SEC --> C
-    U --> RES
-    RES --> PRES
-    PRES --> RESDTO
-```
-
-> Observação: a camada de aplicação não depende da implementação de persistência; ela depende apenas dos contratos definidos em `ports.input` e `ports.output`.
-
----
 
 ## 🎯 Camadas da Arquitetura
 
@@ -157,9 +102,10 @@ flowchart LR
 ### 2. Application Layer (Aplicação)
 Responsável por coordenar a execução das regras de negócio.
 - **Use Cases:** Classes que executam fluxos de negócio específicos (ex: `CriarOrdemServicoUseCase`, `ValidarOrcamentoUseCase`).
-- **Input Ports:** Interfaces que definem o contrato de entrada dos casos de uso, permitindo que a camada web ou o orchestrator chame a aplicação sem acoplamento direto à implementação.
-- **Output Ports / Gateways:** Interfaces que abstraem dependências externas da aplicação, como persistência, integrações e acesso a outros contextos.
-- **Command / Response:** Estruturas de dados que representam a intenção de alteração (Command) e as respostas normalizadas retornadas pelos casos de uso.
+- **Input Ports:** Interfaces que definem o contrato de entrada do caso de uso. Os controllers injetam esses ports e invocam o método `execute(...)` sem depender da implementação concreta.
+- **Output Ports / Gateways:** Interfaces que abstraem as dependências externas da aplicação, como persistência, integrações e acesso a outros contextos. Essas portas são implementadas pela infraestrutura.
+- **Commands:** Objetos de entrada que encapsulam os dados necessários para a execução do caso de uso.
+- **Responses:** Objetos de saída da aplicação, usados pela camada web para formatar a resposta HTTP.
 
 ### 3. Infrastructure Layer (Infraestrutura)
 Implementa os detalhes técnicos e as integrações externas necessários para a execução do sistema.
@@ -169,11 +115,10 @@ Implementa os detalhes técnicos e as integrações externas necessários para a
 
 ### 4. Web Layer (Apresentação REST)
 A porta de entrada HTTP para o sistema.
-- **Controllers:** Controllers REST do Spring Boot que interceptam as requisições HTTP, executam validações simples e invocam os Use Cases.
+- **Controllers:** Controllers REST do Spring Boot que interceptam as requisições HTTP, executam validações simples e invocam os Use Cases por meio de `Input Ports`.
 - **DTOs:** Objetos simples que expõem os dados da API de forma controlada, sem expor as entidades de domínio diretamente.
-- **Mappers:** Classes que convertem DTOs em objetos de comando da aplicação e vice-versa.
-- **Presenters:** Componentes da camada web que recebem as respostas da aplicação e as transformam em um `view model` HTTP final, preparando o payload que será devolvido ao cliente.
-- **Presenters:** Componentes da web que recebem as `responses` da aplicação e as adaptam para o formato de saída HTTP, preparando o `view model` que será devolvido ao cliente.
+- **Mappers:** Classes que convertem `Request DTOs` em `Commands` da aplicação, e em alguns fluxos também auxiliam na transformação de respostas para o formato de apresentação.
+- **Presenters:** Componentes da camada web que recebem a resposta do caso de uso e a adaptam para o `Response DTO` HTTP final, encapsulando a preparação da view model para a API.
 
 ---
 
