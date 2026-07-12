@@ -52,11 +52,13 @@ A documentação detalhada foi descentralizada para facilitar a manutenção e l
 ### 📝 Requisitos & Negócio
 - [Requisitos da Fase 1](project-knowledge/tech-challenge.md) - Escopo inicial do MVP, regras obrigatórias e entregas.
 - [Requisitos da Fase 2](project-knowledge/tech-challange-parte-2.md) - Escopo de evolução (K8s, IaC, CI/CD) e novas APIs requeridas.
-- [Dicionário de Linguagem Ubíqua](documentos/Dicionário linguagem ubiqua.pdf) - Terminologia de negócio acordada (DDD).
+- [Dicionário de Linguagem Ubíqua](documentos/Dicionario-linguagem-ubiqua.pdf) - Terminologia de negócio acordada (DDD).
 - [Domain Storytelling Diagram](documentos/DomainStorytelling.svg) - Diagrama visual da jornada do usuário e interações.
 
 ### 🏗️ Arquitetura & Código
 - [Arquitetura do Projeto](project-knowledge/architecture.md) - Clean Architecture, estrutura de pacotes e Bounded Contexts.
+- [Diagrama de Arquitetura](documentos/diagrama-arquitetura.svg) - Visão estrutural da solução e seus componentes.
+- [Diagrama de Infraestrutura](documentos/diagrama-infra.svg) - Visão da infraestrutura, serviços e deploy da aplicação.
 - [Decisões Arquiteturais (ADRs)](project-knowledge/adr.md) - Histórico de escolhas tecnológicas fundamentadas.
 
 ### 🛡️ Segurança & APIs
