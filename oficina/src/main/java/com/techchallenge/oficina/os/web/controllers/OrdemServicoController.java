@@ -1,13 +1,13 @@
 package com.techchallenge.oficina.os.web.controllers;
 
-import com.techchallenge.oficina.os.application.usecases.*;
 import com.techchallenge.oficina.os.application.usecases.commands.*;
+import com.techchallenge.oficina.os.application.usecases.ports.input.*;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.web.dto.OrdemServicoResponseDto;
 import com.techchallenge.oficina.os.web.dto.TempoMedioExecucaoResponseDto;
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusOS;
 import com.techchallenge.oficina.os.web.dto.*;
-import com.techchallenge.oficina.os.web.mappers.OrdemServicoWebMapper;
+import com.techchallenge.oficina.os.web.presenters.OrdemServicoPresenter;
 import com.techchallenge.oficina.sharedkernel.common.PageableValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @RestController
+@Transactional
 @RequestMapping("/v1/os")
 @RequiredArgsConstructor
 @Validated
@@ -37,23 +39,23 @@ import java.util.UUID;
 @Tag(name = "Ordem de Serviço", description = "Endpoints de gestão de ordens de serviço")
 public class OrdemServicoController {
 
-    private final CriarOrdemServicoUseCase criarOrdemServicoUseCase;
-    private final ListarOrdensServicoUseCase listarOrdensServicoUseCase;
-    private final BuscarOrdemServicoUseCase buscarOrdemServicoUseCase;
-    private final AdicionarServicoOrdemUseCase adicionarServicoOrdemUseCase;
-    private final RemoverServicoOrdemUseCase removerServicoOrdemUseCase;
-    private final AdicionarMROServicoUseCase adicionarMROServicoUseCase;
-    private final RemoverMROServicoUseCase removerMROServicoUseCase;
-    private final AtualizarQuantidadeMROUseCase atualizarQuantidadeMROUseCase;
-    private final EnviarParaDiagnosticoUseCase enviarParaDiagnosticoUseCase;
-    private final EnviarOrcamentoAoClienteUseCase enviarOrcamentoAoClienteUseCase;
-    private final AtualizarObservacoesServicoUseCase atualizarObservacoesServicoUseCase;
-    private final IniciarServicoUseCase iniciarServicoUseCase;
-    private final ConcluirServicoUseCase concluirServicoUseCase;
-    private final CancelarServicoUseCase cancelarServicoUseCase;
-    private final EntregarOrdemServicoUseCase entregarOrdemServicoUseCase;
-    private final CalcularTempoMedioExecucaoUseCase calcularTempoMedioExecucaoUseCase;
-    private final OrdemServicoWebMapper mapper;
+    private final CriarOrdemServicoInpuit criarOrdemServicoInpuit;
+    private final ListarOrdensServicoInput listarOrdensServicoInput;
+    private final BuscarOrdemServicoInput buscarOrdemServicoInput;
+    private final AdicionarServicoOrdemInput adicionarServicoOrdemInput;
+    private final RemoverServicoOrdemInput removerServicoOrdemInput;
+    private final AdicionarMROServicoInput adicionarMROServicoInput;
+    private final RemoverMROServicoInput removerMROServicoInput;
+    private final AtualizarQuantidadeMROInput atualizarQuantidadeMROInput;
+    private final EnviarParaDiagnosticoInput enviarParaDiagnosticoInput;
+    private final EnviarOrcamentoAoClienteInput enviarOrcamentoAoClienteInput;
+    private final AtualizarObservacoesServicoInput atualizarObservacoesServicoInput;
+    private final IniciarServicoInput iniciarServicoInput;
+    private final ConcluirServicoInput concluirServicoInput;
+    private final CancelarServicoInput cancelarServicoInput;
+    private final EntregarOrdemServicoInput entregarOrdemServicoInput;
+    private final CalcularTempoMedioExecucaoInput calcularTempoMedioExecucaoInput;
+    private final OrdemServicoPresenter presenter;
     private final PageableValidator pageableValidator;
 
     @PostMapping
@@ -68,8 +70,8 @@ public class OrdemServicoController {
         log.info("Recebendo requisição para criar ordem de serviço: clienteId={}, veiculoId={}", 
                 request.getClienteId(), request.getVeiculoId());
         
-        OrdemServicoResponse response = criarOrdemServicoUseCase.execute(request.toCommand());
-        OrdemServicoResponseDto dto = mapper.toDto(response);
+        OrdemServicoResponse response = criarOrdemServicoInpuit.execute(request.toCommand());
+        OrdemServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
@@ -86,8 +88,8 @@ public class OrdemServicoController {
             @PathVariable UUID id) {
         log.info("Buscando ordem de serviço por ID: ordemServicoId={}", id);
         
-        OrdemServicoResponse response = buscarOrdemServicoUseCase.execute(id);
-        OrdemServicoResponseDto dto = mapper.toDto(response);
+        OrdemServicoResponse response = buscarOrdemServicoInput.execute(id);
+        OrdemServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -122,9 +124,9 @@ public class OrdemServicoController {
         Set<String> allowedFields = Set.of("dataCriacao", "status", "clienteId", "veiculoId");
         Pageable validatedPageable = pageableValidator.validate(pageable, allowedFields);
 
-        Page<OrdemServicoResponse> responses = listarOrdensServicoUseCase.execute(
+        Page<OrdemServicoResponse> responses = listarOrdensServicoInput.execute(
                 clienteId, veiculoId, status, dataInicio, dataFim, validatedPageable);
-        Page<OrdemServicoResponseDto> dtos = mapper.toDtoPage(responses);
+        Page<OrdemServicoResponseDto> dtos = presenter.prepararViewModelPage(responses);
 
         return ResponseEntity.ok(dtos);
     }
@@ -143,8 +145,8 @@ public class OrdemServicoController {
             @Valid @RequestBody AdicionarServicoOrdemRequest request) {
         log.info("Adicionando serviço à ordem de serviço: ordemServicoId={}, servicoId={}", id, request.getServicoId());
         
-        OrdemServicoResponse response = adicionarServicoOrdemUseCase.execute(request.toCommand(id));
-        OrdemServicoResponseDto dto = mapper.toDto(response);
+        OrdemServicoResponse response = adicionarServicoOrdemInput.execute(request.toCommand(id));
+        OrdemServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -164,8 +166,8 @@ public class OrdemServicoController {
         log.info("Removendo serviço da ordem de serviço: ordemServicoId={}, itemServicoId={}", id, itemServicoId);
         
         RemoverServicoOrdemCommand command = new RemoverServicoOrdemCommand(id, itemServicoId);
-        OrdemServicoResponse response = removerServicoOrdemUseCase.execute(command);
-        OrdemServicoResponseDto dto = mapper.toDto(response);
+        OrdemServicoResponse response = removerServicoOrdemInput.execute(command);
+        OrdemServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -185,8 +187,8 @@ public class OrdemServicoController {
         log.info("Adicionando MRO ao serviço: ordemServicoId={}, itemServicoId={}, mroId={}, quantidade={}", 
                 id, request.getItemServicoId(), request.getMroId(), request.getQuantidade());
         
-        OrdemServicoResponse response = adicionarMROServicoUseCase.execute(request.toCommand(id));
-        OrdemServicoResponseDto dto = mapper.toDto(response);
+        OrdemServicoResponse response = adicionarMROServicoInput.execute(request.toCommand(id));
+        OrdemServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -209,8 +211,8 @@ public class OrdemServicoController {
                 id, itemServicoId, itemMroId);
         
         RemoverMROServicoCommand command = new RemoverMROServicoCommand(id, itemServicoId, itemMroId);
-        OrdemServicoResponse response = removerMROServicoUseCase.execute(command);
-        OrdemServicoResponseDto dto = mapper.toDto(response);
+        OrdemServicoResponse response = removerMROServicoInput.execute(command);
+        OrdemServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -230,8 +232,8 @@ public class OrdemServicoController {
         log.info("Atualizando quantidade de MRO: ordemServicoId={}, itemServicoId={}, itemMroId={}, novaQuantidade={}", 
                 id, request.getItemServicoId(), request.getItemMroId(), request.getQuantidade());
         
-        OrdemServicoResponse response = atualizarQuantidadeMROUseCase.execute(request.toCommand(id));
-        OrdemServicoResponseDto dto = mapper.toDto(response);
+        OrdemServicoResponse response = atualizarQuantidadeMROInput.execute(request.toCommand(id));
+        OrdemServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -250,8 +252,8 @@ public class OrdemServicoController {
         log.info("Enviando ordem de serviço para diagnóstico: ordemServicoId={}", id);
         
         EnviarParaDiagnosticoCommand command = new EnviarParaDiagnosticoCommand(id);
-        OrdemServicoResponse response = enviarParaDiagnosticoUseCase.execute(command);
-        OrdemServicoResponseDto dto = mapper.toDto(response);
+        OrdemServicoResponse response = enviarParaDiagnosticoInput.execute(command);
+        OrdemServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -270,8 +272,8 @@ public class OrdemServicoController {
         log.info("Enviando orçamento ao cliente: ordemServicoId={}", id);
         
         EnviarOrcamentoAoClienteCommand command = new EnviarOrcamentoAoClienteCommand(id);
-        OrdemServicoResponse response = enviarOrcamentoAoClienteUseCase.execute(command);
-        OrdemServicoResponseDto dto = mapper.toDto(response);
+        OrdemServicoResponse response = enviarOrcamentoAoClienteInput.execute(command);
+        OrdemServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -293,8 +295,8 @@ public class OrdemServicoController {
         log.info("Atualizando observações do serviço: ordemServicoId={}, itemServicoId={}", id, itemServicoId);
         
         request.setItemServicoId(itemServicoId);
-        OrdemServicoResponse response = atualizarObservacoesServicoUseCase.execute(request.toCommand(id));
-        OrdemServicoResponseDto dto = mapper.toDto(response);
+        OrdemServicoResponse response = atualizarObservacoesServicoInput.execute(request.toCommand(id));
+        OrdemServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -319,8 +321,8 @@ public class OrdemServicoController {
                 .itemServicoId(itemServicoId)
                 .build();
         
-        OrdemServicoResponse response = iniciarServicoUseCase.execute(command);
-        OrdemServicoResponseDto dto = mapper.toDto(response);
+        OrdemServicoResponse response = iniciarServicoInput.execute(command);
+        OrdemServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -345,8 +347,8 @@ public class OrdemServicoController {
                 .itemServicoId(itemServicoId)
                 .build();
         
-        OrdemServicoResponse response = concluirServicoUseCase.execute(command);
-        OrdemServicoResponseDto dto = mapper.toDto(response);
+        OrdemServicoResponse response = concluirServicoInput.execute(command);
+        OrdemServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -371,8 +373,8 @@ public class OrdemServicoController {
                 .itemServicoId(itemServicoId)
                 .build();
         
-        OrdemServicoResponse response = cancelarServicoUseCase.execute(command);
-        OrdemServicoResponseDto dto = mapper.toDto(response);
+        OrdemServicoResponse response = cancelarServicoInput.execute(command);
+        OrdemServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -391,8 +393,8 @@ public class OrdemServicoController {
         log.info("Entregando ordem de serviço: ordemServicoId={}", id);
         
         EntregarOrdemServicoCommand command = new EntregarOrdemServicoCommand(id);
-        OrdemServicoResponse response = entregarOrdemServicoUseCase.execute(command);
-        OrdemServicoResponseDto dto = mapper.toDto(response);
+        OrdemServicoResponse response = entregarOrdemServicoInput.execute(command);
+        OrdemServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -415,7 +417,7 @@ public class OrdemServicoController {
         log.info("Calculando tempo médio de execução: servicoId={}, dataInicio={}, dataFim={}", 
                 servicoId, dataInicio, dataFim);
         
-        TempoMedioExecucaoResponseDto response = calcularTempoMedioExecucaoUseCase.execute(servicoId, dataInicio, dataFim);
+        TempoMedioExecucaoResponseDto response = calcularTempoMedioExecucaoInput.execute(servicoId, dataInicio, dataFim);
         
         return ResponseEntity.ok(response);
     }

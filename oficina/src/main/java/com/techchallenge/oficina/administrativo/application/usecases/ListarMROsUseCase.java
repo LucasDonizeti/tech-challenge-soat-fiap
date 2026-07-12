@@ -1,5 +1,7 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.ListarMROsInput;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.MROGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
 import com.techchallenge.oficina.administrativo.domain.model.entities.MRO;
 import com.techchallenge.oficina.administrativo.domain.repositories.MRORepository;
@@ -9,19 +11,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
-public class ListarMROsUseCase {
+public class ListarMROsUseCase implements ListarMROsInput {
     
-    private final MRORepository repository;
+    private final MROGateway mroGateway;
     
     public Page<MROResponse> execute(Pageable pageable) {
         log.info("Listando MROs com paginação - página: {}, tamanho: {}",
                 pageable.getPageNumber(),
                 pageable.getPageSize());
 
-        Page<MRO> mros = repository.findAll(pageable);
+        Page<MRO> mros = mroGateway.findAll(pageable);
 
         log.info("Listagem concluída: {} MROs retornados de um total de {}",
                 mros.getContent().size(),

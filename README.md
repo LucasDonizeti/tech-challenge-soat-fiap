@@ -52,17 +52,19 @@ A documentação detalhada foi descentralizada para facilitar a manutenção e l
 ### 📝 Requisitos & Negócio
 - [Requisitos da Fase 1](project-knowledge/tech-challenge.md) - Escopo inicial do MVP, regras obrigatórias e entregas.
 - [Requisitos da Fase 2](project-knowledge/tech-challange-parte-2.md) - Escopo de evolução (K8s, IaC, CI/CD) e novas APIs requeridas.
-- [Dicionário de Linguagem Ubíqua](documentos/Dicionário linguagem ubiqua.pdf) - Terminologia de negócio acordada (DDD).
+- [Dicionário de Linguagem Ubíqua](documentos/Dicionario-linguagem-ubiqua.pdf) - Terminologia de negócio acordada (DDD).
 - [Domain Storytelling Diagram](documentos/DomainStorytelling.svg) - Diagrama visual da jornada do usuário e interações.
 
 ### 🏗️ Arquitetura & Código
 - [Arquitetura do Projeto](project-knowledge/architecture.md) - Clean Architecture, estrutura de pacotes e Bounded Contexts.
+- [Diagrama de Arquitetura](documentos/diagrama-arquitetura.svg) - Visão estrutural da solução e seus componentes.
+- [Diagrama de Infraestrutura](documentos/diagrama-infra.svg) - Visão da infraestrutura, serviços e deploy da aplicação.
 - [Decisões Arquiteturais (ADRs)](project-knowledge/adr.md) - Histórico de escolhas tecnológicas fundamentadas.
 
 ### 🛡️ Segurança & APIs
 - [Segurança e Autenticação JWT](project-knowledge/api-authentication.md) - Login de Admin, uso de Bearer Tokens e divisão de endpoints públicos/protegidos.
-- [Relatório de Vulnerabilidades Sonar (PDF)](documentos/Análise vulnerabilidade Sonar.pdf) - Relatório oficial extraído do scanner estático.
-- [Relatório de Dependências OWASP (PDF)](documentos/Dependency-Check Report.pdf) - Análise de dependências e bibliotecas vulneráveis.
+- [Relatório de Vulnerabilidades Sonar (PDF)](documentos/Analise-vulnerabilidade-Sonar.pdf) - Relatório oficial extraído do scanner estático.
+- [Relatório de Dependências OWASP (PDF)](documentos/Dependency-Check-Report.pdf) - Análise de dependências e bibliotecas vulneráveis.
 
 ### ⚙️ Execução Local, Qualidade & DevOps
 - [Configuração Local & Testes](project-knowledge/local-setup-testing.md) - Como rodar sem Docker, executar testes unitários/integração, analisar cobertura (JaCoCo) e rodar scans (SonarQube/OWASP).

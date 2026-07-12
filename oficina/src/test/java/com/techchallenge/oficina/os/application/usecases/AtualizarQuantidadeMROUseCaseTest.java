@@ -1,11 +1,11 @@
 package com.techchallenge.oficina.os.application.usecases;
 
 import com.techchallenge.oficina.os.application.usecases.commands.AtualizarQuantidadeMROCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
 import com.techchallenge.oficina.os.domain.model.entities.ItemMRO;
 import com.techchallenge.oficina.os.domain.model.entities.ItemServico;
-import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
 class AtualizarQuantidadeMROUseCaseTest {
 
     @Mock
-    private OrdemServicoRepository ordemServicoRepository;
+    private OrdemServicoGateway gateway;
 
     @InjectMocks
     private AtualizarQuantidadeMROUseCase useCase;
@@ -65,25 +65,25 @@ class AtualizarQuantidadeMROUseCaseTest {
         // Arrange
         when(ordemServico.getItensServico()).thenReturn(List.of(itemServico));
         when(itemServico.getMrosServicos()).thenReturn(List.of(itemMRO));
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
-        when(ordemServicoRepository.save(any(OrdemServico.class))).thenReturn(ordemServico);
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
+        when(gateway.save(any(OrdemServico.class))).thenReturn(ordemServico);
 
         // Act
         OrdemServicoResponse response = useCase.execute(command);
 
         // Assert
         assertNotNull(response);
-        verify(ordemServicoRepository, times(1)).findById(ordemServicoId);
+        verify(gateway, times(1)).findById(ordemServicoId);
         verify(itemMRO, times(1)).atualizarQuantidade(5);
         verify(itemServico, times(1)).atualizarValorMRO();
-        verify(ordemServicoRepository, times(1)).save(any(OrdemServico.class));
+        verify(gateway, times(1)).save(any(OrdemServico.class));
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando ordem de serviço não encontrada")
     void deveLancarExcecaoQuandoOrdemServicoNaoEncontrada() {
         // Arrange
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.empty());
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.empty());
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -92,9 +92,9 @@ class AtualizarQuantidadeMROUseCaseTest {
         );
 
         assertTrue(exception.getMessage().contains("Ordem de Serviço não encontrada"));
-        verify(ordemServicoRepository, times(1)).findById(ordemServicoId);
+        verify(gateway, times(1)).findById(ordemServicoId);
         verify(ordemServico, never()).getItensServico();
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).save(any());
     }
 
     @Test
@@ -102,7 +102,7 @@ class AtualizarQuantidadeMROUseCaseTest {
     void deveLancarExcecaoQuandoItemServicoNaoEncontrado() {
         // Arrange
         when(ordemServico.getItensServico()).thenReturn(new ArrayList<>());
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -111,9 +111,9 @@ class AtualizarQuantidadeMROUseCaseTest {
         );
 
         assertTrue(exception.getMessage().contains("Item de Serviço não encontrado"));
-        verify(ordemServicoRepository, times(1)).findById(ordemServicoId);
+        verify(gateway, times(1)).findById(ordemServicoId);
         verify(ordemServico, times(1)).getItensServico();
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).save(any());
     }
 
     @Test
@@ -122,7 +122,7 @@ class AtualizarQuantidadeMROUseCaseTest {
         // Arrange
         when(ordemServico.getItensServico()).thenReturn(List.of(itemServico));
         when(itemServico.getMrosServicos()).thenReturn(new ArrayList<>());
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -131,10 +131,10 @@ class AtualizarQuantidadeMROUseCaseTest {
         );
 
         assertTrue(exception.getMessage().contains("Item de MRO não encontrado com ID"));
-        verify(ordemServicoRepository, times(1)).findById(ordemServicoId);
+        verify(gateway, times(1)).findById(ordemServicoId);
         verify(ordemServico, times(1)).getItensServico();
         verify(itemServico, times(1)).getMrosServicos();
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).save(any());
     }
 
     @Test
@@ -144,8 +144,8 @@ class AtualizarQuantidadeMROUseCaseTest {
         AtualizarQuantidadeMROCommand command1 = new AtualizarQuantidadeMROCommand(ordemServicoId, itemServicoId, itemMroId, 1);
         when(ordemServico.getItensServico()).thenReturn(List.of(itemServico));
         when(itemServico.getMrosServicos()).thenReturn(List.of(itemMRO));
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
-        when(ordemServicoRepository.save(any(OrdemServico.class))).thenReturn(ordemServico);
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
+        when(gateway.save(any(OrdemServico.class))).thenReturn(ordemServico);
 
         // Act
         OrdemServicoResponse response = useCase.execute(command1);
@@ -154,7 +154,7 @@ class AtualizarQuantidadeMROUseCaseTest {
         assertNotNull(response);
         verify(itemMRO, times(1)).atualizarQuantidade(1);
         verify(itemServico, times(1)).atualizarValorMRO();
-        verify(ordemServicoRepository, times(1)).save(any(OrdemServico.class));
+        verify(gateway, times(1)).save(any(OrdemServico.class));
     }
 
     @Test
@@ -164,8 +164,8 @@ class AtualizarQuantidadeMROUseCaseTest {
         AtualizarQuantidadeMROCommand commandLarge = new AtualizarQuantidadeMROCommand(ordemServicoId, itemServicoId, itemMroId, 100);
         when(ordemServico.getItensServico()).thenReturn(List.of(itemServico));
         when(itemServico.getMrosServicos()).thenReturn(List.of(itemMRO));
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
-        when(ordemServicoRepository.save(any(OrdemServico.class))).thenReturn(ordemServico);
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
+        when(gateway.save(any(OrdemServico.class))).thenReturn(ordemServico);
 
         // Act
         OrdemServicoResponse response = useCase.execute(commandLarge);
@@ -174,7 +174,7 @@ class AtualizarQuantidadeMROUseCaseTest {
         assertNotNull(response);
         verify(itemMRO, times(1)).atualizarQuantidade(100);
         verify(itemServico, times(1)).atualizarValorMRO();
-        verify(ordemServicoRepository, times(1)).save(any(OrdemServico.class));
+        verify(gateway, times(1)).save(any(OrdemServico.class));
     }
 
     @Test
@@ -183,8 +183,8 @@ class AtualizarQuantidadeMROUseCaseTest {
         // Act & Assert
         assertThrows(NullPointerException.class, () -> useCase.execute(null));
 
-        verify(ordemServicoRepository, never()).findById(any());
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).findById(any());
+        verify(gateway, never()).save(any());
     }
 
     @Test
@@ -193,8 +193,8 @@ class AtualizarQuantidadeMROUseCaseTest {
         // Arrange
         when(ordemServico.getItensServico()).thenReturn(List.of(itemServico));
         when(itemServico.getMrosServicos()).thenReturn(List.of(itemMRO));
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
-        when(ordemServicoRepository.save(any(OrdemServico.class)))
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
+        when(gateway.save(any(OrdemServico.class)))
                 .thenThrow(new RuntimeException("Erro ao salvar no banco"));
 
         // Act & Assert
@@ -204,10 +204,10 @@ class AtualizarQuantidadeMROUseCaseTest {
         );
 
         assertEquals("Erro ao salvar no banco", exception.getMessage());
-        verify(ordemServicoRepository, times(1)).findById(ordemServicoId);
+        verify(gateway, times(1)).findById(ordemServicoId);
         verify(itemMRO, times(1)).atualizarQuantidade(5);
         verify(itemServico, times(1)).atualizarValorMRO();
-        verify(ordemServicoRepository, times(1)).save(any(OrdemServico.class));
+        verify(gateway, times(1)).save(any(OrdemServico.class));
     }
 
     @Test
@@ -216,8 +216,8 @@ class AtualizarQuantidadeMROUseCaseTest {
         // Arrange
         when(ordemServico.getItensServico()).thenReturn(List.of(itemServico));
         when(itemServico.getMrosServicos()).thenReturn(List.of(itemMRO));
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
-        when(ordemServicoRepository.save(any(OrdemServico.class))).thenReturn(ordemServico);
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
+        when(gateway.save(any(OrdemServico.class))).thenReturn(ordemServico);
 
         // Act
         useCase.execute(command);

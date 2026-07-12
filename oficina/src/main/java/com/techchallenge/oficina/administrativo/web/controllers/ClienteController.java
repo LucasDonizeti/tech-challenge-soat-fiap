@@ -1,19 +1,18 @@
 package com.techchallenge.oficina.administrativo.web.controllers;
 
-import com.techchallenge.oficina.administrativo.application.usecases.*;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.*;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ClienteResponse;
-import com.techchallenge.oficina.administrativo.domain.model.valueobjects.StatusCliente;
 import com.techchallenge.oficina.administrativo.web.dto.*;
-import com.techchallenge.oficina.administrativo.web.mappers.ClienteWebMapper;
+import com.techchallenge.oficina.administrativo.web.presenters.ClientePresenter;
 import com.techchallenge.oficina.sharedkernel.common.PageableValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,15 +20,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 @RestController
+@Transactional
 @RequestMapping("/v1/admin/clientes")
 @RequiredArgsConstructor
 @Validated
@@ -38,15 +36,15 @@ import java.util.UUID;
 @SecurityRequirement(name = "Bearer Authentication")
 public class ClienteController {
     
-    private final CriarClienteUseCase criarClienteUseCase;
-    private final BuscarClienteUseCase buscarClienteUseCase;
-    private final AtualizarClienteUseCase atualizarClienteUseCase;
-    private final InativarClienteUseCase inativarClienteUseCase;
-    private final ReativarClienteUseCase reativarClienteUseCase;
-    private final DeletarClienteUseCase deletarClienteUseCase;
-    private final ListarClientesUseCase listarClientesUseCase;
-    private final BuscarClientesPorFiltroUseCase buscarClientesPorFiltroUseCase;
-    private final ClienteWebMapper mapper;
+    private final CriarClienteInput criarClienteInput;
+    private final BuscarClienteInput buscarClienteInput;
+    private final AtualizarClienteInput atualizarClienteInput;
+    private final InativarClienteInput inativarClienteInput;
+    private final ReativarClienteInput reativarClienteInput;
+    private final DeletarClienteInput deletarClienteInput;
+    private final ListarClientesInput listarClientesInput;
+    private final BuscarClientesPorFiltroInput buscarClientesPorFiltroInput;
+    private final ClientePresenter presenter;
     private final PageableValidator pageableValidator;
     
     @PostMapping
@@ -59,8 +57,8 @@ public class ClienteController {
         public ResponseEntity<ClienteResponseDto> criar(@Valid @RequestBody CriarClienteRequest request) {
         log.info("Recebendo requisição para criar cliente: {}", request.getNome());
         
-        ClienteResponse response = criarClienteUseCase.execute(request.toCommand());
-        ClienteResponseDto dto = mapper.toDto(response);
+        ClienteResponse response = criarClienteInput.execute(request.toCommand());
+        ClienteResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
@@ -77,8 +75,8 @@ public class ClienteController {
             @PathVariable UUID id) {
         log.info("Buscando cliente por ID: {}", id);
         
-        ClienteResponse response = buscarClienteUseCase.execute(id);
-        ClienteResponseDto dto = mapper.toDto(response);
+        ClienteResponse response = buscarClienteInput.execute(id);
+        ClienteResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -102,8 +100,8 @@ public class ClienteController {
         Set<String> allowedFields = Set.of("nome", "cpf", "cnpj", "email", "status", "criadoEm", "atualizadoEm");
         Pageable validatedPageable = pageableValidator.validate(pageable, allowedFields);
 
-        Page<ClienteResponse> responses = listarClientesUseCase.execute(validatedPageable);
-        Page<ClienteResponseDto> dtos = mapper.toDtoPage(responses);
+        Page<ClienteResponse> responses = listarClientesInput.execute(validatedPageable);
+        Page<ClienteResponseDto> dtos = presenter.prepararViewModelPage(responses);
 
         return ResponseEntity.ok(dtos);
     }
@@ -124,8 +122,8 @@ public class ClienteController {
             Pageable pageable) {
         log.info("Buscando clientes com filtros: {}", filter);
         
-        Page<ClienteResponse> responses = buscarClientesPorFiltroUseCase.execute(filter, pageable);
-        Page<ClienteResponseDto> dtos = mapper.toDtoPage(responses);
+        Page<ClienteResponse> responses = buscarClientesPorFiltroInput.execute(filter, pageable);
+        Page<ClienteResponseDto> dtos = presenter.prepararViewModelPage(responses);
         
         return ResponseEntity.ok(dtos);
     }
@@ -144,8 +142,8 @@ public class ClienteController {
             @Valid @RequestBody AtualizarClienteRequest request) {
         log.info("Atualizando cliente ID: {}", id);
         
-        ClienteResponse response = atualizarClienteUseCase.execute(id, request.toCommand());
-        ClienteResponseDto dto = mapper.toDto(response);
+        ClienteResponse response = atualizarClienteInput.execute(id, request.toCommand());
+        ClienteResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -162,8 +160,8 @@ public class ClienteController {
             @PathVariable UUID id) {
         log.info("Inativando cliente ID: {}", id);
         
-        ClienteResponse response = inativarClienteUseCase.execute(id);
-        ClienteResponseDto dto = mapper.toDto(response);
+        ClienteResponse response = inativarClienteInput.execute(id);
+        ClienteResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -180,8 +178,8 @@ public class ClienteController {
             @PathVariable UUID id) {
         log.info("Reativando cliente ID: {}", id);
         
-        ClienteResponse response = reativarClienteUseCase.execute(id);
-        ClienteResponseDto dto = mapper.toDto(response);
+        ClienteResponse response = reativarClienteInput.execute(id);
+        ClienteResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -196,8 +194,8 @@ public class ClienteController {
             @Parameter(description = "UUID do cliente", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
             @PathVariable UUID id) {
         log.info("Excluindo cliente ID: {}", id);
-        
-        deletarClienteUseCase.execute(id);
+
+        deletarClienteInput.execute(id);
         
         return ResponseEntity.noContent().build();
     }

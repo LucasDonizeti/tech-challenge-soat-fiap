@@ -1,9 +1,9 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.MROGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
 import com.techchallenge.oficina.administrativo.domain.model.entities.MRO;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.TipoMRO;
-import com.techchallenge.oficina.administrativo.domain.repositories.MRORepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 class ListarMROsUseCaseTest {
 
     @Mock
-    private MRORepository repository;
+    private MROGateway gateway;
 
     @InjectMocks
     private ListarMROsUseCase useCase;
@@ -73,7 +73,7 @@ class ListarMROsUseCaseTest {
     void deveListarMROsComPaginacaoComSucesso() {
         // Arrange
         Page<MRO> mroPage = new PageImpl<>(mros, pageable, mros.size());
-        when(repository.findAll(pageable)).thenReturn(mroPage);
+        when(gateway.findAll(pageable)).thenReturn(mroPage);
 
         // Act
         Page<MROResponse> response = useCase.execute(pageable);
@@ -84,7 +84,7 @@ class ListarMROsUseCaseTest {
         assertEquals(2, response.getTotalElements());
         assertEquals(1, response.getTotalPages());
 
-        verify(repository, times(1)).findAll(pageable);
+        verify(gateway, times(1)).findAll(pageable);
     }
 
     @Test
@@ -92,7 +92,7 @@ class ListarMROsUseCaseTest {
     void deveRetornarPaginaVaziaQuandoNaoHaMros() {
         // Arrange
         Page<MRO> emptyPage = new PageImpl<>(List.of(), pageable, 0);
-        when(repository.findAll(pageable)).thenReturn(emptyPage);
+        when(gateway.findAll(pageable)).thenReturn(emptyPage);
 
         // Act
         Page<MROResponse> response = useCase.execute(pageable);
@@ -102,7 +102,7 @@ class ListarMROsUseCaseTest {
         assertTrue(response.getContent().isEmpty());
         assertEquals(0, response.getTotalElements());
 
-        verify(repository, times(1)).findAll(pageable);
+        verify(gateway, times(1)).findAll(pageable);
     }
 
     @Test
@@ -111,7 +111,7 @@ class ListarMROsUseCaseTest {
         // Arrange
         Pageable pageable20 = PageRequest.of(0, 20);
         Page<MRO> mroPage = new PageImpl<>(mros, pageable20, mros.size());
-        when(repository.findAll(pageable20)).thenReturn(mroPage);
+        when(gateway.findAll(pageable20)).thenReturn(mroPage);
 
         // Act
         Page<MROResponse> response = useCase.execute(pageable20);
@@ -120,7 +120,7 @@ class ListarMROsUseCaseTest {
         assertNotNull(response);
         assertEquals(2, response.getContent().size());
 
-        verify(repository, times(1)).findAll(pageable20);
+        verify(gateway, times(1)).findAll(pageable20);
     }
 
     @Test
@@ -133,7 +133,7 @@ class ListarMROsUseCaseTest {
         Page<MRO> page1 = new PageImpl<>(List.of(mros.get(0)), pageablePage1, 2);
         Page<MRO> page2 = new PageImpl<>(List.of(mros.get(1)), pageablePage2, 2);
         
-        when(repository.findAll(pageablePage2)).thenReturn(page2);
+        when(gateway.findAll(pageablePage2)).thenReturn(page2);
 
         // Act
         Page<MROResponse> response = useCase.execute(pageablePage2);
@@ -143,7 +143,7 @@ class ListarMROsUseCaseTest {
         assertEquals(1, response.getContent().size());
         assertEquals("Filtro de Óleo", response.getContent().get(0).getNome());
 
-        verify(repository, times(1)).findAll(pageablePage2);
+        verify(gateway, times(1)).findAll(pageablePage2);
     }
 
     @Test
@@ -152,14 +152,14 @@ class ListarMROsUseCaseTest {
         // Act & Assert
         assertThrows(NullPointerException.class, () -> useCase.execute(null));
 
-        verify(repository, never()).findAll(any());
+        verify(gateway, never()).findAll(any());
     }
 
     @Test
     @DisplayName("Deve propagar exceção quando repository falha")
     void devePropagarExcecaoQuandoRepositoryFalha() {
         // Arrange
-        when(repository.findAll(pageable)).thenThrow(new RuntimeException("Erro de conexão"));
+        when(gateway.findAll(pageable)).thenThrow(new RuntimeException("Erro de conexão"));
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -169,6 +169,6 @@ class ListarMROsUseCaseTest {
 
         assertEquals("Erro de conexão", exception.getMessage());
 
-        verify(repository, times(1)).findAll(pageable);
+        verify(gateway, times(1)).findAll(pageable);
     }
 }

@@ -1,10 +1,10 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.commands.AtualizarDadosMROCommand;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.MROGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
 import com.techchallenge.oficina.administrativo.domain.model.entities.MRO;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.TipoMRO;
-import com.techchallenge.oficina.administrativo.domain.repositories.MRORepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 class AtualizarDadosMROUseCaseTest {
 
     @Mock
-    private MRORepository repository;
+    private MROGateway gateway;
 
     @InjectMocks
     private AtualizarDadosMROUseCase useCase;
@@ -63,8 +63,8 @@ class AtualizarDadosMROUseCaseTest {
     @DisplayName("Deve atualizar dados do MRO com sucesso")
     void deveAtualizarDadosMROComSucesso() {
         // Arrange
-        when(repository.findById(mroId)).thenReturn(Optional.of(mro));
-        when(repository.save(any(MRO.class))).thenReturn(mro);
+        when(gateway.findById(mroId)).thenReturn(Optional.of(mro));
+        when(gateway.save(any(MRO.class))).thenReturn(mro);
 
         // Act
         MROResponse response = useCase.execute(command);
@@ -76,8 +76,8 @@ class AtualizarDadosMROUseCaseTest {
         assertEquals("Nova descrição", response.getDescricao());
         assertEquals("PECA", response.getTipo());
 
-        verify(repository, times(1)).findById(mroId);
-        verify(repository, times(1)).save(any(MRO.class));
+        verify(gateway, times(1)).findById(mroId);
+        verify(gateway, times(1)).save(any(MRO.class));
     }
 
     @Test
@@ -91,7 +91,7 @@ class AtualizarDadosMROUseCaseTest {
                 "Descrição",
                 TipoMRO.INSUMO
         );
-        when(repository.findById(idNaoExistente)).thenReturn(Optional.empty());
+        when(gateway.findById(idNaoExistente)).thenReturn(Optional.empty());
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -101,8 +101,8 @@ class AtualizarDadosMROUseCaseTest {
 
         assertTrue(exception.getMessage().contains("MRO não encontrado"));
 
-        verify(repository, times(1)).findById(idNaoExistente);
-        verify(repository, never()).save(any(MRO.class));
+        verify(gateway, times(1)).findById(idNaoExistente);
+        verify(gateway, never()).save(any(MRO.class));
     }
 
     @Test
@@ -111,8 +111,8 @@ class AtualizarDadosMROUseCaseTest {
         // Act & Assert
         assertThrows(NullPointerException.class, () -> useCase.execute(null));
 
-        verify(repository, never()).findById(any());
-        verify(repository, never()).save(any(MRO.class));
+        verify(gateway, never()).findById(any());
+        verify(gateway, never()).save(any(MRO.class));
     }
 
     @Test
@@ -125,8 +125,8 @@ class AtualizarDadosMROUseCaseTest {
                 null,
                 null
         );
-        when(repository.findById(mroId)).thenReturn(Optional.of(mro));
-        when(repository.save(any(MRO.class))).thenReturn(mro);
+        when(gateway.findById(mroId)).thenReturn(Optional.of(mro));
+        when(gateway.save(any(MRO.class))).thenReturn(mro);
 
         // Act
         MROResponse response = useCase.execute(commandNome);
@@ -135,15 +135,15 @@ class AtualizarDadosMROUseCaseTest {
         assertNotNull(response);
         assertEquals("Nome Atualizado", response.getNome());
 
-        verify(repository, times(1)).findById(mroId);
-        verify(repository, times(1)).save(any(MRO.class));
+        verify(gateway, times(1)).findById(mroId);
+        verify(gateway, times(1)).save(any(MRO.class));
     }
 
     @Test
     @DisplayName("Deve propagar exceção quando repository falha")
     void devePropagarExcecaoQuandoRepositoryFalha() {
         // Arrange
-        when(repository.findById(mroId)).thenThrow(new RuntimeException("Erro de conexão"));
+        when(gateway.findById(mroId)).thenThrow(new RuntimeException("Erro de conexão"));
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -153,7 +153,7 @@ class AtualizarDadosMROUseCaseTest {
 
         assertEquals("Erro de conexão", exception.getMessage());
 
-        verify(repository, times(1)).findById(mroId);
-        verify(repository, never()).save(any(MRO.class));
+        verify(gateway, times(1)).findById(mroId);
+        verify(gateway, never()).save(any(MRO.class));
     }
 }

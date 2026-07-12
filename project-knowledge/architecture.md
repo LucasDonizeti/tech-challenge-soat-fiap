@@ -29,36 +29,65 @@ O projeto está organizado em **Bounded Contexts** (Contextos Delimitados), gara
 
 ```
 com.techchallenge.oficina/
-├── administrativo/          # Bounded Context Administrativo
-│   ├── application/         # Camada de Aplicação (Use Cases)
-│   │   └── usecases/        # Casos de uso específicos
-│   ├── domain/              # Camada de Domínio (Lógica pura de negócio)
-│   │   ├── events/          # Eventos de Domínio
-│   │   ├── exceptions/      # Exceções de Domínio
-│   │   ├── model/           # Modelos de Domínio (Entidades/Value Objects)
-│   │   ├── repositories/    # Interfaces de Repositórios (Portas de Saída)
-│   │   └── services/        # Serviços de Domínio
-│   ├── infrastructure/      # Camada de Infraestrutura (JPA, Adaptadores)
-│   └── web/                 # Camada Web (REST Controllers, DTOs, Mappers)
-│       ├── controllers/     # Controladores REST
-│       ├── dto/             # Data Transfer Objects (Requisições/Respostas)
-│       └── mappers/         # Conversores entre DTOs e Domínio
-├── os/                      # Bounded Context de Ordem de Serviço
-│   └── web/
-│       └── controllers/
-├── sharedkernel/            # Kernel Compartilhado (Módulos reutilizáveis)
-│   ├── application/ports/   # Ports de Aplicação Compartilhados
-│   ├── common/              # Classes Comuns e Utilitários
-│   ├── domain/              # Domínios Compartilhados
+├── administrativo/                         # Bounded Context Administrativo
+│   ├── application/                        # Camada de Aplicação
+│   │   └── usecases/
+│   │       ├── commands/                   # Comandos de entrada para os casos de uso
+│   │       ├── ports/
+│   │       │   ├── input/                  # Input Ports (contratos dos use cases)
+│   │       │   └── output/                 # Output Ports / Gateways
+│   │       └── responses/                  # Respostas normalizadas da aplicação
+│   ├── domain/                             # Camada de Domínio
+│   │   ├── events/
+│   │   ├── exceptions/
+│   │   ├── model/
+│   │   ├── repositories/                   # Contracts de persistência (portas do domínio)
+│   │   └── services/
 │   ├── infrastructure/
-│   │   └── security/        # Filtros de Segurança JWT Compartilhados
-│   └── web/                 # Componentes Web Compartilhados
-└── infrastructure/config/   # Configurações Globais do Spring Boot
-    ├── security/            # SecurityConfig
-    └── swagger/             # SwaggerConfig
+│   │   ├── config/
+│   │   ├── gateways/
+│   │   └── persistence/
+│   └── web/
+│       ├── controllers/
+│       ├── dto/
+│       ├── mappers/
+│       └── presenters/
+├── os/                                     # Bounded Context de Ordem de Serviço
+│   ├── application/
+│   │   └── usecases/
+│   │       ├── commands/
+│   │       ├── ports/
+│   │       │   ├── input/
+│   │       │   └── output/
+│   │       └── responses/
+│   ├── domain/
+│   │   ├── events/
+│   │   ├── exceptions/
+│   │   ├── model/
+│   │   ├── repositories/
+│   │   └── services/
+│   ├── infrastructure/
+│   │   ├── acl/
+│   │   ├── config/
+│   │   └── persistence/
+│   └── web/
+│       ├── controllers/
+│       ├── dto/
+│       ├── mappers/
+│       └── presenters/
+├── sharedkernel/                           # Kernel Compartilhado
+│   ├── application/
+│   │   └── ports/
+│   ├── common/
+│   ├── domain/
+│   ├── infrastructure/
+│   │   └── security/
+│   └── web/
+└── infrastructure/config/                  # Configurações globais do Spring Boot
+    ├── security/
+    └── swagger/
 ```
 
----
 
 ## 🎯 Camadas da Arquitetura
 
@@ -73,20 +102,23 @@ com.techchallenge.oficina/
 ### 2. Application Layer (Aplicação)
 Responsável por coordenar a execução das regras de negócio.
 - **Use Cases:** Classes que executam fluxos de negócio específicos (ex: `CriarOrdemServicoUseCase`, `ValidarOrcamentoUseCase`).
-- **Command / Query:** Estruturas de dados que representam a intenção de alteração (Command) ou leitura (Query).
-- **Application Ports:** Interfaces para serviços de infraestrutura geral (ex: envio de e-mails, gateways de integração).
+- **Input Ports:** Interfaces que definem o contrato de entrada do caso de uso. Os controllers injetam esses ports e invocam o método `execute(...)` sem depender da implementação concreta.
+- **Output Ports / Gateways:** Interfaces que abstraem as dependências externas da aplicação, como persistência, integrações e acesso a outros contextos. Essas portas são implementadas pela infraestrutura.
+- **Commands:** Objetos de entrada que encapsulam os dados necessários para a execução do caso de uso.
+- **Responses:** Objetos de saída da aplicação, usados pela camada web para formatar a resposta HTTP.
 
 ### 3. Infrastructure Layer (Infraestrutura)
 Implementa os detalhes técnicos e as integrações externas necessários para a execução do sistema.
-- **Repositories (Implementações):** Classes JPA/Hibernate que implementam as interfaces do domínio e interagem com o banco de dados.
-- **Gateways:** Adaptadores para APIs externas (ex: gateways de pagamento, envio de notificações).
+- **Repositories (Implementações):** Classes JPA/Hibernate que implementam as interfaces de persistência do domínio e os `output ports` da aplicação, conectando o código de negócio ao banco de dados.
+- **Gateways / Adapters:** Adaptadores para APIs externas, ACLs entre bounded contexts e integrações específicas, como acesso a dados de outros contextos.
 - **Database Migrations:** Scripts do Flyway para controle de versão do banco de dados MySQL/PostgreSQL.
 
 ### 4. Web Layer (Apresentação REST)
 A porta de entrada HTTP para o sistema.
-- **Controllers:** Controllers REST do Spring Boot que interceptam as requisições HTTP, executam validações simples e invocam os Use Cases.
+- **Controllers:** Controllers REST do Spring Boot que interceptam as requisições HTTP, executam validações simples e invocam os Use Cases por meio de `Input Ports`.
 - **DTOs:** Objetos simples que expõem os dados da API de forma controlada, sem expor as entidades de domínio diretamente.
-- **Mappers:** Classes que convertem DTOs em objetos de comando da aplicação e vice-versa.
+- **Mappers:** Classes que convertem `Request DTOs` em `Commands` da aplicação, e em alguns fluxos também auxiliam na transformação de respostas para o formato de apresentação.
+- **Presenters:** Componentes da camada web que recebem a resposta do caso de uso e a adaptam para o `Response DTO` HTTP final, encapsulando a preparação da view model para a API.
 
 ---
 

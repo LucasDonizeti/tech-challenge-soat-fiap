@@ -7,6 +7,7 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Nome;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa;
 import com.techchallenge.oficina.os.application.usecases.commands.ConcluirServicoCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.ItemServicoNaoEncontradoException;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
@@ -14,7 +15,6 @@ import com.techchallenge.oficina.os.domain.exceptions.ValidacaoEstoqueException;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
 import com.techchallenge.oficina.os.domain.model.entities.ItemServico;
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusItemServico;
-import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -37,7 +36,7 @@ import static org.mockito.Mockito.*;
 class ConcluirServicoUseCaseTest {
 
     @Mock
-    private OrdemServicoRepository ordemServicoRepository;
+    private OrdemServicoGateway gateway;
 
     @InjectMocks
     private ConcluirServicoUseCase useCase;
@@ -83,8 +82,8 @@ class ConcluirServicoUseCaseTest {
                 .itemServicoId(itemServicoId)
                 .build();
 
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
-        when(ordemServicoRepository.save(any(OrdemServico.class))).thenReturn(ordemServico);
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
+        when(gateway.save(any(OrdemServico.class))).thenReturn(ordemServico);
 
         // Act
         OrdemServicoResponse response = useCase.execute(command);
@@ -92,7 +91,7 @@ class ConcluirServicoUseCaseTest {
         // Assert
         assertEquals(StatusItemServico.CONCLUIDO, itemServico.getStatus());
         assertNotNull(itemServico.getDataFinalizacao());
-        verify(ordemServicoRepository, times(1)).save(ordemServico);
+        verify(gateway, times(1)).save(ordemServico);
     }
 
     @Test
@@ -104,11 +103,11 @@ class ConcluirServicoUseCaseTest {
                 .itemServicoId(itemServicoId)
                 .build();
 
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.empty());
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(OrdemServicoNaoEncontradaException.class, () -> useCase.execute(command));
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).save(any());
     }
 
     @Test
@@ -122,11 +121,11 @@ class ConcluirServicoUseCaseTest {
                 .itemServicoId(nonExistentItemId)
                 .build();
 
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
 
         // Act & Assert
         assertThrows(ItemServicoNaoEncontradoException.class, () -> useCase.execute(command));
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).save(any());
     }
 
     @Test
@@ -138,10 +137,10 @@ class ConcluirServicoUseCaseTest {
                 .itemServicoId(itemServicoId)
                 .build();
 
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
 
         // Act & Assert
         assertThrows(ValidacaoEstoqueException.class, () -> useCase.execute(command));
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).save(any());
     }
 }

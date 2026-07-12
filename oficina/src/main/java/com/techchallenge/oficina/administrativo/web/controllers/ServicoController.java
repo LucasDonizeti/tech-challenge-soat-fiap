@@ -1,9 +1,11 @@
 package com.techchallenge.oficina.administrativo.web.controllers;
 
 import com.techchallenge.oficina.administrativo.application.usecases.*;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.*;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ServicoResponse;
 import com.techchallenge.oficina.administrativo.web.dto.*;
 import com.techchallenge.oficina.administrativo.web.mappers.ServicoWebMapper;
+import com.techchallenge.oficina.administrativo.web.presenters.ServicoPresenter;
 import com.techchallenge.oficina.sharedkernel.common.PageableValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +29,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @RestController
+@Transactional
 @RequestMapping("/v1/admin/servicos")
 @RequiredArgsConstructor
 @Validated
@@ -34,14 +38,14 @@ import java.util.UUID;
 @SecurityRequirement(name = "Bearer Authentication")
 public class ServicoController {
     
-    private final CriarServicoUseCase criarServicoUseCase;
-    private final BuscarServicoUseCase buscarServicoUseCase;
-    private final ListarServicosUseCase listarServicosUseCase;
-    private final InativarServicoUseCase inativarServicoUseCase;
-    private final AtivarServicoUseCase ativarServicoUseCase;
-    private final AtualizarPrecoServicoUseCase atualizarPrecoServicoUseCase;
-    private final AtualizarDadosServicoUseCase atualizarDadosServicoUseCase;
-    private final ServicoWebMapper mapper;
+    private final CriarServicoInput criarServicoInput;
+    private final BuscarServicoInput buscarServicoInput;
+    private final ListarServicosInput listarServicosInput;
+    private final InativarServicoInput inativarServicoInput;
+    private final AtivarServicoInput ativarServicoInput;
+    private final AtualizarPrecoServicoInput atualizarPrecoServicoInput;
+    private final AtualizarDadosServicoInput atualizarDadosServicoInput;
+    private final ServicoPresenter presenter;
     private final PageableValidator pageableValidator;
     
     @PostMapping
@@ -54,8 +58,8 @@ public class ServicoController {
     public ResponseEntity<ServicoResponseDto> criar(@Valid @RequestBody CriarServicoRequest request) {
         log.info("Recebendo requisição para criar serviço: {}", request.getNome());
         
-        ServicoResponse response = criarServicoUseCase.execute(request.toCommand());
-        ServicoResponseDto dto = mapper.toDto(response);
+        ServicoResponse response = criarServicoInput.execute(request.toCommand());
+        ServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
@@ -72,8 +76,8 @@ public class ServicoController {
             @PathVariable UUID id) {
         log.info("Buscando serviço por ID: {}", id);
         
-        ServicoResponse response = buscarServicoUseCase.execute(id);
-        ServicoResponseDto dto = mapper.toDto(response);
+        ServicoResponse response = buscarServicoInput.execute(id);
+        ServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -97,8 +101,8 @@ public class ServicoController {
         Set<String> allowedFields = Set.of("nome", "preco", "ativo", "criadoEm", "atualizadoEm");
         Pageable validatedPageable = pageableValidator.validate(pageable, allowedFields);
 
-        Page<ServicoResponse> responses = listarServicosUseCase.execute(validatedPageable);
-        Page<ServicoResponseDto> dtos = mapper.toDtoPage(responses);
+        Page<ServicoResponse> responses = listarServicosInput.execute(validatedPageable);
+        Page<ServicoResponseDto> dtos = presenter.prepararViewModelPage(responses);
 
         return ResponseEntity.ok(dtos);
     }
@@ -115,8 +119,8 @@ public class ServicoController {
             @PathVariable UUID id) {
         log.info("Inativando serviço ID: {}", id);
         
-        ServicoResponse response = inativarServicoUseCase.execute(id);
-        ServicoResponseDto dto = mapper.toDto(response);
+        ServicoResponse response = inativarServicoInput.execute(id);
+        ServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -133,8 +137,8 @@ public class ServicoController {
             @PathVariable UUID id) {
         log.info("Ativando serviço ID: {}", id);
         
-        ServicoResponse response = ativarServicoUseCase.execute(id);
-        ServicoResponseDto dto = mapper.toDto(response);
+        ServicoResponse response = ativarServicoInput.execute(id);
+        ServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -153,8 +157,8 @@ public class ServicoController {
             @Valid @RequestBody AtualizarPrecoServicoRequest request) {
         log.info("Atualizando preço do serviço ID: {}", id);
         
-        ServicoResponse response = atualizarPrecoServicoUseCase.execute(id, request.toCommand());
-        ServicoResponseDto dto = mapper.toDto(response);
+        ServicoResponse response = atualizarPrecoServicoInput.execute(id, request.toCommand());
+        ServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -173,8 +177,8 @@ public class ServicoController {
             @Valid @RequestBody AtualizarDadosServicoRequest request) {
         log.info("Atualizando dados do serviço ID: {}", id);
         
-        ServicoResponse response = atualizarDadosServicoUseCase.execute(id, request.toCommand());
-        ServicoResponseDto dto = mapper.toDto(response);
+        ServicoResponse response = atualizarDadosServicoInput.execute(id, request.toCommand());
+        ServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }

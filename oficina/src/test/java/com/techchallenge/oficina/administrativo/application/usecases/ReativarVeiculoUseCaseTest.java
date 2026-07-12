@@ -8,7 +8,7 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CPF;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Nome;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa;
-import com.techchallenge.oficina.administrativo.domain.repositories.VeiculoRepository;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.VeiculoGateway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 class ReativarVeiculoUseCaseTest {
 
     @Mock
-    private VeiculoRepository repository;
+    private VeiculoGateway gateway;
 
     @InjectMocks
     private ReativarVeiculoUseCase useCase;
@@ -61,8 +61,8 @@ class ReativarVeiculoUseCaseTest {
     void deveReativarVeiculoComSucesso() {
         // Arrange
         veiculo.inativar();
-        when(repository.findById(veiculoId)).thenReturn(Optional.of(veiculo));
-        when(repository.save(any(Veiculo.class))).thenReturn(veiculo);
+        when(gateway.findById(veiculoId)).thenReturn(Optional.of(veiculo));
+        when(gateway.save(any(Veiculo.class))).thenReturn(veiculo);
 
         // Act
         VeiculoResponse response = useCase.execute(veiculoId);
@@ -72,15 +72,15 @@ class ReativarVeiculoUseCaseTest {
         assertEquals("Toyota", response.getMarca());
         assertEquals("ATIVO", response.getStatus().name());
 
-        verify(repository, times(1)).findById(veiculoId);
-        verify(repository, times(1)).save(any(Veiculo.class));
+        verify(gateway, times(1)).findById(veiculoId);
+        verify(gateway, times(1)).save(any(Veiculo.class));
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando veículo não encontrado")
     void deveLancarExcecaoQuandoVeiculoNaoEncontrado() {
         // Arrange
-        when(repository.findById(veiculoId)).thenReturn(Optional.empty());
+        when(gateway.findById(veiculoId)).thenReturn(Optional.empty());
 
         // Act & Assert
         ValidacaoVeiculoException exception = assertThrows(
@@ -90,8 +90,8 @@ class ReativarVeiculoUseCaseTest {
 
         assertEquals("Veículo não encontrado: " + veiculoId, exception.getMessage());
 
-        verify(repository, times(1)).findById(veiculoId);
-        verify(repository, never()).save(any(Veiculo.class));
+        verify(gateway, times(1)).findById(veiculoId);
+        verify(gateway, never()).save(any(Veiculo.class));
     }
 
     @Test
@@ -100,20 +100,20 @@ class ReativarVeiculoUseCaseTest {
         // Act & Assert
         assertThrows(ValidacaoVeiculoException.class, () -> useCase.execute(null));
 
-        verify(repository, times(1)).findById(isNull());
-        verify(repository, never()).save(any(Veiculo.class));
+        verify(gateway, times(1)).findById(isNull());
+        verify(gateway, never()).save(any(Veiculo.class));
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando veículo já está ativo")
     void deveLancarExcecaoQuandoVeiculoJaAtivo() {
         // Arrange
-        when(repository.findById(veiculoId)).thenReturn(Optional.of(veiculo));
+        when(gateway.findById(veiculoId)).thenReturn(Optional.of(veiculo));
 
         // Act & Assert
         assertThrows(com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException.class,
                 () -> useCase.execute(veiculoId));
 
-        verify(repository, times(1)).findById(veiculoId);
+        verify(gateway, times(1)).findById(veiculoId);
     }
 }

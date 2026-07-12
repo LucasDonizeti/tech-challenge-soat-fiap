@@ -1,17 +1,17 @@
 package com.techchallenge.oficina.os.application.usecases;
 
+import com.techchallenge.oficina.os.application.usecases.ports.output.ClienteGateway;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
 import com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CPF;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Nome;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa;
-import com.techchallenge.oficina.administrativo.domain.repositories.ClienteRepository;
-import com.techchallenge.oficina.administrativo.domain.repositories.VeiculoRepository;
 import com.techchallenge.oficina.os.application.usecases.commands.CriarOrdemServicoCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
+import com.techchallenge.oficina.os.application.usecases.ports.output.VeiculoGateway;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
-import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,13 +32,13 @@ import static org.mockito.Mockito.*;
 class CriarOrdemServicoUseCaseTest {
 
     @Mock
-    private OrdemServicoRepository ordemServicoRepository;
+    private OrdemServicoGateway ordemServicoGateway;
 
     @Mock
-    private ClienteRepository clienteRepository;
+    private ClienteGateway clienteGateway;
 
     @Mock
-    private VeiculoRepository veiculoRepository;
+    private VeiculoGateway veiculoGateway;
 
     @InjectMocks
     private CriarOrdemServicoUseCase useCase;
@@ -66,9 +66,9 @@ class CriarOrdemServicoUseCaseTest {
     @DisplayName("Deve criar ordem de serviço com sucesso")
     void deveCriarOrdemServicoComSucesso() {
         // Arrange
-        when(clienteRepository.findById(command.getClienteId())).thenReturn(Optional.of(cliente));
-        when(veiculoRepository.findById(command.getVeiculoId())).thenReturn(Optional.of(veiculo));
-        when(ordemServicoRepository.save(any(OrdemServico.class))).thenReturn(ordemServico);
+        when(clienteGateway.findById(command.getClienteId())).thenReturn(Optional.of(cliente));
+        when(veiculoGateway.findById(command.getVeiculoId())).thenReturn(Optional.of(veiculo));
+        when(ordemServicoGateway.save(any(OrdemServico.class))).thenReturn(ordemServico);
 
         // Act
         OrdemServicoResponse response = useCase.execute(command);
@@ -80,16 +80,16 @@ class CriarOrdemServicoUseCaseTest {
         assertNotNull(response.getVeiculo());
         assertNotNull(response.getStatus());
 
-        verify(clienteRepository, times(1)).findById(command.getClienteId());
-        verify(veiculoRepository, times(1)).findById(command.getVeiculoId());
-        verify(ordemServicoRepository, times(1)).save(any(OrdemServico.class));
+        verify(clienteGateway, times(1)).findById(command.getClienteId());
+        verify(veiculoGateway, times(1)).findById(command.getVeiculoId());
+        verify(ordemServicoGateway, times(1)).save(any(OrdemServico.class));
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando cliente não encontrado")
     void deveLancarExcecaoQuandoClienteNaoEncontrado() {
         // Arrange
-        when(clienteRepository.findById(command.getClienteId())).thenReturn(Optional.empty());
+        when(clienteGateway.findById(command.getClienteId())).thenReturn(Optional.empty());
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -99,17 +99,17 @@ class CriarOrdemServicoUseCaseTest {
 
         assertTrue(exception.getMessage().contains("Cliente não encontrado"));
 
-        verify(clienteRepository, times(1)).findById(command.getClienteId());
-        verify(veiculoRepository, never()).findById(any());
-        verify(ordemServicoRepository, never()).save(any());
+        verify(clienteGateway, times(1)).findById(command.getClienteId());
+        verify(veiculoGateway, never()).findById(any());
+        verify(ordemServicoGateway, never()).save(any());
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando veículo não encontrado")
     void deveLancarExcecaoQuandoVeiculoNaoEncontrado() {
         // Arrange
-        when(clienteRepository.findById(command.getClienteId())).thenReturn(Optional.of(cliente));
-        when(veiculoRepository.findById(command.getVeiculoId())).thenReturn(Optional.empty());
+        when(clienteGateway.findById(command.getClienteId())).thenReturn(Optional.of(cliente));
+        when(veiculoGateway.findById(command.getVeiculoId())).thenReturn(Optional.empty());
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -119,9 +119,9 @@ class CriarOrdemServicoUseCaseTest {
 
         assertTrue(exception.getMessage().contains("Veículo não encontrado"));
 
-        verify(clienteRepository, times(1)).findById(command.getClienteId());
-        verify(veiculoRepository, times(1)).findById(command.getVeiculoId());
-        verify(ordemServicoRepository, never()).save(any());
+        verify(clienteGateway, times(1)).findById(command.getClienteId());
+        verify(veiculoGateway, times(1)).findById(command.getVeiculoId());
+        verify(ordemServicoGateway, never()).save(any());
     }
 
     @Test
@@ -130,18 +130,18 @@ class CriarOrdemServicoUseCaseTest {
         // Act & Assert
         assertThrows(NullPointerException.class, () -> useCase.execute(null));
 
-        verify(clienteRepository, never()).findById(any());
-        verify(veiculoRepository, never()).findById(any());
-        verify(ordemServicoRepository, never()).save(any());
+        verify(clienteGateway, never()).findById(any());
+        verify(veiculoGateway, never()).findById(any());
+        verify(ordemServicoGateway, never()).save(any());
     }
 
     @Test
     @DisplayName("Deve propagar exceção quando repository falha")
     void devePropagarExcecaoQuandoRepositoryFalha() {
         // Arrange
-        when(clienteRepository.findById(command.getClienteId())).thenReturn(Optional.of(cliente));
-        when(veiculoRepository.findById(command.getVeiculoId())).thenReturn(Optional.of(veiculo));
-        when(ordemServicoRepository.save(any(OrdemServico.class))).thenThrow(new RuntimeException("Erro ao salvar no banco"));
+        when(clienteGateway.findById(command.getClienteId())).thenReturn(Optional.of(cliente));
+        when(veiculoGateway.findById(command.getVeiculoId())).thenReturn(Optional.of(veiculo));
+        when(ordemServicoGateway.save(any(OrdemServico.class))).thenThrow(new RuntimeException("Erro ao salvar no banco"));
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -151,18 +151,18 @@ class CriarOrdemServicoUseCaseTest {
 
         assertEquals("Erro ao salvar no banco", exception.getMessage());
 
-        verify(clienteRepository, times(1)).findById(command.getClienteId());
-        verify(veiculoRepository, times(1)).findById(command.getVeiculoId());
-        verify(ordemServicoRepository, times(1)).save(any(OrdemServico.class));
+        verify(clienteGateway, times(1)).findById(command.getClienteId());
+        verify(veiculoGateway, times(1)).findById(command.getVeiculoId());
+        verify(ordemServicoGateway, times(1)).save(any(OrdemServico.class));
     }
 
     @Test
     @DisplayName("Deve criar ordem de serviço com status inicial correto")
     void deveCriarOrdemServicoComStatusInicialCorreto() {
         // Arrange
-        when(clienteRepository.findById(command.getClienteId())).thenReturn(Optional.of(cliente));
-        when(veiculoRepository.findById(command.getVeiculoId())).thenReturn(Optional.of(veiculo));
-        when(ordemServicoRepository.save(any(OrdemServico.class))).thenReturn(ordemServico);
+        when(clienteGateway.findById(command.getClienteId())).thenReturn(Optional.of(cliente));
+        when(veiculoGateway.findById(command.getVeiculoId())).thenReturn(Optional.of(veiculo));
+        when(ordemServicoGateway.save(any(OrdemServico.class))).thenReturn(ordemServico);
 
         // Act
         OrdemServicoResponse response = useCase.execute(command);
@@ -171,6 +171,6 @@ class CriarOrdemServicoUseCaseTest {
         assertNotNull(response.getStatus());
         assertEquals(ordemServico.getStatus().toString(), response.getStatus());
 
-        verify(ordemServicoRepository, times(1)).save(any(OrdemServico.class));
+        verify(ordemServicoGateway, times(1)).save(any(OrdemServico.class));
     }
 }

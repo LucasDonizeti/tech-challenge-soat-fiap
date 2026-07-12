@@ -1,12 +1,11 @@
 package com.techchallenge.oficina.os.web.controllers;
 
-import com.techchallenge.oficina.os.application.usecases.AprovarOrcamentoUseCase;
-import com.techchallenge.oficina.os.application.usecases.BuscarOrdemServicoUseCase;
-import com.techchallenge.oficina.os.application.usecases.ListarOrdensServicoPorClienteUseCase;
 import com.techchallenge.oficina.os.application.usecases.commands.AprovarOrcamentoCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.input.AprovarOrcamentoInput;
+import com.techchallenge.oficina.os.application.usecases.ports.input.ListarOrdensServicoPorClienteInput;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.web.dto.OrdemServicoResponseDto;
-import com.techchallenge.oficina.os.web.mappers.OrdemServicoWebMapper;
+import com.techchallenge.oficina.os.web.presenters.ClienteOSPresenter;
 import com.techchallenge.oficina.sharedkernel.common.PageableValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @RestController
+@Transactional
 @RequestMapping("/api/cliente/os")
 @RequiredArgsConstructor
 @Validated
@@ -33,10 +34,9 @@ import java.util.UUID;
 @Tag(name = "Cliente - Ordem de Serviço", description = "Endpoints públicos para clientes interagirem com ordens de serviço")
 public class ClienteOSController {
 
-    private final AprovarOrcamentoUseCase aprovarOrcamentoUseCase;
-    private final BuscarOrdemServicoUseCase buscarOrdemServicoUseCase;
-    private final ListarOrdensServicoPorClienteUseCase listarOrdensServicoPorClienteUseCase;
-    private final OrdemServicoWebMapper mapper;
+    private final AprovarOrcamentoInput aprovarOrcamentoInput;
+    private final ListarOrdensServicoPorClienteInput listarOrdensServicoPorClienteInput;
+    private final ClienteOSPresenter presenter;
     private final PageableValidator pageableValidator;
 
     @GetMapping("/{id}")
@@ -60,8 +60,8 @@ public class ClienteOSController {
         Set<String> allowedFields = Set.of("status", "dataCriacao", "dataInicioExecucao", "dataFinalizacao", "valorTotal");
         Pageable validatedPageable = pageableValidator.validate(pageable, allowedFields);
 
-        Page<OrdemServicoResponse> responses = listarOrdensServicoPorClienteUseCase.execute(id, validatedPageable);
-        Page<OrdemServicoResponseDto> dtos = mapper.toDtoPage(responses);
+        Page<OrdemServicoResponse> responses = listarOrdensServicoPorClienteInput.execute(id, validatedPageable);
+        Page<OrdemServicoResponseDto> dtos = presenter.prepararViewModelPage(responses);
 
         return ResponseEntity.ok(dtos);
     }
@@ -80,8 +80,8 @@ public class ClienteOSController {
         log.info("Aprovando orçamento (cliente): ordemServicoId={}", osId);
         
         AprovarOrcamentoCommand command = new AprovarOrcamentoCommand(osId);
-        OrdemServicoResponse response = aprovarOrcamentoUseCase.execute(command);
-        OrdemServicoResponseDto dto = mapper.toDto(response);
+        OrdemServicoResponse response = aprovarOrcamentoInput.execute(command);
+        OrdemServicoResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }

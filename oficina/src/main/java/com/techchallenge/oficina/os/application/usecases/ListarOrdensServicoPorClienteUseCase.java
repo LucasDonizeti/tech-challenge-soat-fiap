@@ -1,5 +1,7 @@
 package com.techchallenge.oficina.os.application.usecases;
 
+import com.techchallenge.oficina.os.application.usecases.ports.input.ListarOrdensServicoPorClienteInput;
+import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,12 +11,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
-public class ListarOrdensServicoPorClienteUseCase {
+public class ListarOrdensServicoPorClienteUseCase implements ListarOrdensServicoPorClienteInput {
     
-    private final OrdemServicoRepository ordemServicoRepository;
+    private final OrdemServicoGateway ordemServicoGateway;
     
     public Page<OrdemServicoResponse> execute(UUID clienteId, org.springframework.data.domain.Pageable pageable) {
         log.info("Listando ordens de serviço por cliente: clienteId={}", clienteId);
@@ -23,7 +24,7 @@ public class ListarOrdensServicoPorClienteUseCase {
             throw new IllegalArgumentException("Cliente ID é obrigatório");
         }
         
-        Page<OrdemServicoResponse> responses = ordemServicoRepository
+        Page<OrdemServicoResponse> responses = ordemServicoGateway
                 .findByFilters(clienteId, null, null, null, null, pageable)
                 .map(OrdemServicoResponse::from);
         

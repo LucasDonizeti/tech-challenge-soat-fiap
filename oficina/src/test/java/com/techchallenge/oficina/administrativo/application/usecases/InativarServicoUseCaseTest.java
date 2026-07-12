@@ -1,9 +1,9 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.ServicoGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ServicoResponse;
 import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoServicoException;
 import com.techchallenge.oficina.administrativo.domain.model.entities.Servico;
-import com.techchallenge.oficina.administrativo.domain.repositories.ServicoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 class InativarServicoUseCaseTest {
 
     @Mock
-    private ServicoRepository repository;
+    private ServicoGateway gateway;
 
     @InjectMocks
     private InativarServicoUseCase inativarServicoUseCase;
@@ -43,8 +43,8 @@ class InativarServicoUseCaseTest {
     @DisplayName("Deve inativar serviço com sucesso")
     void deveInativarServicoComSucesso() {
         // Arrange
-        when(repository.findById(servicoId)).thenReturn(Optional.of(servico));
-        when(repository.save(any(Servico.class))).thenReturn(servico);
+        when(gateway.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(gateway.save(any(Servico.class))).thenReturn(servico);
 
         // Act
         ServicoResponse response = inativarServicoUseCase.execute(servicoId);
@@ -55,15 +55,15 @@ class InativarServicoUseCaseTest {
         assertEquals("Descrição", response.getDescricao());
         assertEquals(new BigDecimal("150.00"), response.getPreco());
         assertFalse(response.getAtivo());
-        verify(repository, times(1)).findById(servicoId);
-        verify(repository, times(1)).save(any(Servico.class));
+        verify(gateway, times(1)).findById(servicoId);
+        verify(gateway, times(1)).save(any(Servico.class));
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando serviço não encontrado")
     void deveLancarExcecaoQuandoServicoNaoEncontrado() {
         // Arrange
-        when(repository.findById(servicoId)).thenReturn(Optional.empty());
+        when(gateway.findById(servicoId)).thenReturn(Optional.empty());
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(
@@ -72,8 +72,8 @@ class InativarServicoUseCaseTest {
         );
 
         assertEquals("Serviço não encontrado: " + servicoId, exception.getMessage());
-        verify(repository, times(1)).findById(servicoId);
-        verify(repository, never()).save(any(Servico.class));
+        verify(gateway, times(1)).findById(servicoId);
+        verify(gateway, never()).save(any(Servico.class));
     }
 
     @Test
@@ -81,7 +81,7 @@ class InativarServicoUseCaseTest {
     void deveLancarExcecaoQuandoServicoIdNulo() {
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> inativarServicoUseCase.execute(null));
-        verify(repository, never()).findById(any(UUID.class));
+        verify(gateway, never()).findById(any(UUID.class));
     }
 
     @Test
@@ -89,7 +89,7 @@ class InativarServicoUseCaseTest {
     void deveLancarExcecaoQuandoServicoJaEstaInativo() {
         // Arrange
         servico.desativar();
-        when(repository.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(gateway.findById(servicoId)).thenReturn(Optional.of(servico));
 
         // Act & Assert
         ValidacaoServicoException exception = assertThrows(
@@ -98,7 +98,7 @@ class InativarServicoUseCaseTest {
         );
 
         assertEquals("Serviço já está inativo", exception.getMessage());
-        verify(repository, times(1)).findById(servicoId);
-        verify(repository, never()).save(any(Servico.class));
+        verify(gateway, times(1)).findById(servicoId);
+        verify(gateway, never()).save(any(Servico.class));
     }
 }

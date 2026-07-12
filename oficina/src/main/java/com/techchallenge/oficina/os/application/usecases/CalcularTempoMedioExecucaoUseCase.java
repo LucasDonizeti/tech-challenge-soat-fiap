@@ -1,12 +1,13 @@
 package com.techchallenge.oficina.os.application.usecases;
 
+import com.techchallenge.oficina.os.application.usecases.ports.input.CalcularTempoMedioExecucaoInput;
+import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusOS;
 import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
 import com.techchallenge.oficina.os.web.dto.TempoMedioExecucaoResponseDto;
 import com.techchallenge.oficina.os.web.dto.TempoMedioExecucaoResponseDto.TempoServicoMetricas;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -17,12 +18,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
-public class CalcularTempoMedioExecucaoUseCase {
+public class CalcularTempoMedioExecucaoUseCase implements CalcularTempoMedioExecucaoInput {
     
-    private final OrdemServicoRepository ordemServicoRepository;
+    private final OrdemServicoGateway ordemServicoGateway;
     
     public TempoMedioExecucaoResponseDto execute(UUID servicoId, LocalDateTime dataInicio, LocalDateTime dataFim) {
         log.info("Calculando tempo médio de execução: servicoId={}, dataInicio={}, dataFim={}", 
@@ -30,7 +30,7 @@ public class CalcularTempoMedioExecucaoUseCase {
         
         // Buscar todas as OSs em status FINALIZADA ou ENTREGUE
         // Nota: Como o repository não tem método específico, precisamos buscar todas e filtrar
-        var todasOS = ordemServicoRepository.findAll(org.springframework.data.domain.Pageable.unpaged());
+        var todasOS = ordemServicoGateway.findAll(org.springframework.data.domain.Pageable.unpaged());
         
         // Filtrar por status e período
         var osFiltradas = todasOS.getContent().stream()

@@ -1,11 +1,9 @@
 package com.techchallenge.oficina.os.application.usecases;
 
+import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
 import com.techchallenge.oficina.os.domain.model.entities.ItemServico;
-import com.techchallenge.oficina.os.domain.model.valueobjects.StatusItemServico;
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusOS;
-import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
-import com.techchallenge.oficina.os.web.dto.TempoMedioExecucaoResponseDto;
 import com.techchallenge.oficina.os.web.dto.TempoMedioExecucaoResponseDto.TempoServicoMetricas;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +21,6 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,7 +32,7 @@ import static org.mockito.Mockito.*;
 class CalcularTempoMedioExecucaoUseCaseTest {
 
     @Mock
-    private OrdemServicoRepository ordemServicoRepository;
+    private OrdemServicoGateway gateway;
 
     @InjectMocks
     private CalcularTempoMedioExecucaoUseCase useCase;
@@ -66,7 +63,7 @@ class CalcularTempoMedioExecucaoUseCaseTest {
         List<OrdemServico> ordensServico = List.of(ordemServico1, ordemServico2);
         Page<OrdemServico> page = new PageImpl<>(ordensServico);
 
-        when(ordemServicoRepository.findAll(any(Pageable.class))).thenReturn(page);
+        when(gateway.findAll(any(Pageable.class))).thenReturn(page);
 
         // Act
         var response = useCase.execute(null, null, null);
@@ -79,7 +76,7 @@ class CalcularTempoMedioExecucaoUseCaseTest {
         assertTrue(response.getTempoMinimoSegundos() > 0);
         assertTrue(response.getTempoMaximoSegundos() > 0);
         assertNotNull(response.getTempoMedioPorServico());
-        verify(ordemServicoRepository, times(1)).findAll(any(Pageable.class));
+        verify(gateway, times(1)).findAll(any(Pageable.class));
     }
 
     @Test
@@ -87,7 +84,7 @@ class CalcularTempoMedioExecucaoUseCaseTest {
     void deveRetornarZerosQuandoNaoHaOrdensServico() {
         // Arrange
         Page<OrdemServico> emptyPage = Page.empty();
-        when(ordemServicoRepository.findAll(any(Pageable.class))).thenReturn(emptyPage);
+        when(gateway.findAll(any(Pageable.class))).thenReturn(emptyPage);
 
         // Act
         var response = useCase.execute(null, null, null);
@@ -98,7 +95,7 @@ class CalcularTempoMedioExecucaoUseCaseTest {
         assertEquals(0L, response.getTempoMedioSegundos());
         assertEquals(0L, response.getTempoMinimoSegundos());
         assertEquals(0L, response.getTempoMaximoSegundos());
-        verify(ordemServicoRepository, times(1)).findAll(any(Pageable.class));
+        verify(gateway, times(1)).findAll(any(Pageable.class));
     }
 
     @Test
@@ -116,14 +113,14 @@ class CalcularTempoMedioExecucaoUseCaseTest {
         List<OrdemServico> ordensServico = List.of(ordemServico1);
         Page<OrdemServico> page = new PageImpl<>(ordensServico);
 
-        when(ordemServicoRepository.findAll(any(Pageable.class))).thenReturn(page);
+        when(gateway.findAll(any(Pageable.class))).thenReturn(page);
 
         // Act
         var response = useCase.execute(null, dataInicio, dataFim);
 
         // Assert
         assertNotNull(response);
-        verify(ordemServicoRepository, times(1)).findAll(any(Pageable.class));
+        verify(gateway, times(1)).findAll(any(Pageable.class));
     }
 
     @Test
@@ -141,7 +138,7 @@ class CalcularTempoMedioExecucaoUseCaseTest {
         List<OrdemServico> ordensServico = List.of(ordemServico1, ordemServico2);
         Page<OrdemServico> page = new PageImpl<>(ordensServico);
 
-        when(ordemServicoRepository.findAll(any(Pageable.class))).thenReturn(page);
+        when(gateway.findAll(any(Pageable.class))).thenReturn(page);
 
         // Act
         var response = useCase.execute(null, null, null);
@@ -149,7 +146,7 @@ class CalcularTempoMedioExecucaoUseCaseTest {
         // Assert
         assertNotNull(response);
         assertEquals(0, response.getQuantidadeOS());
-        verify(ordemServicoRepository, times(1)).findAll(any(Pageable.class));
+        verify(gateway, times(1)).findAll(any(Pageable.class));
     }
 
     @Test
@@ -167,7 +164,7 @@ class CalcularTempoMedioExecucaoUseCaseTest {
         List<OrdemServico> ordensServico = List.of(ordemServico1, ordemServico2);
         Page<OrdemServico> page = new PageImpl<>(ordensServico);
 
-        when(ordemServicoRepository.findAll(any(Pageable.class))).thenReturn(page);
+        when(gateway.findAll(any(Pageable.class))).thenReturn(page);
 
         // Act
         var response = useCase.execute(null, null, null);
@@ -175,7 +172,7 @@ class CalcularTempoMedioExecucaoUseCaseTest {
         // Assert
         assertNotNull(response);
         assertEquals(0, response.getQuantidadeOS());
-        verify(ordemServicoRepository, times(1)).findAll(any(Pageable.class));
+        verify(gateway, times(1)).findAll(any(Pageable.class));
     }
 
     @Test
@@ -211,7 +208,7 @@ class CalcularTempoMedioExecucaoUseCaseTest {
         List<OrdemServico> ordensServico = List.of(ordemServico1, ordemServico2);
         Page<OrdemServico> page = new PageImpl<>(ordensServico);
 
-        when(ordemServicoRepository.findAll(any(Pageable.class))).thenReturn(page);
+        when(gateway.findAll(any(Pageable.class))).thenReturn(page);
 
         // Act
         var response = useCase.execute(null, null, null);
@@ -254,7 +251,7 @@ class CalcularTempoMedioExecucaoUseCaseTest {
         List<OrdemServico> ordensServico = List.of(ordemServico1);
         Page<OrdemServico> page = new PageImpl<>(ordensServico);
 
-        when(ordemServicoRepository.findAll(any(Pageable.class))).thenReturn(page);
+        when(gateway.findAll(any(Pageable.class))).thenReturn(page);
 
         // Act
         var response = useCase.execute(null, null, null);

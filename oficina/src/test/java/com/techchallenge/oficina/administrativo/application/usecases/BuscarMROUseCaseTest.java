@@ -1,9 +1,9 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.MROGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
 import com.techchallenge.oficina.administrativo.domain.model.entities.MRO;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.TipoMRO;
-import com.techchallenge.oficina.administrativo.domain.repositories.MRORepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 class BuscarMROUseCaseTest {
 
     @Mock
-    private MRORepository repository;
+    private MROGateway gateway;
 
     @InjectMocks
     private BuscarMROUseCase useCase;
@@ -49,7 +49,7 @@ class BuscarMROUseCaseTest {
     @DisplayName("Deve buscar MRO com sucesso")
     void deveBuscarMROComSucesso() {
         // Arrange
-        when(repository.findById(mroId)).thenReturn(Optional.of(mro));
+        when(gateway.findById(mroId)).thenReturn(Optional.of(mro));
 
         // Act
         MROResponse response = useCase.execute(mroId);
@@ -63,14 +63,14 @@ class BuscarMROUseCaseTest {
         assertEquals(new BigDecimal("45.90"), response.getPrecoUnitario());
         assertTrue(response.getAtivo());
 
-        verify(repository, times(1)).findById(mroId);
+        verify(gateway, times(1)).findById(mroId);
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando MRO não encontrado")
     void deveLancarExcecaoQuandoMRONaoEncontrado() {
         // Arrange
-        when(repository.findById(mroId)).thenReturn(Optional.empty());
+        when(gateway.findById(mroId)).thenReturn(Optional.empty());
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -80,7 +80,7 @@ class BuscarMROUseCaseTest {
 
         assertTrue(exception.getMessage().contains("MRO não encontrado"));
 
-        verify(repository, times(1)).findById(mroId);
+        verify(gateway, times(1)).findById(mroId);
     }
 
     @Test
@@ -89,14 +89,14 @@ class BuscarMROUseCaseTest {
         // Act & Assert
         assertThrows(RuntimeException.class, () -> useCase.execute(null));
 
-        verify(repository, never()).findById(any(UUID.class));
+        verify(gateway, never()).findById(any(UUID.class));
     }
 
     @Test
     @DisplayName("Deve propagar exceção quando repository falha")
     void devePropagarExcecaoQuandoRepositoryFalha() {
         // Arrange
-        when(repository.findById(mroId)).thenThrow(new RuntimeException("Erro ao buscar no banco"));
+        when(gateway.findById(mroId)).thenThrow(new RuntimeException("Erro ao buscar no banco"));
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -106,7 +106,7 @@ class BuscarMROUseCaseTest {
 
         assertEquals("Erro ao buscar no banco", exception.getMessage());
 
-        verify(repository, times(1)).findById(mroId);
+        verify(gateway, times(1)).findById(mroId);
     }
 
     @Test
@@ -121,7 +121,7 @@ class BuscarMROUseCaseTest {
                 new BigDecimal("25.00")
         );
 
-        when(repository.findById(mroId)).thenReturn(Optional.of(mroPeca));
+        when(gateway.findById(mroId)).thenReturn(Optional.of(mroPeca));
 
         // Act
         MROResponse response = useCase.execute(mroId);
@@ -130,7 +130,7 @@ class BuscarMROUseCaseTest {
         assertNotNull(response);
         assertEquals("PECA", response.getTipo());
 
-        verify(repository, times(1)).findById(mroId);
+        verify(gateway, times(1)).findById(mroId);
     }
 
     @Test
@@ -146,7 +146,7 @@ class BuscarMROUseCaseTest {
         );
         mroInativo.desativar();
 
-        when(repository.findById(mroId)).thenReturn(Optional.of(mroInativo));
+        when(gateway.findById(mroId)).thenReturn(Optional.of(mroInativo));
 
         // Act
         MROResponse response = useCase.execute(mroId);
@@ -155,7 +155,7 @@ class BuscarMROUseCaseTest {
         assertNotNull(response);
         assertFalse(response.getAtivo());
 
-        verify(repository, times(1)).findById(mroId);
+        verify(gateway, times(1)).findById(mroId);
     }
 
     @Test
@@ -170,7 +170,7 @@ class BuscarMROUseCaseTest {
                 new BigDecimal("15.50")
         );
 
-        when(repository.findById(mroId)).thenReturn(Optional.of(mroEstoqueZero));
+        when(gateway.findById(mroId)).thenReturn(Optional.of(mroEstoqueZero));
 
         // Act
         MROResponse response = useCase.execute(mroId);
@@ -179,6 +179,6 @@ class BuscarMROUseCaseTest {
         assertNotNull(response);
         assertEquals(0, response.getQuantidadeEstoque());
 
-        verify(repository, times(1)).findById(mroId);
+        verify(gateway, times(1)).findById(mroId);
     }
 }

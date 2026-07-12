@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.commands.AtualizarClienteCommand;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.ClienteGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ClienteResponse;
 import com.techchallenge.oficina.administrativo.domain.exceptions.EmailJaCadastradoException;
 import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoClienteException;
@@ -8,7 +9,6 @@ import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CPF;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Nome;
-import com.techchallenge.oficina.administrativo.domain.repositories.ClienteRepository;
 import com.techchallenge.oficina.administrativo.domain.services.ClienteDomainService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 class AtualizarClienteUseCaseTest {
 
     @Mock
-    private ClienteRepository repository;
+    private ClienteGateway gateway;
 
     @Mock
     private ClienteDomainService domainService;
@@ -66,8 +66,8 @@ class AtualizarClienteUseCaseTest {
                 "joao.silva@email.com"
         );
         
-        when(repository.findById(clienteId)).thenReturn(Optional.of(clienteExistente));
-        when(repository.save(any(Cliente.class))).thenReturn(clienteExistente);
+        when(gateway.findById(clienteId)).thenReturn(Optional.of(clienteExistente));
+        when(gateway.save(any(Cliente.class))).thenReturn(clienteExistente);
 
         // Act
         ClienteResponse response = useCase.execute(clienteId, commandMesmoEmail);
@@ -77,8 +77,8 @@ class AtualizarClienteUseCaseTest {
         assertEquals("João Silva Santos", response.getNome());
         assertEquals("joao.silva@email.com", response.getEmail());
 
-        verify(repository, times(1)).findById(clienteId);
-        verify(repository, times(1)).save(any(Cliente.class));
+        verify(gateway, times(1)).findById(clienteId);
+        verify(gateway, times(1)).save(any(Cliente.class));
         verify(domainService, never()).validarEmailUnico(any(Email.class));
     }
 
@@ -86,8 +86,8 @@ class AtualizarClienteUseCaseTest {
     @DisplayName("Deve atualizar cliente com sucesso quando email foi alterado")
     void deveAtualizarClienteComSucessoEmailAlterado() {
         // Arrange
-        when(repository.findById(clienteId)).thenReturn(Optional.of(clienteExistente));
-        when(repository.save(any(Cliente.class))).thenReturn(clienteExistente);
+        when(gateway.findById(clienteId)).thenReturn(Optional.of(clienteExistente));
+        when(gateway.save(any(Cliente.class))).thenReturn(clienteExistente);
 
         // Act
         ClienteResponse response = useCase.execute(clienteId, command);
@@ -97,8 +97,8 @@ class AtualizarClienteUseCaseTest {
         assertEquals("João Silva Santos", response.getNome());
         assertEquals("joao.silva.santos@email.com", response.getEmail());
 
-        verify(repository, times(1)).findById(clienteId);
-        verify(repository, times(1)).save(any(Cliente.class));
+        verify(gateway, times(1)).findById(clienteId);
+        verify(gateway, times(1)).save(any(Cliente.class));
         verify(domainService, times(1)).validarEmailUnico(any(Email.class));
     }
 
@@ -106,7 +106,7 @@ class AtualizarClienteUseCaseTest {
     @DisplayName("Deve lançar exceção quando cliente não encontrado")
     void deveLancarExcecaoQuandoClienteNaoEncontrado() {
         // Arrange
-        when(repository.findById(clienteId)).thenReturn(Optional.empty());
+        when(gateway.findById(clienteId)).thenReturn(Optional.empty());
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(
@@ -116,8 +116,8 @@ class AtualizarClienteUseCaseTest {
 
         assertEquals("Cliente não encontrado: " + clienteId, exception.getMessage());
 
-        verify(repository, times(1)).findById(clienteId);
-        verify(repository, never()).save(any(Cliente.class));
+        verify(gateway, times(1)).findById(clienteId);
+        verify(gateway, never()).save(any(Cliente.class));
         verify(domainService, never()).validarEmailUnico(any(Email.class));
     }
 
@@ -125,7 +125,7 @@ class AtualizarClienteUseCaseTest {
     @DisplayName("Deve lançar exceção quando email já está em uso por outro cliente")
     void deveLancarExcecaoQuandoEmailJaCadastrado() {
         // Arrange
-        when(repository.findById(clienteId)).thenReturn(Optional.of(clienteExistente));
+        when(gateway.findById(clienteId)).thenReturn(Optional.of(clienteExistente));
         doThrow(new EmailJaCadastradoException(Email.of("novo.email@teste.com")))
                 .when(domainService).validarEmailUnico(any(Email.class));
 
@@ -137,8 +137,8 @@ class AtualizarClienteUseCaseTest {
 
         assertEquals("Email já cadastrado: novo.email@teste.com", exception.getMessage());
 
-        verify(repository, times(1)).findById(clienteId);
-        verify(repository, never()).save(any(Cliente.class));
+        verify(gateway, times(1)).findById(clienteId);
+        verify(gateway, never()).save(any(Cliente.class));
         verify(domainService, times(1)).validarEmailUnico(any(Email.class));
     }
 

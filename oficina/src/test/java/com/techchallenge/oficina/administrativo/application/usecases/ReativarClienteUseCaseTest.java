@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.ClienteGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ClienteResponse;
 import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoValorException;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
@@ -7,7 +8,6 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CPF;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Nome;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.StatusCliente;
-import com.techchallenge.oficina.administrativo.domain.repositories.ClienteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 class ReativarClienteUseCaseTest {
 
     @Mock
-    private ClienteRepository repository;
+    private ClienteGateway gateway;
 
     @InjectMocks
     private ReativarClienteUseCase useCase;
@@ -50,8 +50,8 @@ class ReativarClienteUseCaseTest {
     void deveReativarClienteComSucesso() {
         // Arrange
         cliente.inativar(); // Cliente começa inativo
-        when(repository.findById(clienteId)).thenReturn(Optional.of(cliente));
-        when(repository.save(any(Cliente.class))).thenReturn(cliente);
+        when(gateway.findById(clienteId)).thenReturn(Optional.of(cliente));
+        when(gateway.save(any(Cliente.class))).thenReturn(cliente);
 
         // Act
         ClienteResponse response = useCase.execute(clienteId);
@@ -63,15 +63,15 @@ class ReativarClienteUseCaseTest {
         assertEquals("joao.silva@email.com", response.getEmail());
         assertEquals(StatusCliente.ATIVO, response.getStatus());
 
-        verify(repository, times(1)).findById(clienteId);
-        verify(repository, times(1)).save(any(Cliente.class));
+        verify(gateway, times(1)).findById(clienteId);
+        verify(gateway, times(1)).save(any(Cliente.class));
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando cliente não encontrado")
     void deveLancarExcecaoQuandoClienteNaoEncontrado() {
         // Arrange
-        when(repository.findById(clienteId)).thenReturn(Optional.empty());
+        when(gateway.findById(clienteId)).thenReturn(Optional.empty());
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(
@@ -81,8 +81,8 @@ class ReativarClienteUseCaseTest {
 
         assertEquals("Cliente não encontrado: " + clienteId, exception.getMessage());
 
-        verify(repository, times(1)).findById(clienteId);
-        verify(repository, never()).save(any(Cliente.class));
+        verify(gateway, times(1)).findById(clienteId);
+        verify(gateway, never()).save(any(Cliente.class));
     }
 
     @Test
@@ -103,8 +103,8 @@ class ReativarClienteUseCaseTest {
         );
         clientePJ.inativar(); // Cliente PJ começa inativo
         
-        when(repository.findById(clienteId)).thenReturn(Optional.of(clientePJ));
-        when(repository.save(any(Cliente.class))).thenReturn(clientePJ);
+        when(gateway.findById(clienteId)).thenReturn(Optional.of(clientePJ));
+        when(gateway.save(any(Cliente.class))).thenReturn(clientePJ);
 
         // Act
         ClienteResponse response = useCase.execute(clienteId);
@@ -116,8 +116,8 @@ class ReativarClienteUseCaseTest {
         assertEquals("contato@autopecas.com.br", response.getEmail());
         assertEquals(StatusCliente.ATIVO, response.getStatus());
 
-        verify(repository, times(1)).findById(clienteId);
-        verify(repository, times(1)).save(any(Cliente.class));
+        verify(gateway, times(1)).findById(clienteId);
+        verify(gateway, times(1)).save(any(Cliente.class));
     }
 
     @Test
@@ -125,7 +125,7 @@ class ReativarClienteUseCaseTest {
     void deveLancarExcecaoQuandoClienteJaEstaAtivo() {
         // Arrange
         // Cliente já está ativo por padrão após criação
-        when(repository.findById(clienteId)).thenReturn(Optional.of(cliente));
+        when(gateway.findById(clienteId)).thenReturn(Optional.of(cliente));
 
         // Act & Assert
         ValidacaoValorException exception = assertThrows(
@@ -135,7 +135,7 @@ class ReativarClienteUseCaseTest {
 
         assertEquals("Cliente já está ativo", exception.getMessage());
 
-        verify(repository, times(1)).findById(clienteId);
-        verify(repository, never()).save(any(Cliente.class));
+        verify(gateway, times(1)).findById(clienteId);
+        verify(gateway, never()).save(any(Cliente.class));
     }
 }

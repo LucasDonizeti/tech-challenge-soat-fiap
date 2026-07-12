@@ -6,6 +6,7 @@ import com.techchallenge.oficina.administrativo.application.usecases.responses.M
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.TipoMRO;
 import com.techchallenge.oficina.administrativo.web.dto.*;
 import com.techchallenge.oficina.administrativo.web.mappers.MROWebMapper;
+import com.techchallenge.oficina.administrativo.web.presenters.MROPresenter;
 import com.techchallenge.oficina.sharedkernel.common.PageableValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -66,7 +67,7 @@ class MROControllerTest {
     private DebitarEstoqueMROUseCase debitarEstoqueMROUseCase;
 
     @Mock
-    private MROWebMapper mapper;
+    private MROPresenter presenter;
 
     @Mock
     private PageableValidator pageableValidator;
@@ -126,7 +127,7 @@ class MROControllerTest {
         request.setPrecoUnitario(new BigDecimal("45.90"));
 
         when(criarMROUseCase.execute(any())).thenReturn(mroResponse);
-        when(mapper.toDto(any(MROResponse.class))).thenReturn(mroResponseDto);
+        when(presenter.prepararViewModel(any(MROResponse.class))).thenReturn(mroResponseDto);
 
         // Act & Assert
         mockMvc.perform(post("/v1/admin/mros")
@@ -138,7 +139,7 @@ class MROControllerTest {
                 .andExpect(jsonPath("$.tipo").value("INSUMO"));
 
         verify(criarMROUseCase, times(1)).execute(any());
-        verify(mapper, times(1)).toDto(any(MROResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(MROResponse.class));
     }
 
     @Test
@@ -146,7 +147,7 @@ class MROControllerTest {
     void deveBuscarMroPorIdComSucesso() throws Exception {
         // Arrange
         when(buscarMROUseCase.execute(mroId)).thenReturn(mroResponse);
-        when(mapper.toDto(any(MROResponse.class))).thenReturn(mroResponseDto);
+        when(presenter.prepararViewModel(any(MROResponse.class))).thenReturn(mroResponseDto);
 
         // Act & Assert
         mockMvc.perform(get("/v1/admin/mros/{id}", mroId))
@@ -155,7 +156,7 @@ class MROControllerTest {
                 .andExpect(jsonPath("$.nome").value("Óleo Motor 5W30"));
 
         verify(buscarMROUseCase, times(1)).execute(mroId);
-        verify(mapper, times(1)).toDto(any(MROResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(MROResponse.class));
     }
 
     @Test
@@ -174,7 +175,7 @@ class MROControllerTest {
                 .build();
 
         when(inativarMROUseCase.execute(mroId)).thenReturn(inativoResponse);
-        when(mapper.toDto(any(MROResponse.class))).thenReturn(inativoDto);
+        when(presenter.prepararViewModel(any(MROResponse.class))).thenReturn(inativoDto);
 
         // Act & Assert
         mockMvc.perform(patch("/v1/admin/mros/{id}/inativar", mroId))
@@ -182,7 +183,7 @@ class MROControllerTest {
                 .andExpect(jsonPath("$.ativo").value(false));
 
         verify(inativarMROUseCase, times(1)).execute(mroId);
-        verify(mapper, times(1)).toDto(any(MROResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(MROResponse.class));
     }
 
     @Test
@@ -190,7 +191,7 @@ class MROControllerTest {
     void deveAtivarMroComSucesso() throws Exception {
         // Arrange
         when(ativarMROUseCase.execute(mroId)).thenReturn(mroResponse);
-        when(mapper.toDto(any(MROResponse.class))).thenReturn(mroResponseDto);
+        when(presenter.prepararViewModel(any(MROResponse.class))).thenReturn(mroResponseDto);
 
         // Act & Assert
         mockMvc.perform(patch("/v1/admin/mros/{id}/ativar", mroId))
@@ -198,7 +199,7 @@ class MROControllerTest {
                 .andExpect(jsonPath("$.ativo").value(true));
 
         verify(ativarMROUseCase, times(1)).execute(mroId);
-        verify(mapper, times(1)).toDto(any(MROResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(MROResponse.class));
     }
 
     @Test
@@ -220,7 +221,7 @@ class MROControllerTest {
                 .build();
 
         when(atualizarPrecoMROUseCase.execute(any())).thenReturn(responseComNovoPreco);
-        when(mapper.toDto(any(MROResponse.class))).thenReturn(dtoComNovoPreco);
+        when(presenter.prepararViewModel(any(MROResponse.class))).thenReturn(dtoComNovoPreco);
 
         // Act & Assert
         mockMvc.perform(patch("/v1/admin/mros/{id}/preco", mroId)
@@ -230,7 +231,7 @@ class MROControllerTest {
                 .andExpect(jsonPath("$.precoUnitario").value(50.00));
 
         verify(atualizarPrecoMROUseCase, times(1)).execute(any());
-        verify(mapper, times(1)).toDto(any(MROResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(MROResponse.class));
     }
 
     @Test
@@ -256,7 +257,7 @@ class MROControllerTest {
                 .build();
 
         when(atualizarDadosMROUseCase.execute(any())).thenReturn(responseAtualizado);
-        when(mapper.toDto(any(MROResponse.class))).thenReturn(dtoAtualizado);
+        when(presenter.prepararViewModel(any(MROResponse.class))).thenReturn(dtoAtualizado);
 
         // Act & Assert
         mockMvc.perform(patch("/v1/admin/mros/{id}/dados", mroId)
@@ -267,7 +268,7 @@ class MROControllerTest {
                 .andExpect(jsonPath("$.descricao").value("Óleo para motor diesel"));
 
         verify(atualizarDadosMROUseCase, times(1)).execute(any());
-        verify(mapper, times(1)).toDto(any(MROResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(MROResponse.class));
     }
 
     @Test
@@ -289,7 +290,7 @@ class MROControllerTest {
                 .build();
 
         when(reporEstoqueMROUseCase.execute(any())).thenReturn(responseComEstoqueIncrementado);
-        when(mapper.toDto(any(MROResponse.class))).thenReturn(dtoComEstoqueIncrementado);
+        when(presenter.prepararViewModel(any(MROResponse.class))).thenReturn(dtoComEstoqueIncrementado);
 
         // Act & Assert
         mockMvc.perform(post("/v1/admin/mros/{id}/estoque/incrementar", mroId)
@@ -299,7 +300,7 @@ class MROControllerTest {
                 .andExpect(jsonPath("$.quantidadeEstoque").value(110));
 
         verify(reporEstoqueMROUseCase, times(1)).execute(any());
-        verify(mapper, times(1)).toDto(any(MROResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(MROResponse.class));
     }
 
     @Test
@@ -321,7 +322,7 @@ class MROControllerTest {
                 .build();
 
         when(debitarEstoqueMROUseCase.execute(any())).thenReturn(responseComEstoqueRetirado);
-        when(mapper.toDto(any(MROResponse.class))).thenReturn(dtoComEstoqueRetirado);
+        when(presenter.prepararViewModel(any(MROResponse.class))).thenReturn(dtoComEstoqueRetirado);
 
         // Act & Assert
         mockMvc.perform(post("/v1/admin/mros/{id}/estoque/retirar", mroId)
@@ -331,6 +332,6 @@ class MROControllerTest {
                 .andExpect(jsonPath("$.quantidadeEstoque").value(95));
 
         verify(debitarEstoqueMROUseCase, times(1)).execute(any());
-        verify(mapper, times(1)).toDto(any(MROResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(MROResponse.class));
     }
 }

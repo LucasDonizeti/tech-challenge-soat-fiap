@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.VeiculoGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.VeiculoResponse;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
 import com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo;
@@ -7,7 +8,6 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CPF;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Nome;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa;
-import com.techchallenge.oficina.administrativo.domain.repositories.VeiculoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 class BuscarVeiculosPorClienteUseCaseTest {
 
     @Mock
-    private VeiculoRepository repository;
+    private VeiculoGateway gateway;
 
     @InjectMocks
     private BuscarVeiculosPorClienteUseCase useCase;
@@ -70,7 +70,7 @@ class BuscarVeiculosPorClienteUseCaseTest {
     void deveBuscarVeiculosPorClienteComSucesso() {
         // Arrange
         List<Veiculo> veiculos = List.of(veiculo1, veiculo2);
-        when(repository.findByClienteId(clienteId)).thenReturn(veiculos);
+        when(gateway.findByClienteId(clienteId)).thenReturn(veiculos);
 
         // Act
         List<VeiculoResponse> responses = useCase.execute(clienteId);
@@ -81,14 +81,14 @@ class BuscarVeiculosPorClienteUseCaseTest {
         assertEquals("Toyota", responses.get(0).getMarca());
         assertEquals("Honda", responses.get(1).getMarca());
 
-        verify(repository, times(1)).findByClienteId(clienteId);
+        verify(gateway, times(1)).findByClienteId(clienteId);
     }
 
     @Test
     @DisplayName("Deve retornar lista vazia quando cliente não possui veículos")
     void deveRetornarListaVaziaQuandoClienteSemVeiculos() {
         // Arrange
-        when(repository.findByClienteId(clienteId)).thenReturn(List.of());
+        when(gateway.findByClienteId(clienteId)).thenReturn(List.of());
 
         // Act
         List<VeiculoResponse> responses = useCase.execute(clienteId);
@@ -97,14 +97,14 @@ class BuscarVeiculosPorClienteUseCaseTest {
         assertNotNull(responses);
         assertTrue(responses.isEmpty());
 
-        verify(repository, times(1)).findByClienteId(clienteId);
+        verify(gateway, times(1)).findByClienteId(clienteId);
     }
 
     @Test
     @DisplayName("Deve retornar lista vazia quando clienteId nulo")
     void deveRetornarListaVaziaQuandoClienteIdNulo() {
         // Arrange
-        when(repository.findByClienteId(null)).thenReturn(List.of());
+        when(gateway.findByClienteId(null)).thenReturn(List.of());
 
         // Act
         List<VeiculoResponse> responses = useCase.execute(null);
@@ -113,7 +113,7 @@ class BuscarVeiculosPorClienteUseCaseTest {
         assertNotNull(responses);
         assertTrue(responses.isEmpty());
 
-        verify(repository, times(1)).findByClienteId(isNull());
+        verify(gateway, times(1)).findByClienteId(isNull());
     }
 
     @Test
@@ -122,7 +122,7 @@ class BuscarVeiculosPorClienteUseCaseTest {
         // Arrange
         veiculo1.inativar();
         List<Veiculo> veiculos = List.of(veiculo1);
-        when(repository.findByClienteId(clienteId)).thenReturn(veiculos);
+        when(gateway.findByClienteId(clienteId)).thenReturn(veiculos);
 
         // Act
         List<VeiculoResponse> responses = useCase.execute(clienteId);
@@ -132,7 +132,7 @@ class BuscarVeiculosPorClienteUseCaseTest {
         assertEquals(1, responses.size());
         assertEquals("INATIVO", responses.get(0).getStatus().name());
 
-        verify(repository, times(1)).findByClienteId(clienteId);
+        verify(gateway, times(1)).findByClienteId(clienteId);
     }
 
     @Test
@@ -141,7 +141,7 @@ class BuscarVeiculosPorClienteUseCaseTest {
         // Arrange
         veiculo2.inativar();
         List<Veiculo> veiculos = List.of(veiculo1, veiculo2);
-        when(repository.findByClienteId(clienteId)).thenReturn(veiculos);
+        when(gateway.findByClienteId(clienteId)).thenReturn(veiculos);
 
         // Act
         List<VeiculoResponse> responses = useCase.execute(clienteId);
@@ -152,6 +152,6 @@ class BuscarVeiculosPorClienteUseCaseTest {
         assertEquals("ATIVO", responses.get(0).getStatus().name());
         assertEquals("INATIVO", responses.get(1).getStatus().name());
 
-        verify(repository, times(1)).findByClienteId(clienteId);
+        verify(gateway, times(1)).findByClienteId(clienteId);
     }
 }
