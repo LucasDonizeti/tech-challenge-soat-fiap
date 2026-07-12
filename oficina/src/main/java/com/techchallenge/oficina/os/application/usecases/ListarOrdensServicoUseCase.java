@@ -7,6 +7,7 @@ import com.techchallenge.oficina.administrativo.application.usecases.ports.input
 import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ServicoResponse;
 import com.techchallenge.oficina.os.application.usecases.ports.input.ListarOrdensServicoInput;
+import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
 import com.techchallenge.oficina.os.application.usecases.responses.ItemMROResponse;
 import com.techchallenge.oficina.os.application.usecases.responses.ItemServicoResponse;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
@@ -17,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -26,23 +26,21 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
 public class ListarOrdensServicoUseCase implements ListarOrdensServicoInput {
     
-    private final OrdemServicoRepository ordemServicoRepository;
+    private final OrdemServicoGateway ordemServicoGateway;
     private final BuscarServicoInput buscarServicoInput;
     private final BuscarMROInput buscarMROInput;
-    
-    @Transactional(readOnly = true)
+
     public Page<OrdemServicoResponse> execute(UUID clienteId, UUID veiculoId, StatusOS status, 
                                                LocalDateTime dataInicio, LocalDateTime dataFim, 
                                                Pageable pageable) {
         log.info("Listando ordens de serviço com filtros: clienteId={}, veiculoId={}, status={}, dataInicio={}, dataFim={}", 
                 clienteId, veiculoId, status, dataInicio, dataFim);
         
-        Page<OrdemServico> ordensServico = ordemServicoRepository.findByFilters(
+        Page<OrdemServico> ordensServico = ordemServicoGateway.findByFilters(
                 clienteId, veiculoId, status, dataInicio, dataFim, pageable);
         
         return ordensServico.map(this::enrichOrdemServicoResponse);

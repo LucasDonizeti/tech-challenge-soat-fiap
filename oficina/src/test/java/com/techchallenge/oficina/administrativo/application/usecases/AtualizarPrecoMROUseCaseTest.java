@@ -1,10 +1,10 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.commands.AtualizarPrecoMROCommand;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.MROGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
 import com.techchallenge.oficina.administrativo.domain.model.entities.MRO;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.TipoMRO;
-import com.techchallenge.oficina.administrativo.domain.repositories.MRORepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
 class AtualizarPrecoMROUseCaseTest {
 
     @Mock
-    private MRORepository repository;
+    private MROGateway gateway;
 
     @InjectMocks
     private AtualizarPrecoMROUseCase useCase;
@@ -55,8 +55,8 @@ class AtualizarPrecoMROUseCaseTest {
     @DisplayName("Deve atualizar preço do MRO com sucesso")
     void deveAtualizarPrecoDoMROComSucesso() {
         // Arrange
-        when(repository.findById(mroId)).thenReturn(Optional.of(mro));
-        when(repository.save(any(MRO.class))).thenReturn(mro);
+        when(gateway.findById(mroId)).thenReturn(Optional.of(mro));
+        when(gateway.save(any(MRO.class))).thenReturn(mro);
 
         // Act
         MROResponse response = useCase.execute(command);
@@ -67,15 +67,15 @@ class AtualizarPrecoMROUseCaseTest {
         assertEquals("Óleo Motor 5W30", response.getNome());
         assertEquals(novoPreco, response.getPrecoUnitario());
 
-        verify(repository, times(1)).findById(mroId);
-        verify(repository, times(1)).save(any(MRO.class));
+        verify(gateway, times(1)).findById(mroId);
+        verify(gateway, times(1)).save(any(MRO.class));
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando MRO não encontrado")
     void deveLancarExcecaoQuandoMRONaoEncontrado() {
         // Arrange
-        when(repository.findById(mroId)).thenReturn(Optional.empty());
+        when(gateway.findById(mroId)).thenReturn(Optional.empty());
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -85,8 +85,8 @@ class AtualizarPrecoMROUseCaseTest {
 
         assertTrue(exception.getMessage().contains("MRO não encontrado"));
 
-        verify(repository, times(1)).findById(mroId);
-        verify(repository, never()).save(any(MRO.class));
+        verify(gateway, times(1)).findById(mroId);
+        verify(gateway, never()).save(any(MRO.class));
     }
 
     @Test
@@ -95,15 +95,15 @@ class AtualizarPrecoMROUseCaseTest {
         // Act & Assert
         assertThrows(NullPointerException.class, () -> useCase.execute(null));
 
-        verify(repository, never()).findById(any(UUID.class));
-        verify(repository, never()).save(any(MRO.class));
+        verify(gateway, never()).findById(any(UUID.class));
+        verify(gateway, never()).save(any(MRO.class));
     }
 
     @Test
     @DisplayName("Deve propagar exceção quando repository falha ao buscar")
     void devePropagarExcecaoQuandoRepositoryFalhaAoBuscar() {
         // Arrange
-        when(repository.findById(mroId)).thenThrow(new RuntimeException("Erro ao buscar no banco"));
+        when(gateway.findById(mroId)).thenThrow(new RuntimeException("Erro ao buscar no banco"));
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -113,16 +113,16 @@ class AtualizarPrecoMROUseCaseTest {
 
         assertEquals("Erro ao buscar no banco", exception.getMessage());
 
-        verify(repository, times(1)).findById(mroId);
-        verify(repository, never()).save(any(MRO.class));
+        verify(gateway, times(1)).findById(mroId);
+        verify(gateway, never()).save(any(MRO.class));
     }
 
     @Test
     @DisplayName("Deve propagar exceção quando repository falha ao salvar")
     void devePropagarExcecaoQuandoRepositoryFalhaAoSalvar() {
         // Arrange
-        when(repository.findById(mroId)).thenReturn(Optional.of(mro));
-        when(repository.save(any(MRO.class))).thenThrow(new RuntimeException("Erro ao salvar no banco"));
+        when(gateway.findById(mroId)).thenReturn(Optional.of(mro));
+        when(gateway.save(any(MRO.class))).thenThrow(new RuntimeException("Erro ao salvar no banco"));
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -132,8 +132,8 @@ class AtualizarPrecoMROUseCaseTest {
 
         assertEquals("Erro ao salvar no banco", exception.getMessage());
 
-        verify(repository, times(1)).findById(mroId);
-        verify(repository, times(1)).save(any(MRO.class));
+        verify(gateway, times(1)).findById(mroId);
+        verify(gateway, times(1)).save(any(MRO.class));
     }
 
     @Test
@@ -143,8 +143,8 @@ class AtualizarPrecoMROUseCaseTest {
         BigDecimal precoMaior = new BigDecimal("99.99");
         AtualizarPrecoMROCommand commandPrecoMaior = new AtualizarPrecoMROCommand(mroId, precoMaior);
 
-        when(repository.findById(mroId)).thenReturn(Optional.of(mro));
-        when(repository.save(any(MRO.class))).thenReturn(mro);
+        when(gateway.findById(mroId)).thenReturn(Optional.of(mro));
+        when(gateway.save(any(MRO.class))).thenReturn(mro);
 
         // Act
         MROResponse response = useCase.execute(commandPrecoMaior);
@@ -153,8 +153,8 @@ class AtualizarPrecoMROUseCaseTest {
         assertNotNull(response);
         assertEquals(precoMaior, response.getPrecoUnitario());
 
-        verify(repository, times(1)).findById(mroId);
-        verify(repository, times(1)).save(any(MRO.class));
+        verify(gateway, times(1)).findById(mroId);
+        verify(gateway, times(1)).save(any(MRO.class));
     }
 
     @Test
@@ -164,8 +164,8 @@ class AtualizarPrecoMROUseCaseTest {
         BigDecimal precoMenor = new BigDecimal("25.00");
         AtualizarPrecoMROCommand commandPrecoMenor = new AtualizarPrecoMROCommand(mroId, precoMenor);
 
-        when(repository.findById(mroId)).thenReturn(Optional.of(mro));
-        when(repository.save(any(MRO.class))).thenReturn(mro);
+        when(gateway.findById(mroId)).thenReturn(Optional.of(mro));
+        when(gateway.save(any(MRO.class))).thenReturn(mro);
 
         // Act
         MROResponse response = useCase.execute(commandPrecoMenor);
@@ -174,7 +174,7 @@ class AtualizarPrecoMROUseCaseTest {
         assertNotNull(response);
         assertEquals(precoMenor, response.getPrecoUnitario());
 
-        verify(repository, times(1)).findById(mroId);
-        verify(repository, times(1)).save(any(MRO.class));
+        verify(gateway, times(1)).findById(mroId);
+        verify(gateway, times(1)).save(any(MRO.class));
     }
 }

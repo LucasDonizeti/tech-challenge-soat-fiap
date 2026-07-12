@@ -1,10 +1,10 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.commands.CriarMROCommand;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.MROGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
 import com.techchallenge.oficina.administrativo.domain.model.entities.MRO;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.TipoMRO;
-import com.techchallenge.oficina.administrativo.domain.repositories.MRORepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 class CriarMROUseCaseTest {
 
     @Mock
-    private MRORepository repository;
+    private MROGateway gateway;
 
     @InjectMocks
     private CriarMROUseCase useCase;
@@ -55,7 +55,7 @@ class CriarMROUseCaseTest {
     @DisplayName("Deve criar MRO com sucesso")
     void deveCriarMROComSucesso() {
         // Arrange
-        when(repository.save(any(MRO.class))).thenReturn(mro);
+        when(gateway.save(any(MRO.class))).thenReturn(mro);
 
         // Act
         MROResponse response = useCase.execute(command);
@@ -70,7 +70,7 @@ class CriarMROUseCaseTest {
         assertEquals(new BigDecimal("45.90"), response.getPrecoUnitario());
         assertTrue(response.getAtivo());
 
-        verify(repository, times(1)).save(any(MRO.class));
+        verify(gateway, times(1)).save(any(MRO.class));
     }
 
     @Test
@@ -93,7 +93,7 @@ class CriarMROUseCaseTest {
                 new BigDecimal("15.50")
         );
 
-        when(repository.save(any(MRO.class))).thenReturn(mroZeroEstoque);
+        when(gateway.save(any(MRO.class))).thenReturn(mroZeroEstoque);
 
         // Act
         MROResponse response = useCase.execute(commandZeroEstoque);
@@ -102,7 +102,7 @@ class CriarMROUseCaseTest {
         assertNotNull(response);
         assertEquals(0, response.getQuantidadeEstoque());
 
-        verify(repository, times(1)).save(any(MRO.class));
+        verify(gateway, times(1)).save(any(MRO.class));
     }
 
     @Test
@@ -125,7 +125,7 @@ class CriarMROUseCaseTest {
                 new BigDecimal("25.00")
         );
 
-        when(repository.save(any(MRO.class))).thenReturn(mroPeca);
+        when(gateway.save(any(MRO.class))).thenReturn(mroPeca);
 
         // Act
         MROResponse response = useCase.execute(commandPeca);
@@ -134,7 +134,7 @@ class CriarMROUseCaseTest {
         assertNotNull(response);
         assertEquals("PECA", response.getTipo());
 
-        verify(repository, times(1)).save(any(MRO.class));
+        verify(gateway, times(1)).save(any(MRO.class));
     }
 
     @Test
@@ -157,7 +157,7 @@ class CriarMROUseCaseTest {
                 new BigDecimal("0.50")
         );
 
-        when(repository.save(any(MRO.class))).thenReturn(mroSemDescricao);
+        when(gateway.save(any(MRO.class))).thenReturn(mroSemDescricao);
 
         // Act
         MROResponse response = useCase.execute(commandSemDescricao);
@@ -166,7 +166,7 @@ class CriarMROUseCaseTest {
         assertNotNull(response);
         assertNull(response.getDescricao());
 
-        verify(repository, times(1)).save(any(MRO.class));
+        verify(gateway, times(1)).save(any(MRO.class));
     }
 
     @Test
@@ -175,14 +175,14 @@ class CriarMROUseCaseTest {
         // Act & Assert
         assertThrows(NullPointerException.class, () -> useCase.execute(null));
 
-        verify(repository, never()).save(any(MRO.class));
+        verify(gateway, never()).save(any(MRO.class));
     }
 
     @Test
     @DisplayName("Deve propagar exceção quando repository falha")
     void devePropagarExcecaoQuandoRepositoryFalha() {
         // Arrange
-        when(repository.save(any(MRO.class))).thenThrow(new RuntimeException("Erro ao salvar no banco"));
+        when(gateway.save(any(MRO.class))).thenThrow(new RuntimeException("Erro ao salvar no banco"));
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -192,6 +192,6 @@ class CriarMROUseCaseTest {
 
         assertEquals("Erro ao salvar no banco", exception.getMessage());
 
-        verify(repository, times(1)).save(any(MRO.class));
+        verify(gateway, times(1)).save(any(MRO.class));
     }
 }

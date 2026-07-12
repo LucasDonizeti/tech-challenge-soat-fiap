@@ -1,7 +1,5 @@
 package com.techchallenge.oficina.os.infrastructure.persistence.repositories;
 
-import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
-import com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo;
 import com.techchallenge.oficina.administrativo.domain.repositories.ClienteRepository;
 import com.techchallenge.oficina.administrativo.domain.repositories.VeiculoRepository;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;

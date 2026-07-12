@@ -6,50 +6,33 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.StatusVeiculo;
 import lombok.Getter;
 
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
-@Entity
-@Table(name = "veiculos")
 @Getter
 public class Veiculo {
-    
-    @Id
-    @Column(name = "id", columnDefinition = "BINARY(16)")
+
     private UUID id;
     
-    @Embedded
-    @AttributeOverrides(
-        @AttributeOverride(name = "valor", column = @Column(name = "placa", length = 7, nullable = false, unique = true))
-    )
+
     private Placa placa;
-    
-    @Column(name = "marca", length = 50, nullable = false)
+
     private String marca;
-    
-    @Column(name = "modelo", length = 50, nullable = false)
+
     private String modelo;
-    
-    @Column(name = "ano", nullable = false)
+
     private Integer ano;
-    
-    @Column(name = "cor", length = 30)
+
     private String cor;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
     private StatusVeiculo status;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
-    
-    @Column(name = "criado_em", nullable = false)
-    private java.time.LocalDateTime criadoEm;
-    
-    @Column(name = "atualizado_em", nullable = false)
-    private java.time.LocalDateTime atualizadoEm;
+
+    private LocalDateTime criadoEm;
+
+    private LocalDateTime atualizadoEm;
 
     // Construtor padrão para JPA
     protected Veiculo() {}

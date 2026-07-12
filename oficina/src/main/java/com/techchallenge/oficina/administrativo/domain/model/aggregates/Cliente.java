@@ -13,50 +13,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Entity
-@Table(name = "clientes")
 @Getter
 public class Cliente extends AbstractAggregateRoot<Cliente> {
-    
-    @Id
-    @Column(name = "id", columnDefinition = "BINARY(16)")
+
     private UUID id;
-    
-    @Embedded
-    @AttributeOverrides(
-        @AttributeOverride(name = "valor", column = @Column(name = "nome", length = 100, nullable = false))
-    )
+
     private Nome nome;
-    
-    @Embedded
-    @AttributeOverrides(
-        @AttributeOverride(name = "valor", column = @Column(name = "cpf", length = 11))
-    )
+
     private CPF cpf;
-    
-    @Embedded
-    @AttributeOverrides(
-        @AttributeOverride(name = "valor", column = @Column(name = "cnpj", length = 14))
-    )
+
     private CNPJ cnpj;
-    
-    @Embedded
-    @AttributeOverrides(
-        @AttributeOverride(name = "endereco", column = @Column(name = "email", length = 100, nullable = false, unique = true))
-    )
+
     private Email email;
-    
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+
     private StatusCliente status;
-    
-    @Column(name = "criado_em", nullable = false)
+
     private LocalDateTime criadoEm;
-    
-    @Column(name = "atualizado_em", nullable = false)
+
     private LocalDateTime atualizadoEm;
-    
-    @OneToMany(mappedBy = "cliente", fetch = FetchType.LAZY)
+
     private List<Veiculo> veiculos = new ArrayList<>();
 
     // Construtor padrão para JPA

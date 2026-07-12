@@ -2,6 +2,7 @@ package com.techchallenge.oficina.os.application.usecases;
 
 import com.techchallenge.oficina.os.application.usecases.commands.AprovarOrcamentoCommand;
 import com.techchallenge.oficina.os.application.usecases.ports.input.AprovarOrcamentoInput;
+import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
@@ -11,26 +12,24 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
 public class AprovarOrcamentoUseCase implements AprovarOrcamentoInput {
     
-    private final OrdemServicoRepository ordemServicoRepository;
-    
-    @Transactional
+    private final OrdemServicoGateway ordemServicoGateway;
+
     public OrdemServicoResponse execute(AprovarOrcamentoCommand command) {
         log.info("Aprovando orçamento: ordemServicoId={}", command.getOrdemServicoId());
         
         // Buscar ordem de serviço
-        OrdemServico ordemServico = ordemServicoRepository.findById(command.getOrdemServicoId())
+        OrdemServico ordemServico = ordemServicoGateway.findById(command.getOrdemServicoId())
                 .orElseThrow(() -> new OrdemServicoNaoEncontradaException(command.getOrdemServicoId()));
         
         // Aprovar orçamento (validações são feitas no domínio)
         ordemServico.aprovarOrcamento();
         
         // Persistência
-        OrdemServico savedOrdemServico = ordemServicoRepository.save(ordemServico);
+        OrdemServico savedOrdemServico = ordemServicoGateway.save(ordemServico);
         
         log.info("Orçamento aprovado com sucesso: ID={}, Status={}", 
                 savedOrdemServico.getId(), savedOrdemServico.getStatus());

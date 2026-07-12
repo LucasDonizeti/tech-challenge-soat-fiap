@@ -2,6 +2,7 @@ package com.techchallenge.oficina.os.application.usecases;
 
 import com.techchallenge.oficina.os.application.usecases.commands.ConcluirServicoCommand;
 import com.techchallenge.oficina.os.application.usecases.ports.input.ConcluirServicoInput;
+import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.ItemServicoNaoEncontradoException;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
@@ -15,20 +16,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
 public class ConcluirServicoUseCase implements ConcluirServicoInput {
     
-    private final OrdemServicoRepository ordemServicoRepository;
-    
-    @Transactional
+    private final OrdemServicoGateway ordemServicoGateway;
+
     public OrdemServicoResponse execute(ConcluirServicoCommand command) {
         log.info("Concluindo serviço: ordemServicoId={}, itemServicoId={}", 
                 command.getOrdemServicoId(), command.getItemServicoId());
         
         // Buscar ordem de serviço
-        OrdemServico ordemServico = ordemServicoRepository.findById(command.getOrdemServicoId())
+        OrdemServico ordemServico = ordemServicoGateway.findById(command.getOrdemServicoId())
                 .orElseThrow(() -> new OrdemServicoNaoEncontradaException(command.getOrdemServicoId()));
         
         // Buscar item de serviço
@@ -46,7 +45,7 @@ public class ConcluirServicoUseCase implements ConcluirServicoInput {
         itemServico.atualizarStatus(StatusItemServico.CONCLUIDO);
         
         // Persistência
-        OrdemServico savedOrdemServico = ordemServicoRepository.save(ordemServico);
+        OrdemServico savedOrdemServico = ordemServicoGateway.save(ordemServico);
         
         log.info("Serviço concluído com sucesso: itemServicoId={}", itemServico.getId());
         

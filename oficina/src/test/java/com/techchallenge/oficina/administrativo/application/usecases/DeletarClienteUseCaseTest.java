@@ -1,10 +1,10 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.ClienteGateway;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CPF;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Nome;
-import com.techchallenge.oficina.administrativo.domain.repositories.ClienteRepository;
 import com.techchallenge.oficina.administrativo.domain.services.ClienteDomainService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 class DeletarClienteUseCaseTest {
 
     @Mock
-    private ClienteRepository repository;
+    private ClienteGateway gateway;
 
     @Mock
     private ClienteDomainService domainService;
@@ -50,24 +50,24 @@ class DeletarClienteUseCaseTest {
     @DisplayName("Deve deletar cliente com sucesso")
     void deveDeletarClienteComSucesso() {
         // Arrange
-        when(repository.findById(clienteId)).thenReturn(Optional.of(cliente));
+        when(gateway.findById(clienteId)).thenReturn(Optional.of(cliente));
         doNothing().when(domainService).validarExclusaoCliente(cliente);
-        doNothing().when(repository).deleteById(clienteId);
+        doNothing().when(gateway).deleteById(clienteId);
 
         // Act
         assertDoesNotThrow(() -> useCase.execute(clienteId));
 
         // Assert
-        verify(repository, times(1)).findById(clienteId);
+        verify(gateway, times(1)).findById(clienteId);
         verify(domainService, times(1)).validarExclusaoCliente(cliente);
-        verify(repository, times(1)).deleteById(clienteId);
+        verify(gateway, times(1)).deleteById(clienteId);
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando cliente não encontrado")
     void deveLancarExcecaoQuandoClienteNaoEncontrado() {
         // Arrange
-        when(repository.findById(clienteId)).thenReturn(Optional.empty());
+        when(gateway.findById(clienteId)).thenReturn(Optional.empty());
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(
@@ -77,16 +77,16 @@ class DeletarClienteUseCaseTest {
 
         assertEquals("Cliente não encontrado: " + clienteId, exception.getMessage());
 
-        verify(repository, times(1)).findById(clienteId);
+        verify(gateway, times(1)).findById(clienteId);
         verify(domainService, never()).validarExclusaoCliente(any(Cliente.class));
-        verify(repository, never()).deleteById(any(UUID.class));
+        verify(gateway, never()).deleteById(any(UUID.class));
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando cliente não pode ser excluído")
     void deveLancarExcecaoQuandoClienteNaoPodeSerExcluido() {
         // Arrange
-        when(repository.findById(clienteId)).thenReturn(Optional.of(cliente));
+        when(gateway.findById(clienteId)).thenReturn(Optional.of(cliente));
         doThrow(new IllegalStateException("Cliente não pode ser excluído. Verifique se há ordens de serviço em andamento ou veículos cadastrados."))
                 .when(domainService).validarExclusaoCliente(cliente);
 
@@ -98,9 +98,9 @@ class DeletarClienteUseCaseTest {
 
         assertEquals("Cliente não pode ser excluído. Verifique se há ordens de serviço em andamento ou veículos cadastrados.", exception.getMessage());
 
-        verify(repository, times(1)).findById(clienteId);
+        verify(gateway, times(1)).findById(clienteId);
         verify(domainService, times(1)).validarExclusaoCliente(cliente);
-        verify(repository, never()).deleteById(any(UUID.class));
+        verify(gateway, never()).deleteById(any(UUID.class));
     }
 
     @Test
@@ -120,17 +120,17 @@ class DeletarClienteUseCaseTest {
                 Email.of("contato@autopecas.com.br")
         );
         
-        when(repository.findById(clienteId)).thenReturn(Optional.of(clientePJ));
+        when(gateway.findById(clienteId)).thenReturn(Optional.of(clientePJ));
         doNothing().when(domainService).validarExclusaoCliente(clientePJ);
-        doNothing().when(repository).deleteById(clienteId);
+        doNothing().when(gateway).deleteById(clienteId);
 
         // Act
         assertDoesNotThrow(() -> useCase.execute(clienteId));
 
         // Assert
-        verify(repository, times(1)).findById(clienteId);
+        verify(gateway, times(1)).findById(clienteId);
         verify(domainService, times(1)).validarExclusaoCliente(clientePJ);
-        verify(repository, times(1)).deleteById(clienteId);
+        verify(gateway, times(1)).deleteById(clienteId);
     }
 
     @Test
@@ -138,16 +138,16 @@ class DeletarClienteUseCaseTest {
     void deveDeletarClienteInativoComSucesso() {
         // Arrange
         cliente.inativar();
-        when(repository.findById(clienteId)).thenReturn(Optional.of(cliente));
+        when(gateway.findById(clienteId)).thenReturn(Optional.of(cliente));
         doNothing().when(domainService).validarExclusaoCliente(cliente);
-        doNothing().when(repository).deleteById(clienteId);
+        doNothing().when(gateway).deleteById(clienteId);
 
         // Act
         assertDoesNotThrow(() -> useCase.execute(clienteId));
 
         // Assert
-        verify(repository, times(1)).findById(clienteId);
+        verify(gateway, times(1)).findById(clienteId);
         verify(domainService, times(1)).validarExclusaoCliente(cliente);
-        verify(repository, times(1)).deleteById(clienteId);
+        verify(gateway, times(1)).deleteById(clienteId);
     }
 }

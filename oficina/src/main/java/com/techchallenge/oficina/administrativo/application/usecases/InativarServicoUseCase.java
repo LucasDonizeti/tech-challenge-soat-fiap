@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.ports.input.InativarServicoInput;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.ServicoGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ServicoResponse;
 import com.techchallenge.oficina.administrativo.domain.model.entities.Servico;
 import com.techchallenge.oficina.administrativo.domain.repositories.ServicoRepository;
@@ -11,19 +12,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
 public class InativarServicoUseCase implements InativarServicoInput {
     
-    private final ServicoRepository repository;
-    
-    @Transactional
+    private final ServicoGateway servicoGateway;
+
     public ServicoResponse execute(UUID servicoId) {
         log.info("Iniciando inativação do serviço: ID={}", servicoId);
         
         // Buscar serviço existente
-        Servico servico = repository.findById(servicoId)
+        Servico servico = servicoGateway.findById(servicoId)
                 .orElseThrow(() -> {
                     log.warn("Serviço não encontrado para inativação: ID={}", servicoId);
                     return new IllegalArgumentException("Serviço não encontrado: " + servicoId);
@@ -33,7 +32,7 @@ public class InativarServicoUseCase implements InativarServicoInput {
         servico.desativar();
         
         // Persistir alterações
-        Servico savedServico = repository.save(servico);
+        Servico savedServico = servicoGateway.save(servico);
         
         log.info("Serviço inativado com sucesso: ID={}, Nome={}", 
                 servico.getId(), 

@@ -2,6 +2,7 @@ package com.techchallenge.oficina.os.application.usecases;
 
 import com.techchallenge.oficina.os.application.usecases.commands.RemoverServicoOrdemCommand;
 import com.techchallenge.oficina.os.application.usecases.ports.input.RemoverServicoOrdemInput;
+import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoStatusInvalidoException;
@@ -15,20 +16,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
 public class RemoverServicoOrdemUseCase implements RemoverServicoOrdemInput {
     
-    private final OrdemServicoRepository ordemServicoRepository;
-    
-    @Transactional
+    private final OrdemServicoGateway ordemServicoGateway;
+
     public OrdemServicoResponse execute(RemoverServicoOrdemCommand command) {
         log.info("Removendo serviço da ordem de serviço: ordemServicoId={}, itemServicoId={}", 
                 command.getOrdemServicoId(), command.getItemServicoId());
         
         // Buscar ordem de serviço
-        OrdemServico ordemServico = ordemServicoRepository.findById(command.getOrdemServicoId())
+        OrdemServico ordemServico = ordemServicoGateway.findById(command.getOrdemServicoId())
                 .orElseThrow(() -> new OrdemServicoNaoEncontradaException(command.getOrdemServicoId()));
         
         // A validação de status é feita dentro do próprio aggregate (removerItemServico)
@@ -38,7 +37,7 @@ public class RemoverServicoOrdemUseCase implements RemoverServicoOrdemInput {
         ordemServico.removerItemServico(command.getItemServicoId());
         
         // Persistência
-        OrdemServico savedOrdemServico = ordemServicoRepository.save(ordemServico);
+        OrdemServico savedOrdemServico = ordemServicoGateway.save(ordemServico);
         
         log.info("Serviço removido da ordem de serviço com sucesso: itemServicoId={}", command.getItemServicoId());
         

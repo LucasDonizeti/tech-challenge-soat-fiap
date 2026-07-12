@@ -14,7 +14,7 @@ Foi decidido adotar a seguinte estrutura de pacotes para o projeto, combinando *
 
 ```text
 com.techchallenge.oficina
-├── administrativo/                               
+├── administrativo/
 │   ├── domain/
 │   │   ├── model/
 │   │   │   ├── aggregates/
@@ -25,17 +25,22 @@ com.techchallenge.oficina
 │   │   └── services/
 │   ├── application/
 │   │   └── usecases/
+│   │       ├── commands/
+│   │       ├── ports/
+│   │       │   ├── input/
+│   │       │   └── output/
+│   │       └── responses/
 │   ├── web/
 │   │   ├── controllers/
-│   │   ├── dtos/
-│   │   └── mappers/
+│   │   ├── dto/
+│   │   ├── mappers/
+│   │   └── presenters/
 │   └── infrastructure/
-│       ├── persistence/
+│       ├── config/
 │       ├── gateways/
-│       ├── external/
-│       └── config/
+│       └── persistence/
 
-├── os/                             
+├── os/
 │   ├── domain/
 │   │   ├── model/
 │   │   │   ├── aggregates/
@@ -46,15 +51,20 @@ com.techchallenge.oficina
 │   │   └── services/
 │   ├── application/
 │   │   └── usecases/
+│   │       ├── commands/
+│   │       ├── ports/
+│   │       │   ├── input/
+│   │       │   └── output/
+│   │       └── responses/
 │   ├── web/
 │   │   ├── controllers/
-│   │   ├── dtos/
-│   │   └── mappers/
+│   │   ├── dto/
+│   │   ├── mappers/
+│   │   └── presenters/
 │   └── infrastructure/
-│       ├── persistence/
-│       ├── gateways/
-│       ├── external/
-│       └── config/
+│       ├── acl/
+│       ├── config/
+│       └── persistence/
 
 ├── sharedkernel/
 │   ├── domain/
@@ -69,10 +79,10 @@ com.techchallenge.oficina
 │       ├── annotations/
 │       └── exceptions/
 
-└── infrastructure/                         
+└── infrastructure/
     └── config/
         ├── security/
-        └── spring/
+        └── swagger/
 ```
 
 ### Descrição dos Pacotes
@@ -234,49 +244,57 @@ public class ClienteDomainService {
 
 **application/**
 - **Propósito:** Orquestra casos de uso e coordena o domínio.
-- **Descrição:** Contém a lógica de aplicação (use cases).
+- **Descrição:** Contém a lógica de aplicação (use cases), seus comandos, respostas e os contratos de entrada/saída necessários para manter o acoplamento baixo com a infraestrutura.
 - **Subpacotes:**
   - `usecases/` - Casos de uso específicos do bounded context
+  - `usecases/commands/` - Comandos que representam operações de aplicação
+  - `usecases/ports/input/` - Interfaces de entrada dos use cases (Input Ports)
+  - `usecases/ports/output/` - Interfaces de saída/gateways abstraindo persistência e integrações
+  - `usecases/responses/` - Objetos de resposta retornados pelos use cases
 - **Exemplo de código:**
 ```java
 // application/usecases/CriarClienteUseCase.java
 @Service
 @Transactional
-public class CriarClienteUseCase {
-    private final ClienteRepository repository;
+public class CriarClienteUseCase implements CriarClienteInput {
+    private final ClienteGateway clienteGateway;
     private final ClienteDomainService domainService;
-    private final EventPublisher eventPublisher;
-    
-    public CriarClienteUseCase(ClienteRepository repository, 
-                              ClienteDomainService domainService,
-                              EventPublisher eventPublisher) {
-        this.repository = repository;
+
+    public CriarClienteUseCase(ClienteGateway clienteGateway,
+                              ClienteDomainService domainService) {
+        this.clienteGateway = clienteGateway;
         this.domainService = domainService;
-        this.eventPublisher = eventPublisher;
     }
 
     public ClienteResponse execute(CriarClienteCommand command) {
-        // Validações de aplicação
         command.validate();
-        
-        // Validações de domínio via Domain Service
+
         domainService.validarCPFUnico(command.getCpf());
-        
-        // Criação do aggregate (factory method)
+
         Cliente cliente = Cliente.criar(
-            command.getNome(), 
-            command.getCpf(), 
+            command.getNome(),
+            command.getCpf(),
             command.getEmail()
         );
-        
-        // Persistência
-        repository.save(cliente);
-        
-        // Publicação de eventos adicionais se necessário
-        eventPublisher.publish(new ClienteCriadoEvent(cliente.getId()));
-        
-        return ClienteResponse.from(cliente);
+
+        Cliente salvo = clienteGateway.save(cliente);
+        return ClienteResponse.from(salvo);
     }
+}
+```
+
+```java
+// application/usecases/ports/input/CriarClienteInput.java
+public interface CriarClienteInput {
+    ClienteResponse execute(CriarClienteCommand command);
+}
+```
+
+```java
+// application/usecases/ports/output/ClienteGateway.java
+public interface ClienteGateway {
+    Cliente save(Cliente cliente);
+    Optional<Cliente> findById(UUID id);
 }
 ```
 

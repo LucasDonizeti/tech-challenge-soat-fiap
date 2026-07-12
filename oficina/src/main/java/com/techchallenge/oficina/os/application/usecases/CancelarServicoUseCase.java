@@ -2,6 +2,7 @@ package com.techchallenge.oficina.os.application.usecases;
 
 import com.techchallenge.oficina.os.application.usecases.commands.CancelarServicoCommand;
 import com.techchallenge.oficina.os.application.usecases.ports.input.CancelarServicoInput;
+import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.ItemServicoNaoEncontradoException;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
@@ -15,20 +16,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
 public class CancelarServicoUseCase implements CancelarServicoInput {
     
-    private final OrdemServicoRepository ordemServicoRepository;
-    
-    @Transactional
+    private final OrdemServicoGateway ordemServicoGateway;
+
     public OrdemServicoResponse execute(CancelarServicoCommand command) {
         log.info("Cancelando serviço: ordemServicoId={}, itemServicoId={}", 
                 command.getOrdemServicoId(), command.getItemServicoId());
         
         // Buscar ordem de serviço
-        OrdemServico ordemServico = ordemServicoRepository.findById(command.getOrdemServicoId())
+        OrdemServico ordemServico = ordemServicoGateway.findById(command.getOrdemServicoId())
                 .orElseThrow(() -> new OrdemServicoNaoEncontradaException(command.getOrdemServicoId()));
         
         // Buscar item de serviço
@@ -50,7 +49,7 @@ public class CancelarServicoUseCase implements CancelarServicoInput {
         itemServico.atualizarStatus(StatusItemServico.CANCELADO);
         
         // Persistência
-        OrdemServico savedOrdemServico = ordemServicoRepository.save(ordemServico);
+        OrdemServico savedOrdemServico = ordemServicoGateway.save(ordemServico);
         
         log.info("Serviço cancelado com sucesso: itemServicoId={}", itemServico.getId());
         

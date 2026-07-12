@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.VeiculoGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.VeiculoResponse;
 import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoVeiculoException;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
@@ -8,7 +9,6 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CPF;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Nome;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa;
-import com.techchallenge.oficina.administrativo.domain.repositories.VeiculoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 class BuscarVeiculoUseCaseTest {
 
     @Mock
-    private VeiculoRepository repository;
+    private VeiculoGateway gateway;
 
     @InjectMocks
     private BuscarVeiculoUseCase useCase;
@@ -60,7 +60,7 @@ class BuscarVeiculoUseCaseTest {
     @DisplayName("Deve buscar veículo com sucesso quando encontrado")
     void deveBuscarVeiculoComSucesso() {
         // Arrange
-        when(repository.findById(veiculoId)).thenReturn(Optional.of(veiculo));
+        when(gateway.findById(veiculoId)).thenReturn(Optional.of(veiculo));
 
         // Act
         VeiculoResponse response = useCase.execute(veiculoId);
@@ -73,14 +73,14 @@ class BuscarVeiculoUseCaseTest {
         assertEquals("Prata", response.getCor());
         assertEquals("ABC-1234", response.getPlaca());
 
-        verify(repository, times(1)).findById(veiculoId);
+        verify(gateway, times(1)).findById(veiculoId);
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando veículo não encontrado")
     void deveLancarExcecaoQuandoVeiculoNaoEncontrado() {
         // Arrange
-        when(repository.findById(veiculoId)).thenReturn(Optional.empty());
+        when(gateway.findById(veiculoId)).thenReturn(Optional.empty());
 
         // Act & Assert
         ValidacaoVeiculoException exception = assertThrows(
@@ -90,7 +90,7 @@ class BuscarVeiculoUseCaseTest {
 
         assertEquals("Veículo não encontrado: " + veiculoId, exception.getMessage());
 
-        verify(repository, times(1)).findById(veiculoId);
+        verify(gateway, times(1)).findById(veiculoId);
     }
 
     @Test
@@ -99,7 +99,7 @@ class BuscarVeiculoUseCaseTest {
         // Act & Assert
         assertThrows(ValidacaoVeiculoException.class, () -> useCase.execute(null));
 
-        verify(repository, times(1)).findById(isNull());
+        verify(gateway, times(1)).findById(isNull());
     }
 
     @Test
@@ -107,7 +107,7 @@ class BuscarVeiculoUseCaseTest {
     void deveBuscarVeiculoInativoComSucesso() {
         // Arrange
         veiculo.inativar();
-        when(repository.findById(veiculoId)).thenReturn(Optional.of(veiculo));
+        when(gateway.findById(veiculoId)).thenReturn(Optional.of(veiculo));
 
         // Act
         VeiculoResponse response = useCase.execute(veiculoId);
@@ -117,14 +117,14 @@ class BuscarVeiculoUseCaseTest {
         assertEquals("Toyota", response.getMarca());
         assertEquals("INATIVO", response.getStatus().name());
 
-        verify(repository, times(1)).findById(veiculoId);
+        verify(gateway, times(1)).findById(veiculoId);
     }
 
     @Test
     @DisplayName("Deve buscar veículo com cliente vinculado")
     void deveBuscarVeiculoComClienteVinculado() {
         // Arrange
-        when(repository.findById(veiculoId)).thenReturn(Optional.of(veiculo));
+        when(gateway.findById(veiculoId)).thenReturn(Optional.of(veiculo));
 
         // Act
         VeiculoResponse response = useCase.execute(veiculoId);
@@ -134,6 +134,6 @@ class BuscarVeiculoUseCaseTest {
         assertNotNull(response.getClienteId());
         assertEquals("João Silva", response.getClienteNome());
 
-        verify(repository, times(1)).findById(veiculoId);
+        verify(gateway, times(1)).findById(veiculoId);
     }
 }

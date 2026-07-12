@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.domain.services;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.ClienteGateway;
 import com.techchallenge.oficina.administrativo.domain.exceptions.CnpjJaCadastradoException;
 import com.techchallenge.oficina.administrativo.domain.exceptions.CpfJaCadastradoException;
 import com.techchallenge.oficina.administrativo.domain.exceptions.EmailJaCadastradoException;
@@ -16,22 +17,22 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ClienteDomainService {
     
-    private final ClienteRepository repository;
+    private final ClienteGateway clienteGateway;
     
     public void validarCPFUnico(CPF cpf) {
-        if (repository.existsByCPF(cpf)) {
+        if (clienteGateway.existsByCPF(cpf)) {
             throw new CpfJaCadastradoException(cpf);
         }
     }
     
     public void validarCNPJUnico(CNPJ cnpj) {
-        if (repository.existsByCNPJ(cnpj)) {
+        if (clienteGateway.existsByCNPJ(cnpj)) {
             throw new CnpjJaCadastradoException(cnpj);
         }
     }
     
     public void validarEmailUnico(Email email) {
-        if (repository.existsByEmail(email)) {
+        if (clienteGateway.existsByEmail(email)) {
             throw new EmailJaCadastradoException(email);
         }
     }

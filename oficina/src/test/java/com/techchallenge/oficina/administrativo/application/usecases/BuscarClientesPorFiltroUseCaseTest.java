@@ -1,12 +1,12 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.ClienteGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ClienteResponse;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CPF;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Nome;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.StatusCliente;
-import com.techchallenge.oficina.administrativo.domain.repositories.ClienteRepository;
 import com.techchallenge.oficina.administrativo.web.dto.ClienteFilterRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 class BuscarClientesPorFiltroUseCaseTest {
 
     @Mock
-    private ClienteRepository repository;
+    private ClienteGateway gateway;
 
     @InjectMocks
     private BuscarClientesPorFiltroUseCase useCase;
@@ -48,7 +48,7 @@ class BuscarClientesPorFiltroUseCaseTest {
                 Cliente.criar(Nome.of("João Santos"), CPF.of("98765432100"), Email.of("santos@teste.com"))
         );
 
-        when(repository.findByFilter(filter)).thenReturn(clientes);
+        when(gateway.findByFilter(filter)).thenReturn(clientes);
 
         // Act
         Page<ClienteResponse> result = useCase.execute(filter, pageable);
@@ -60,7 +60,7 @@ class BuscarClientesPorFiltroUseCaseTest {
         assertEquals("João Silva", result.getContent().get(0).getNome());
         assertEquals("João Santos", result.getContent().get(1).getNome());
 
-        verify(repository, times(1)).findByFilter(filter);
+        verify(gateway, times(1)).findByFilter(filter);
     }
 
     @Test
@@ -77,7 +77,7 @@ class BuscarClientesPorFiltroUseCaseTest {
                 Cliente.criar(Nome.of("João Silva"), CPF.of("12345678909"), Email.of("joao@teste.com"))
         );
 
-        when(repository.findByFilter(filter)).thenReturn(clientes);
+        when(gateway.findByFilter(filter)).thenReturn(clientes);
 
         // Act
         Page<ClienteResponse> result = useCase.execute(filter, pageable);
@@ -89,7 +89,7 @@ class BuscarClientesPorFiltroUseCaseTest {
         assertEquals("João Silva", result.getContent().get(0).getNome());
         assertEquals("123.456.789-09", result.getContent().get(0).getCpf());
 
-        verify(repository, times(1)).findByFilter(filter);
+        verify(gateway, times(1)).findByFilter(filter);
     }
 
     @Test
@@ -106,7 +106,7 @@ class BuscarClientesPorFiltroUseCaseTest {
                 Cliente.criar(Nome.of("Maria Silva"), CPF.of("98765432100"), Email.of("maria@gmail.com"))
         );
 
-        when(repository.findByFilter(filter)).thenReturn(clientes);
+        when(gateway.findByFilter(filter)).thenReturn(clientes);
 
         // Act
         Page<ClienteResponse> result = useCase.execute(filter, pageable);
@@ -118,7 +118,7 @@ class BuscarClientesPorFiltroUseCaseTest {
         assertEquals("Maria Silva", result.getContent().get(0).getNome());
         assertEquals("maria@gmail.com", result.getContent().get(0).getEmail());
 
-        verify(repository, times(1)).findByFilter(filter);
+        verify(gateway, times(1)).findByFilter(filter);
     }
 
     @Test
@@ -136,7 +136,7 @@ class BuscarClientesPorFiltroUseCaseTest {
                 Cliente.criar(Nome.of("Cliente Ativo Dois"), CPF.of("98765432100"), Email.of("ativo2@teste.com"))
         );
 
-        when(repository.findByFilter(filter)).thenReturn(clientes);
+        when(gateway.findByFilter(filter)).thenReturn(clientes);
 
         // Act
         Page<ClienteResponse> result = useCase.execute(filter, pageable);
@@ -148,7 +148,7 @@ class BuscarClientesPorFiltroUseCaseTest {
         result.getContent().forEach(response -> 
             assertEquals("ATIVO", response.getStatus().name()));
 
-        verify(repository, times(1)).findByFilter(filter);
+        verify(gateway, times(1)).findByFilter(filter);
     }
 
     @Test
@@ -166,7 +166,7 @@ class BuscarClientesPorFiltroUseCaseTest {
                 Cliente.criar(Nome.of("João Silva"), CPF.of("12345678909"), Email.of("joao@teste.com"))
         );
 
-        when(repository.findByFilter(filter)).thenReturn(clientes);
+        when(gateway.findByFilter(filter)).thenReturn(clientes);
 
         // Act
         Page<ClienteResponse> result = useCase.execute(filter, pageable);
@@ -176,7 +176,7 @@ class BuscarClientesPorFiltroUseCaseTest {
         assertEquals(1, result.getTotalElements());
         assertEquals(1, result.getContent().size());
 
-        verify(repository, times(1)).findByFilter(filter);
+        verify(gateway, times(1)).findByFilter(filter);
     }
 
     @Test
@@ -189,7 +189,7 @@ class BuscarClientesPorFiltroUseCaseTest {
 
         Pageable pageable = PageRequest.of(0, 10);
 
-        when(repository.findByFilter(filter)).thenReturn(List.of());
+        when(gateway.findByFilter(filter)).thenReturn(List.of());
 
         // Act
         Page<ClienteResponse> result = useCase.execute(filter, pageable);
@@ -200,7 +200,7 @@ class BuscarClientesPorFiltroUseCaseTest {
         assertEquals(0, result.getContent().size());
         assertTrue(result.getContent().isEmpty());
 
-        verify(repository, times(1)).findByFilter(filter);
+        verify(gateway, times(1)).findByFilter(filter);
     }
 
     @Test
@@ -216,7 +216,7 @@ class BuscarClientesPorFiltroUseCaseTest {
                 Cliente.criar(Nome.of("Cliente Tres"), CPF.of("12345678909"), Email.of("cliente3@teste.com"))
         );
 
-        when(repository.findByFilter(filter)).thenReturn(clientes);
+        when(gateway.findByFilter(filter)).thenReturn(clientes);
 
         // Act
         Page<ClienteResponse> result = useCase.execute(filter, pageable);
@@ -228,7 +228,7 @@ class BuscarClientesPorFiltroUseCaseTest {
         assertEquals(2, result.getSize()); // Tamanho da página
         assertEquals(0, result.getNumber()); // Número da página
 
-        verify(repository, times(1)).findByFilter(filter);
+        verify(gateway, times(1)).findByFilter(filter);
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.commands.CriarClienteCommand;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.ClienteGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ClienteResponse;
 import com.techchallenge.oficina.administrativo.domain.exceptions.CpfJaCadastradoException;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
@@ -8,7 +9,6 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CPF;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CNPJ;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Nome;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
-import com.techchallenge.oficina.administrativo.domain.repositories.ClienteRepository;
 import com.techchallenge.oficina.administrativo.domain.services.ClienteDomainService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
 class CriarClienteUseCaseSimpleTest {
 
     @Mock
-    private ClienteRepository repository;
+    private ClienteGateway gateway;
 
     @Mock
     private ClienteDomainService domainService;
@@ -55,7 +55,7 @@ class CriarClienteUseCaseSimpleTest {
                 Email.of("joao.silva@email.com")
         );
         
-        when(repository.save(any(Cliente.class))).thenReturn(clienteSalvo);
+        when(gateway.save(any(Cliente.class))).thenReturn(clienteSalvo);
 
         // Act
         ClienteResponse response = criarClienteUseCase.execute(command);
@@ -71,7 +71,7 @@ class CriarClienteUseCaseSimpleTest {
 
         // Verificar se validações foram chamadas
         verify(domainService).validarIdentificadoresUnicos(any(CPF.class), isNull(), any(Email.class));
-        verify(repository).save(any(Cliente.class));
+        verify(gateway).save(any(Cliente.class));
     }
 
     @Test
@@ -90,7 +90,7 @@ class CriarClienteUseCaseSimpleTest {
                 Email.of("contato@autopecas.com.br")
         );
         
-        when(repository.save(any(Cliente.class))).thenReturn(clienteSalvo);
+        when(gateway.save(any(Cliente.class))).thenReturn(clienteSalvo);
 
         // Act
         ClienteResponse response = criarClienteUseCase.execute(commandPJ);
@@ -106,7 +106,7 @@ class CriarClienteUseCaseSimpleTest {
 
         // Verificar se validações foram chamadas
         verify(domainService).validarIdentificadoresUnicos(isNull(), any(CNPJ.class), any(Email.class));
-        verify(repository).save(any(Cliente.class));
+        verify(gateway).save(any(Cliente.class));
     }
 
     @Test
@@ -124,6 +124,6 @@ class CriarClienteUseCaseSimpleTest {
         assertEquals("CPF já cadastrado: 123.456.789-09", exception.getMessage());
 
         // Verificar que não tentou salvar
-        verify(repository, never()).save(any(Cliente.class));
+        verify(gateway, never()).save(any(Cliente.class));
     }
 }

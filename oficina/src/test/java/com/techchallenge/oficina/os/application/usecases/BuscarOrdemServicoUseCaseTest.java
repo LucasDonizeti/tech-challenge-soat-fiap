@@ -1,9 +1,9 @@
 package com.techchallenge.oficina.os.application.usecases;
 
+import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
-import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 class BuscarOrdemServicoUseCaseTest {
 
     @Mock
-    private OrdemServicoRepository ordemServicoRepository;
+    private OrdemServicoGateway gateway;
 
     @InjectMocks
     private BuscarOrdemServicoUseCase useCase;
@@ -42,21 +42,21 @@ class BuscarOrdemServicoUseCaseTest {
     @DisplayName("Deve buscar ordem de serviço com sucesso")
     void deveBuscarOrdemServicoComSucesso() {
         // Arrange
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
 
         // Act
         OrdemServicoResponse response = useCase.execute(ordemServicoId);
 
         // Assert
         assertNotNull(response);
-        verify(ordemServicoRepository, times(1)).findById(ordemServicoId);
+        verify(gateway, times(1)).findById(ordemServicoId);
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando ordem de serviço não encontrada")
     void deveLancarExcecaoQuandoOrdemServicoNaoEncontrada() {
         // Arrange
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.empty());
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.empty());
 
         // Act & Assert
         OrdemServicoNaoEncontradaException exception = assertThrows(
@@ -65,7 +65,7 @@ class BuscarOrdemServicoUseCaseTest {
         );
 
         assertTrue(exception.getMessage().contains(ordemServicoId.toString()));
-        verify(ordemServicoRepository, times(1)).findById(ordemServicoId);
+        verify(gateway, times(1)).findById(ordemServicoId);
     }
 
     @Test
@@ -74,7 +74,7 @@ class BuscarOrdemServicoUseCaseTest {
         // Act & Assert
         assertThrows(OrdemServicoNaoEncontradaException.class, () -> useCase.execute(null));
 
-        verify(ordemServicoRepository, times(1)).findById(null);
+        verify(gateway, times(1)).findById(null);
     }
 
     @Test
@@ -82,34 +82,34 @@ class BuscarOrdemServicoUseCaseTest {
     void deveBuscarOrdemServicoComUUIDValido() {
         // Arrange
         UUID validId = UUID.randomUUID();
-        when(ordemServicoRepository.findById(validId)).thenReturn(Optional.of(ordemServico));
+        when(gateway.findById(validId)).thenReturn(Optional.of(ordemServico));
 
         // Act
         OrdemServicoResponse response = useCase.execute(validId);
 
         // Assert
         assertNotNull(response);
-        verify(ordemServicoRepository, times(1)).findById(validId);
+        verify(gateway, times(1)).findById(validId);
     }
 
     @Test
     @DisplayName("Deve chamar repository apenas uma vez")
     void deveChamarRepositoryApenasUmaVez() {
         // Arrange
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
 
         // Act
         useCase.execute(ordemServicoId);
 
         // Assert
-        verify(ordemServicoRepository, times(1)).findById(ordemServicoId);
+        verify(gateway, times(1)).findById(ordemServicoId);
     }
 
     @Test
     @DisplayName("Deve propagar exceção quando repository falha")
     void devePropagarExcecaoQuandoRepositoryFalha() {
         // Arrange
-        when(ordemServicoRepository.findById(ordemServicoId))
+        when(gateway.findById(ordemServicoId))
                 .thenThrow(new RuntimeException("Erro ao buscar no banco"));
 
         // Act & Assert
@@ -119,6 +119,6 @@ class BuscarOrdemServicoUseCaseTest {
         );
 
         assertEquals("Erro ao buscar no banco", exception.getMessage());
-        verify(ordemServicoRepository, times(1)).findById(ordemServicoId);
+        verify(gateway, times(1)).findById(ordemServicoId);
     }
 }
