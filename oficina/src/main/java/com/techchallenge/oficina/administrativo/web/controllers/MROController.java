@@ -1,9 +1,11 @@
 package com.techchallenge.oficina.administrativo.web.controllers;
 
 import com.techchallenge.oficina.administrativo.application.usecases.*;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.*;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
 import com.techchallenge.oficina.administrativo.web.dto.*;
 import com.techchallenge.oficina.administrativo.web.mappers.MROWebMapper;
+import com.techchallenge.oficina.administrativo.web.presenters.MROPresenter;
 import com.techchallenge.oficina.sharedkernel.common.PageableValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +29,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @RestController
+@Transactional
 @RequestMapping("/v1/admin/mros")
 @RequiredArgsConstructor
 @Validated
@@ -34,16 +38,16 @@ import java.util.UUID;
 @SecurityRequirement(name = "Bearer Authentication")
 public class MROController {
     
-    private final CriarMROUseCase criarMROUseCase;
-    private final BuscarMROUseCase buscarMROUseCase;
-    private final ListarMROsUseCase listarMROsUseCase;
-    private final InativarMROUseCase inativarMROUseCase;
-    private final AtivarMROUseCase ativarMROUseCase;
-    private final AtualizarPrecoMROUseCase atualizarPrecoMROUseCase;
-    private final AtualizarDadosMROUseCase atualizarDadosMROUseCase;
-    private final ReporEstoqueMROUseCase reporEstoqueMROUseCase;
-    private final DebitarEstoqueMROUseCase debitarEstoqueMROUseCase;
-    private final MROWebMapper mapper;
+    private final CriarMROInput criarMROInput;
+    private final BuscarMROInput buscarMROInput;
+    private final ListarMROsInput listarMROsInput;
+    private final InativarMROInput inativarMROInput;
+    private final AtivarMROInput ativarMROInput;
+    private final AtualizarPrecoMROInput atualizarPrecoMROInput;
+    private final AtualizarDadosMROInput atualizarDadosMROInput;
+    private final ReporEstoqueMROInput reporEstoqueMROInput;
+    private final DebitarEstoqueMROInput debitarEstoqueMROInput;
+    private final MROPresenter presenter;
     private final PageableValidator pageableValidator;
     
     @PostMapping
@@ -56,8 +60,8 @@ public class MROController {
     public ResponseEntity<MROResponseDto> criar(@Valid @RequestBody CriarMRORequest request) {
         log.info("Recebendo requisição para criar MRO: {}", request.getNome());
         
-        MROResponse response = criarMROUseCase.execute(request.toCommand());
-        MROResponseDto dto = mapper.toDto(response);
+        MROResponse response = criarMROInput.execute(request.toCommand());
+        MROResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
@@ -74,8 +78,8 @@ public class MROController {
             @PathVariable UUID id) {
         log.info("Buscando MRO por ID: {}", id);
         
-        MROResponse response = buscarMROUseCase.execute(id);
-        MROResponseDto dto = mapper.toDto(response);
+        MROResponse response = buscarMROInput.execute(id);
+        MROResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -99,8 +103,8 @@ public class MROController {
         Set<String> allowedFields = Set.of("nome", "tipo", "quantidadeEstoque", "precoUnitario", "ativo", "criadoEm", "atualizadoEm");
         Pageable validatedPageable = pageableValidator.validate(pageable, allowedFields);
 
-        Page<MROResponse> responses = listarMROsUseCase.execute(validatedPageable);
-        Page<MROResponseDto> dtos = mapper.toDtoPage(responses);
+        Page<MROResponse> responses = listarMROsInput.execute(validatedPageable);
+        Page<MROResponseDto> dtos = presenter.prepararViewModelPage(responses);
 
         return ResponseEntity.ok(dtos);
     }
@@ -117,8 +121,8 @@ public class MROController {
             @PathVariable UUID id) {
         log.info("Inativando MRO ID: {}", id);
         
-        MROResponse response = inativarMROUseCase.execute(id);
-        MROResponseDto dto = mapper.toDto(response);
+        MROResponse response = inativarMROInput.execute(id);
+        MROResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -135,8 +139,8 @@ public class MROController {
             @PathVariable UUID id) {
         log.info("Ativando MRO ID: {}", id);
         
-        MROResponse response = ativarMROUseCase.execute(id);
-        MROResponseDto dto = mapper.toDto(response);
+        MROResponse response = ativarMROInput.execute(id);
+        MROResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -155,8 +159,8 @@ public class MROController {
             @Valid @RequestBody AtualizarPrecoMRORequest request) {
         log.info("Atualizando preço unitário do MRO ID: {}", id);
         
-        MROResponse response = atualizarPrecoMROUseCase.execute(request.toCommand(id));
-        MROResponseDto dto = mapper.toDto(response);
+        MROResponse response = atualizarPrecoMROInput.execute(request.toCommand(id));
+        MROResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -175,8 +179,8 @@ public class MROController {
             @Valid @RequestBody AtualizarDadosMRORequest request) {
         log.info("Atualizando dados do MRO ID: {}", id);
         
-        MROResponse response = atualizarDadosMROUseCase.execute(request.toCommand(id));
-        MROResponseDto dto = mapper.toDto(response);
+        MROResponse response = atualizarDadosMROInput.execute(request.toCommand(id));
+        MROResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -198,8 +202,8 @@ public class MROController {
         com.techchallenge.oficina.administrativo.application.usecases.commands.ReporEstoqueMROCommand command = 
                 new com.techchallenge.oficina.administrativo.application.usecases.commands.ReporEstoqueMROCommand(id, request.getQuantidade());
         
-        MROResponse response = reporEstoqueMROUseCase.execute(command);
-        MROResponseDto dto = mapper.toDto(response);
+        MROResponse response = reporEstoqueMROInput.execute(command);
+        MROResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }
@@ -221,8 +225,8 @@ public class MROController {
         com.techchallenge.oficina.administrativo.application.usecases.commands.DebitarEstoqueMROCommand command = 
                 new com.techchallenge.oficina.administrativo.application.usecases.commands.DebitarEstoqueMROCommand(id, request.getQuantidade());
         
-        MROResponse response = debitarEstoqueMROUseCase.execute(command);
-        MROResponseDto dto = mapper.toDto(response);
+        MROResponse response = debitarEstoqueMROInput.execute(command);
+        MROResponseDto dto = presenter.prepararViewModel(response);
         
         return ResponseEntity.ok(dto);
     }

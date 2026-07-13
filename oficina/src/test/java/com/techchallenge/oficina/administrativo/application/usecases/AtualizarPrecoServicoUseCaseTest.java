@@ -1,9 +1,9 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.commands.AtualizarPrecoServicoCommand;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.ServicoGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ServicoResponse;
 import com.techchallenge.oficina.administrativo.domain.model.entities.Servico;
-import com.techchallenge.oficina.administrativo.domain.repositories.ServicoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 class AtualizarPrecoServicoUseCaseTest {
 
     @Mock
-    private ServicoRepository repository;
+    private ServicoGateway gateway;
 
     @InjectMocks
     private AtualizarPrecoServicoUseCase useCase;
@@ -49,8 +49,8 @@ class AtualizarPrecoServicoUseCaseTest {
     @DisplayName("Deve atualizar preço do serviço com sucesso")
     void deveAtualizarPrecoDoServicoComSucesso() {
         // Arrange
-        when(repository.findById(servicoId)).thenReturn(Optional.of(servico));
-        when(repository.save(any(Servico.class))).thenReturn(servico);
+        when(gateway.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(gateway.save(any(Servico.class))).thenReturn(servico);
 
         // Act
         ServicoResponse result = useCase.execute(servicoId, command);
@@ -58,15 +58,15 @@ class AtualizarPrecoServicoUseCaseTest {
         // Assert
         assertNotNull(result);
         assertEquals(new BigDecimal("180.00"), servico.getPreco());
-        verify(repository, times(1)).findById(servicoId);
-        verify(repository, times(1)).save(any(Servico.class));
+        verify(gateway, times(1)).findById(servicoId);
+        verify(gateway, times(1)).save(any(Servico.class));
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando serviço não encontrado")
     void deveLancarExcecaoQuandoServicoNaoEncontrado() {
         // Arrange
-        when(repository.findById(servicoId)).thenReturn(Optional.empty());
+        when(gateway.findById(servicoId)).thenReturn(Optional.empty());
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(
@@ -75,8 +75,8 @@ class AtualizarPrecoServicoUseCaseTest {
         );
 
         assertTrue(exception.getMessage().contains("Serviço não encontrado"));
-        verify(repository, times(1)).findById(servicoId);
-        verify(repository, never()).save(any());
+        verify(gateway, times(1)).findById(servicoId);
+        verify(gateway, never()).save(any());
     }
 
     @Test
@@ -84,8 +84,8 @@ class AtualizarPrecoServicoUseCaseTest {
     void deveAtualizarPrecoParaValorMaior() {
         // Arrange
         AtualizarPrecoServicoCommand commandMaior = new AtualizarPrecoServicoCommand(new BigDecimal("200.00"));
-        when(repository.findById(servicoId)).thenReturn(Optional.of(servico));
-        when(repository.save(any(Servico.class))).thenReturn(servico);
+        when(gateway.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(gateway.save(any(Servico.class))).thenReturn(servico);
 
         // Act
         ServicoResponse result = useCase.execute(servicoId, commandMaior);
@@ -93,7 +93,7 @@ class AtualizarPrecoServicoUseCaseTest {
         // Assert
         assertNotNull(result);
         assertEquals(new BigDecimal("200.00"), servico.getPreco());
-        verify(repository, times(1)).save(any(Servico.class));
+        verify(gateway, times(1)).save(any(Servico.class));
     }
 
     @Test
@@ -101,8 +101,8 @@ class AtualizarPrecoServicoUseCaseTest {
     void deveAtualizarPrecoParaValorMenor() {
         // Arrange
         AtualizarPrecoServicoCommand commandMenor = new AtualizarPrecoServicoCommand(new BigDecimal("100.00"));
-        when(repository.findById(servicoId)).thenReturn(Optional.of(servico));
-        when(repository.save(any(Servico.class))).thenReturn(servico);
+        when(gateway.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(gateway.save(any(Servico.class))).thenReturn(servico);
 
         // Act
         ServicoResponse result = useCase.execute(servicoId, commandMenor);
@@ -110,15 +110,15 @@ class AtualizarPrecoServicoUseCaseTest {
         // Assert
         assertNotNull(result);
         assertEquals(new BigDecimal("100.00"), servico.getPreco());
-        verify(repository, times(1)).save(any(Servico.class));
+        verify(gateway, times(1)).save(any(Servico.class));
     }
 
     @Test
     @DisplayName("Deve manter outros dados do serviço inalterados")
     void deveManterOutrosDadosDoServicoInalterados() {
         // Arrange
-        when(repository.findById(servicoId)).thenReturn(Optional.of(servico));
-        when(repository.save(any(Servico.class))).thenReturn(servico);
+        when(gateway.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(gateway.save(any(Servico.class))).thenReturn(servico);
 
         String nomeOriginal = servico.getNome();
         String descricaoOriginal = servico.getDescricao();
@@ -137,8 +137,8 @@ class AtualizarPrecoServicoUseCaseTest {
     @DisplayName("Deve retornar response com dados atualizados")
     void deveRetornarResponseComDadosAtualizados() {
         // Arrange
-        when(repository.findById(servicoId)).thenReturn(Optional.of(servico));
-        when(repository.save(any(Servico.class))).thenReturn(servico);
+        when(gateway.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(gateway.save(any(Servico.class))).thenReturn(servico);
 
         // Act
         ServicoResponse result = useCase.execute(servicoId, command);
@@ -155,8 +155,8 @@ class AtualizarPrecoServicoUseCaseTest {
     void deveAtualizarPrecoComValorDecimal() {
         // Arrange
         AtualizarPrecoServicoCommand commandDecimal = new AtualizarPrecoServicoCommand(new BigDecimal("175.50"));
-        when(repository.findById(servicoId)).thenReturn(Optional.of(servico));
-        when(repository.save(any(Servico.class))).thenReturn(servico);
+        when(gateway.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(gateway.save(any(Servico.class))).thenReturn(servico);
 
         // Act
         ServicoResponse result = useCase.execute(servicoId, commandDecimal);
@@ -164,7 +164,7 @@ class AtualizarPrecoServicoUseCaseTest {
         // Assert
         assertNotNull(result);
         assertEquals(new BigDecimal("175.50"), servico.getPreco());
-        verify(repository, times(1)).save(any(Servico.class));
+        verify(gateway, times(1)).save(any(Servico.class));
     }
 
     @Test
@@ -172,8 +172,8 @@ class AtualizarPrecoServicoUseCaseTest {
     void deveAtualizarPrecoComValorMuitoPequeno() {
         // Arrange
         AtualizarPrecoServicoCommand commandPequeno = new AtualizarPrecoServicoCommand(new BigDecimal("0.01"));
-        when(repository.findById(servicoId)).thenReturn(Optional.of(servico));
-        when(repository.save(any(Servico.class))).thenReturn(servico);
+        when(gateway.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(gateway.save(any(Servico.class))).thenReturn(servico);
 
         // Act
         ServicoResponse result = useCase.execute(servicoId, commandPequeno);
@@ -181,6 +181,6 @@ class AtualizarPrecoServicoUseCaseTest {
         // Assert
         assertNotNull(result);
         assertEquals(new BigDecimal("0.01"), servico.getPreco());
-        verify(repository, times(1)).save(any(Servico.class));
+        verify(gateway, times(1)).save(any(Servico.class));
     }
 }

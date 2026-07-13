@@ -1,6 +1,8 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.commands.CriarMROCommand;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.CriarMROInput;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.MROGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
 import com.techchallenge.oficina.administrativo.domain.model.entities.MRO;
 import com.techchallenge.oficina.administrativo.domain.repositories.MRORepository;
@@ -9,14 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
-public class CriarMROUseCase {
+public class CriarMROUseCase implements CriarMROInput {
     
-    private final MRORepository repository;
-    
-    @Transactional
+    private final MROGateway mroGateway;
+
     public MROResponse execute(CriarMROCommand command) {
         log.info("Iniciando criação de MRO: {}", command.getNome());
         
@@ -30,7 +30,7 @@ public class CriarMROUseCase {
         );
         
         // Persistência
-        MRO savedMRO = repository.save(mro);
+        MRO savedMRO = mroGateway.save(mro);
         
         log.info("MRO criado com sucesso: ID={}, Nome={}, Tipo={}", 
                 savedMRO.getId(), 

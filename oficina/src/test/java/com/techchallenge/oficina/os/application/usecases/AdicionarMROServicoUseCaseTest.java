@@ -9,6 +9,7 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Nome;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa;
 import com.techchallenge.oficina.os.application.usecases.commands.AdicionarMROServicoCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.ItemServicoNaoEncontradoException;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
@@ -16,7 +17,6 @@ import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoStatusInvalido
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
 import com.techchallenge.oficina.os.domain.model.entities.ItemServico;
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusOS;
-import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ import static org.mockito.Mockito.*;
 class AdicionarMROServicoUseCaseTest {
 
     @Mock
-    private OrdemServicoRepository ordemServicoRepository;
+    private OrdemServicoGateway gateway;
 
     @Mock
     private BuscarMROUseCase buscarMROUseCase;
@@ -84,9 +84,9 @@ class AdicionarMROServicoUseCaseTest {
     @DisplayName("Deve adicionar MRO ao serviço com sucesso quando status é RECEBIDA")
     void deveAdicionarMROAoServicoComSucesso() {
         // Arrange
-        when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
+        when(gateway.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
         when(buscarMROUseCase.execute(command.getMroId())).thenReturn(mroResponse);
-        when(ordemServicoRepository.save(any(OrdemServico.class))).thenReturn(ordemServico);
+        when(gateway.save(any(OrdemServico.class))).thenReturn(ordemServico);
 
         // Act
         OrdemServicoResponse response = useCase.execute(command);
@@ -95,9 +95,9 @@ class AdicionarMROServicoUseCaseTest {
         assertNotNull(response);
         assertEquals(ordemServico.getId(), response.getId());
 
-        verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
+        verify(gateway, times(1)).findById(command.getOrdemServicoId());
         verify(buscarMROUseCase, times(1)).execute(command.getMroId());
-        verify(ordemServicoRepository, times(1)).save(any(OrdemServico.class));
+        verify(gateway, times(1)).save(any(OrdemServico.class));
     }
 
     @Test
@@ -105,9 +105,9 @@ class AdicionarMROServicoUseCaseTest {
     void deveAdicionarMROAoServicoComSucessoEmDiagnostico() {
         // Arrange
         ordemServico.enviarParaDiagnostico();
-        when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
+        when(gateway.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
         when(buscarMROUseCase.execute(command.getMroId())).thenReturn(mroResponse);
-        when(ordemServicoRepository.save(any(OrdemServico.class))).thenReturn(ordemServico);
+        when(gateway.save(any(OrdemServico.class))).thenReturn(ordemServico);
 
         // Act
         OrdemServicoResponse response = useCase.execute(command);
@@ -116,9 +116,9 @@ class AdicionarMROServicoUseCaseTest {
         assertNotNull(response);
         assertEquals(ordemServico.getId(), response.getId());
 
-        verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
+        verify(gateway, times(1)).findById(command.getOrdemServicoId());
         verify(buscarMROUseCase, times(1)).execute(command.getMroId());
-        verify(ordemServicoRepository, times(1)).save(any(OrdemServico.class));
+        verify(gateway, times(1)).save(any(OrdemServico.class));
     }
 
     @Test
@@ -126,7 +126,7 @@ class AdicionarMROServicoUseCaseTest {
     void deveLancarExcecaoQuandoOrdemServicoNaoEstaRecebida() {
         // Arrange
         ordemServico.atualizarStatus(StatusOS.EM_EXECUCAO);
-        when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
+        when(gateway.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
 
         // Act & Assert
         OrdemServicoStatusInvalidoException exception = assertThrows(
@@ -136,16 +136,16 @@ class AdicionarMROServicoUseCaseTest {
 
         assertTrue(exception.getMessage().contains("Só é possível adicionar MROs quando a Ordem de Serviço está nos status RECEBIDA ou EM_DIAGNOSTICO"));
 
-        verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
+        verify(gateway, times(1)).findById(command.getOrdemServicoId());
         verify(buscarMROUseCase, never()).execute(any());
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).save(any());
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando ordem de serviço não encontrada")
     void deveLancarExcecaoQuandoOrdemServicoNaoEncontrada() {
         // Arrange
-        when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.empty());
+        when(gateway.findById(command.getOrdemServicoId())).thenReturn(Optional.empty());
 
         // Act & Assert
         OrdemServicoNaoEncontradaException exception = assertThrows(
@@ -155,9 +155,9 @@ class AdicionarMROServicoUseCaseTest {
 
         assertTrue(exception.getMessage().contains("Ordem de Serviço não encontrada"));
 
-        verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
+        verify(gateway, times(1)).findById(command.getOrdemServicoId());
         verify(buscarMROUseCase, never()).execute(any());
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).save(any());
     }
 
     @Test
@@ -169,7 +169,7 @@ class AdicionarMROServicoUseCaseTest {
         veiculo.setCliente(cliente);
         OrdemServico ordemServicoSemItem = OrdemServico.criar(cliente, veiculo);
 
-        when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServicoSemItem));
+        when(gateway.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServicoSemItem));
 
         // Act & Assert
         ItemServicoNaoEncontradoException exception = assertThrows(
@@ -179,9 +179,9 @@ class AdicionarMROServicoUseCaseTest {
 
         assertTrue(exception.getMessage().contains("Item de Serviço não encontrado"));
 
-        verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
+        verify(gateway, times(1)).findById(command.getOrdemServicoId());
         verify(buscarMROUseCase, never()).execute(any());
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).save(any());
     }
 
     @Test
@@ -190,9 +190,9 @@ class AdicionarMROServicoUseCaseTest {
         // Act & Assert
         assertThrows(NullPointerException.class, () -> useCase.execute(null));
 
-        verify(ordemServicoRepository, never()).findById(any());
+        verify(gateway, never()).findById(any());
         verify(buscarMROUseCase, never()).execute(any());
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).save(any());
     }
 
 }

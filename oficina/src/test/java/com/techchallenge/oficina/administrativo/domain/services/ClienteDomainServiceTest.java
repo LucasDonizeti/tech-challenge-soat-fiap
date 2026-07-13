@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.domain.services;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.ClienteGateway;
 import com.techchallenge.oficina.administrativo.domain.exceptions.CnpjJaCadastradoException;
 import com.techchallenge.oficina.administrativo.domain.exceptions.CpfJaCadastradoException;
 import com.techchallenge.oficina.administrativo.domain.exceptions.EmailJaCadastradoException;
@@ -9,7 +10,6 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CNPJ;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CPF;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Nome;
-import com.techchallenge.oficina.administrativo.domain.repositories.ClienteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
 class ClienteDomainServiceTest {
 
     @Mock
-    private ClienteRepository repository;
+    private ClienteGateway gateway;
 
     @InjectMocks
     private ClienteDomainService domainService;
@@ -48,18 +48,18 @@ class ClienteDomainServiceTest {
     @DisplayName("Deve validar CPF único com sucesso")
     void deveValidarCpfUnicoComSucesso() {
         // Arrange
-        when(repository.existsByCPF(cpf)).thenReturn(false);
+        when(gateway.existsByCPF(cpf)).thenReturn(false);
 
         // Act & Assert
         assertDoesNotThrow(() -> domainService.validarCPFUnico(cpf));
-        verify(repository, times(1)).existsByCPF(cpf);
+        verify(gateway, times(1)).existsByCPF(cpf);
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando CPF já cadastrado")
     void deveLancarExcecaoQuandoCpfJaCadastrado() {
         // Arrange
-        when(repository.existsByCPF(cpf)).thenReturn(true);
+        when(gateway.existsByCPF(cpf)).thenReturn(true);
 
         // Act & Assert
         CpfJaCadastradoException exception = assertThrows(
@@ -67,25 +67,25 @@ class ClienteDomainServiceTest {
                 () -> domainService.validarCPFUnico(cpf)
         );
         assertEquals(cpf, exception.getCpf());
-        verify(repository, times(1)).existsByCPF(cpf);
+        verify(gateway, times(1)).existsByCPF(cpf);
     }
 
     @Test
     @DisplayName("Deve validar CNPJ único com sucesso")
     void deveValidarCnpjUnicoComSucesso() {
         // Arrange
-        when(repository.existsByCNPJ(cnpj)).thenReturn(false);
+        when(gateway.existsByCNPJ(cnpj)).thenReturn(false);
 
         // Act & Assert
         assertDoesNotThrow(() -> domainService.validarCNPJUnico(cnpj));
-        verify(repository, times(1)).existsByCNPJ(cnpj);
+        verify(gateway, times(1)).existsByCNPJ(cnpj);
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando CNPJ já cadastrado")
     void deveLancarExcecaoQuandoCnpjJaCadastrado() {
         // Arrange
-        when(repository.existsByCNPJ(cnpj)).thenReturn(true);
+        when(gateway.existsByCNPJ(cnpj)).thenReturn(true);
 
         // Act & Assert
         CnpjJaCadastradoException exception = assertThrows(
@@ -93,25 +93,25 @@ class ClienteDomainServiceTest {
                 () -> domainService.validarCNPJUnico(cnpj)
         );
         assertEquals(cnpj, exception.getCnpj());
-        verify(repository, times(1)).existsByCNPJ(cnpj);
+        verify(gateway, times(1)).existsByCNPJ(cnpj);
     }
 
     @Test
     @DisplayName("Deve validar email único com sucesso")
     void deveValidarEmailUnicoComSucesso() {
         // Arrange
-        when(repository.existsByEmail(email)).thenReturn(false);
+        when(gateway.existsByEmail(email)).thenReturn(false);
 
         // Act & Assert
         assertDoesNotThrow(() -> domainService.validarEmailUnico(email));
-        verify(repository, times(1)).existsByEmail(email);
+        verify(gateway, times(1)).existsByEmail(email);
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando email já cadastrado")
     void deveLancarExcecaoQuandoEmailJaCadastrado() {
         // Arrange
-        when(repository.existsByEmail(email)).thenReturn(true);
+        when(gateway.existsByEmail(email)).thenReturn(true);
 
         // Act & Assert
         EmailJaCadastradoException exception = assertThrows(
@@ -119,79 +119,79 @@ class ClienteDomainServiceTest {
                 () -> domainService.validarEmailUnico(email)
         );
         assertEquals(email, exception.getEmail());
-        verify(repository, times(1)).existsByEmail(email);
+        verify(gateway, times(1)).existsByEmail(email);
     }
 
     @Test
     @DisplayName("Deve validar identificadores únicos com CPF e email")
     void deveValidarIdentificadoresUnicosComCpfEEmail() {
         // Arrange
-        when(repository.existsByCPF(cpf)).thenReturn(false);
-        when(repository.existsByEmail(email)).thenReturn(false);
+        when(gateway.existsByCPF(cpf)).thenReturn(false);
+        when(gateway.existsByEmail(email)).thenReturn(false);
 
         // Act & Assert
         assertDoesNotThrow(() -> domainService.validarIdentificadoresUnicos(cpf, null, email));
-        verify(repository, times(1)).existsByCPF(cpf);
-        verify(repository, never()).existsByCNPJ(any());
-        verify(repository, times(1)).existsByEmail(email);
+        verify(gateway, times(1)).existsByCPF(cpf);
+        verify(gateway, never()).existsByCNPJ(any());
+        verify(gateway, times(1)).existsByEmail(email);
     }
 
     @Test
     @DisplayName("Deve validar identificadores únicos com CNPJ e email")
     void deveValidarIdentificadoresUnicosComCnpjEEmail() {
         // Arrange
-        when(repository.existsByCNPJ(cnpj)).thenReturn(false);
-        when(repository.existsByEmail(email)).thenReturn(false);
+        when(gateway.existsByCNPJ(cnpj)).thenReturn(false);
+        when(gateway.existsByEmail(email)).thenReturn(false);
 
         // Act & Assert
         assertDoesNotThrow(() -> domainService.validarIdentificadoresUnicos(null, cnpj, email));
-        verify(repository, never()).existsByCPF(any());
-        verify(repository, times(1)).existsByCNPJ(cnpj);
-        verify(repository, times(1)).existsByEmail(email);
+        verify(gateway, never()).existsByCPF(any());
+        verify(gateway, times(1)).existsByCNPJ(cnpj);
+        verify(gateway, times(1)).existsByEmail(email);
     }
 
     @Test
     @DisplayName("Deve validar identificadores únicos com apenas email")
     void deveValidarIdentificadoresUnicosComApenasEmail() {
         // Arrange
-        when(repository.existsByEmail(email)).thenReturn(false);
+        when(gateway.existsByEmail(email)).thenReturn(false);
 
         // Act & Assert
         assertDoesNotThrow(() -> domainService.validarIdentificadoresUnicos(null, null, email));
-        verify(repository, never()).existsByCPF(any());
-        verify(repository, never()).existsByCNPJ(any());
-        verify(repository, times(1)).existsByEmail(email);
+        verify(gateway, never()).existsByCPF(any());
+        verify(gateway, never()).existsByCNPJ(any());
+        verify(gateway, times(1)).existsByEmail(email);
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando CPF duplicado na validação combinada")
     void deveLancarExcecaoQuandoCpfDuplicadoNaValidacaoCombinada() {
         // Arrange
-        when(repository.existsByCPF(cpf)).thenReturn(true);
+        when(gateway.existsByCPF(cpf)).thenReturn(true);
 
         // Act & Assert
         assertThrows(CpfJaCadastradoException.class, 
                 () -> domainService.validarIdentificadoresUnicos(cpf, null, email));
-        verify(repository, times(1)).existsByCPF(cpf);
+        verify(gateway, times(1)).existsByCPF(cpf);
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando CNPJ duplicado na validação combinada")
     void deveLancarExcecaoQuandoCnpjDuplicadoNaValidacaoCombinada() {
         // Arrange
-        when(repository.existsByCNPJ(cnpj)).thenReturn(true);
+        when(gateway.existsByCNPJ(cnpj)).thenReturn(true);
 
         // Act & Assert
         assertThrows(CnpjJaCadastradoException.class, 
                 () -> domainService.validarIdentificadoresUnicos(null, cnpj, email));
-        verify(repository, times(1)).existsByCNPJ(cnpj);
+        verify(gateway, times(1)).existsByCNPJ(cnpj);
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando email duplicado na validação combinada")
     void deveLancarExcecaoQuandoEmailDuplicadoNaValidacaoCombinada() {
         // Arrange
-        when(repository.existsByEmail(email)).thenReturn(true);
+        when(gateway.existsByEmail(email)).thenReturn(true);
 
         // Act & Assert
         assertThrows(EmailJaCadastradoException.class, 

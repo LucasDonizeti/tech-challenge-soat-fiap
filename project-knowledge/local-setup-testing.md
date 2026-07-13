@@ -1,10 +1,64 @@
 # Guia de Configuração Local e Qualidade de Software
 
-Este guia detalha o processo para configurar, compilar e executar o projeto localmente (sem Docker Compose), além das instruções de execução dos testes automatizados, análise de cobertura com JaCoCo, qualidade de código com SonarQube e análise de vulnerabilidades com OWASP Dependency Check.
+Este guia descreve as formas de configurar, compilar e executar o projeto localmente, com foco no cenário recomendado com Docker Compose, além das instruções de execução dos testes automatizados, análise de cobertura com JaCoCo, qualidade de código com SonarQube e análise de vulnerabilidades com OWASP Dependency Check.
 
 ---
 
-## 💻 Como Executar o Projeto Localmente (Sem Docker Compose)
+## 🚀 Como Executar o Projeto Localmente com Docker Compose
+
+O cenário recomendado para execução local do projeto é usar o arquivo [docker-compose.yml](../docker-compose.yml), que orquestra a API Spring Boot, o banco MySQL e os serviços auxiliares, como SonarQube.
+
+### Pré-requisitos
+
+- **Docker** instalado e em execução.
+- **Docker Compose** habilitado no ambiente.
+- Opcionalmente, **Git** para clonar o repositório e manter a estrutura do projeto.
+
+### 1. Subir a aplicação e os serviços dependentes
+
+A partir da raiz do repositório, execute:
+
+```bash
+docker compose up --build -d
+```
+
+Se o ambiente usar a versão clássica do Compose, o comando equivalente é:
+
+```bash
+docker-compose up --build -d
+```
+
+Esse comando irá construir a imagem da API e iniciar os containers do banco MySQL e dos serviços auxiliares definidos no arquivo de composição.
+
+### 2. Verificar os containers ativos
+
+Para confirmar que a aplicação e o banco foram iniciados corretamente:
+
+```bash
+docker compose ps
+```
+
+A API ficará disponível em: **http://localhost:8080**
+
+### 3. Logs e troubleshooting
+
+Se desejar acompanhar o comportamento da aplicação em tempo real:
+
+```bash
+docker compose logs -f app
+```
+
+Para encerrar todos os serviços e remover os containers criados:
+
+```bash
+docker compose down -v
+```
+
+> O ambiente do Docker Compose já configura automaticamente a conexão com o banco MySQL usando o serviço `mysql`, então não é necessário alterar o arquivo de configuração local para essa forma de execução.
+
+---
+
+## 💻 Como Executar o Projeto Localmente (Modo Nativo / Sem Docker Compose)
 
 Caso prefira executar a aplicação Spring Boot e o banco de dados de forma nativa/local:
 
@@ -151,6 +205,4 @@ Após a conclusão da análise, os relatórios são salvos em:
 
 ### ⚙️ Configurações Importantes
 
-- **Fail Build on CVSS:** Configurado para **7**. O build falhará caso seja encontrada alguma vulnerabilidade com pontuação CVSS maior ou igual a 7.
 - **Skip Check:** Por padrão, a propriedade `<owasp.skip>` está configurada como `true` no `pom.xml`. Para ativá-lo no fluxo padrão de build, mude para `false` no seu arquivo `pom.xml`.
-- **Arquivo de Supressão:** Supressões de falsos-positivos são configuradas em [owasp-suppressions.xml](../oficina/owasp-suppressions.xml).

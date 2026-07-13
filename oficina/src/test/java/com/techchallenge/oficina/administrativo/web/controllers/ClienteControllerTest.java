@@ -10,6 +10,7 @@ import com.techchallenge.oficina.administrativo.web.dto.AtualizarClienteRequest;
 import com.techchallenge.oficina.administrativo.web.dto.ClienteResponseDto;
 import com.techchallenge.oficina.administrativo.web.dto.CriarClienteRequest;
 import com.techchallenge.oficina.administrativo.web.mappers.ClienteWebMapper;
+import com.techchallenge.oficina.administrativo.web.presenters.ClientePresenter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,7 +60,7 @@ class ClienteControllerTest {
     private BuscarClientesPorFiltroUseCase buscarClientesPorFiltroUseCase;
 
     @Mock
-    private ClienteWebMapper mapper;
+    private ClientePresenter presenter;
 
     @InjectMocks
     private ClienteController clienteController;
@@ -113,7 +114,7 @@ class ClienteControllerTest {
         request.setEmail("joao@example.com");
 
         when(criarClienteUseCase.execute(any(CriarClienteCommand.class))).thenReturn(clienteResponse);
-        when(mapper.toDto(any(ClienteResponse.class))).thenReturn(clienteResponseDto);
+        when(presenter.prepararViewModel(any(ClienteResponse.class))).thenReturn(clienteResponseDto);
 
         // Act & Assert
         mockMvc.perform(post("/v1/admin/clientes")
@@ -125,7 +126,7 @@ class ClienteControllerTest {
                 .andExpect(jsonPath("$.email").value("joao@example.com"));
 
         verify(criarClienteUseCase, times(1)).execute(any(CriarClienteCommand.class));
-        verify(mapper, times(1)).toDto(any(ClienteResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(ClienteResponse.class));
     }
 
     @Test
@@ -134,7 +135,7 @@ class ClienteControllerTest {
         // Arrange
         UUID id = clienteResponse.getId();
         when(buscarClienteUseCase.execute(id)).thenReturn(clienteResponse);
-        when(mapper.toDto(any(ClienteResponse.class))).thenReturn(clienteResponseDto);
+        when(presenter.prepararViewModel(any(ClienteResponse.class))).thenReturn(clienteResponseDto);
 
         // Act & Assert
         mockMvc.perform(get("/v1/admin/clientes/{id}", id))
@@ -143,7 +144,7 @@ class ClienteControllerTest {
                 .andExpect(jsonPath("$.nome").value("João Silva"));
 
         verify(buscarClienteUseCase, times(1)).execute(id);
-        verify(mapper, times(1)).toDto(any(ClienteResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(ClienteResponse.class));
     }
 
 
@@ -171,7 +172,7 @@ class ClienteControllerTest {
 
         when(atualizarClienteUseCase.execute(eq(id), any(AtualizarClienteCommand.class)))
                 .thenReturn(updatedResponse);
-        when(mapper.toDto(any(ClienteResponse.class))).thenReturn(clienteResponseDto);
+        when(presenter.prepararViewModel(any(ClienteResponse.class))).thenReturn(clienteResponseDto);
 
         // Act & Assert
         mockMvc.perform(put("/v1/admin/clientes/{id}", id)
@@ -180,7 +181,7 @@ class ClienteControllerTest {
                 .andExpect(status().isOk());
 
         verify(atualizarClienteUseCase, times(1)).execute(eq(id), any(AtualizarClienteCommand.class));
-        verify(mapper, times(1)).toDto(any(ClienteResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(ClienteResponse.class));
     }
 
     @Test
@@ -203,14 +204,14 @@ class ClienteControllerTest {
                 .build();
 
         when(inativarClienteUseCase.execute(id)).thenReturn(inativadoResponse);
-        when(mapper.toDto(any(ClienteResponse.class))).thenReturn(clienteResponseDto);
+        when(presenter.prepararViewModel(any(ClienteResponse.class))).thenReturn(clienteResponseDto);
 
         // Act & Assert
         mockMvc.perform(patch("/v1/admin/clientes/{id}/inativar", id))
                 .andExpect(status().isOk());
 
         verify(inativarClienteUseCase, times(1)).execute(id);
-        verify(mapper, times(1)).toDto(any(ClienteResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(ClienteResponse.class));
     }
 
     @Test
@@ -220,14 +221,14 @@ class ClienteControllerTest {
         UUID id = clienteResponse.getId();
 
         when(reativarClienteUseCase.execute(id)).thenReturn(clienteResponse);
-        when(mapper.toDto(any(ClienteResponse.class))).thenReturn(clienteResponseDto);
+        when(presenter.prepararViewModel(any(ClienteResponse.class))).thenReturn(clienteResponseDto);
 
         // Act & Assert
         mockMvc.perform(patch("/v1/admin/clientes/{id}/reativar", id))
                 .andExpect(status().isOk());
 
         verify(reativarClienteUseCase, times(1)).execute(id);
-        verify(mapper, times(1)).toDto(any(ClienteResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(ClienteResponse.class));
     }
 
     @Test

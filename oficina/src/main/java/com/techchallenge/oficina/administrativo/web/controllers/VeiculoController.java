@@ -1,10 +1,12 @@
 package com.techchallenge.oficina.administrativo.web.controllers;
 
 import com.techchallenge.oficina.administrativo.application.usecases.*;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.input.*;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.VeiculoResponse;
 import com.techchallenge.oficina.administrativo.web.dto.CriarVeiculoRequest;
 import com.techchallenge.oficina.administrativo.web.dto.VeiculoResponseDto;
 import com.techchallenge.oficina.administrativo.web.mappers.VeiculoWebMapper;
+import com.techchallenge.oficina.administrativo.web.presenters.VeiculoPresenter;
 import com.techchallenge.oficina.sharedkernel.common.PageableValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +31,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @RestController
+@Transactional
 @RequestMapping("/v1/admin/veiculos")
 @RequiredArgsConstructor
 @Validated
@@ -36,13 +40,13 @@ import java.util.UUID;
 @SecurityRequirement(name = "Bearer Authentication")
 public class VeiculoController {
 
-    private final CriarVeiculoUseCase criarVeiculoUseCase;
-    private final BuscarVeiculoUseCase buscarVeiculoUseCase;
-    private final BuscarVeiculosPorClienteUseCase buscarVeiculosPorClienteUseCase;
-    private final InativarVeiculoUseCase inativarVeiculoUseCase;
-    private final ReativarVeiculoUseCase reativarVeiculoUseCase;
-    private final ListarVeiculosUseCase listarVeiculosUseCase;
-    private final VeiculoWebMapper mapper;
+    private final CriarVeiculoInput criarVeiculoInput;
+    private final BuscarVeiculoInput buscarVeiculoInput;
+    private final BuscarVeiculosPorClienteInput buscarVeiculosPorClienteInput;
+    private final InativarVeiculoInput inativarVeiculoInput;
+    private final ReativarVeiculoInput reativarVeiculoInput;
+    private final ListarVeiculosInput listarVeiculosInput;
+    private final VeiculoPresenter presenter;
     private final PageableValidator pageableValidator;
 
     @PostMapping
@@ -57,8 +61,8 @@ public class VeiculoController {
         log.info("Recebendo requisição para criar veículo: Placa={}, ClienteID={}",
                 request.getPlaca(), request.getClienteId());
 
-        VeiculoResponse response = criarVeiculoUseCase.execute(request.toCommand());
-        VeiculoResponseDto dto = mapper.toDto(response);
+        VeiculoResponse response = criarVeiculoInput.execute(request.toCommand());
+        VeiculoResponseDto dto = presenter.prepararViewModel(response);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
@@ -75,8 +79,8 @@ public class VeiculoController {
             @PathVariable UUID id) {
         log.info("Buscando veículo por ID: {}", id);
 
-        VeiculoResponse response = buscarVeiculoUseCase.execute(id);
-        VeiculoResponseDto dto = mapper.toDto(response);
+        VeiculoResponse response = buscarVeiculoInput.execute(id);
+        VeiculoResponseDto dto = presenter.prepararViewModel(response);
 
         return ResponseEntity.ok(dto);
     }
@@ -91,8 +95,8 @@ public class VeiculoController {
             @PathVariable UUID clienteId) {
         log.info("Buscando veículos do cliente: ID={}", clienteId);
 
-        List<VeiculoResponse> responses = buscarVeiculosPorClienteUseCase.execute(clienteId);
-        List<VeiculoResponseDto> dtos = mapper.toDtoList(responses);
+        List<VeiculoResponse> responses = buscarVeiculosPorClienteInput.execute(clienteId);
+        List<VeiculoResponseDto> dtos = presenter.prepararViewModelList(responses);
 
         return ResponseEntity.ok(dtos);
     }
@@ -116,8 +120,8 @@ public class VeiculoController {
         Set<String> allowedFields = Set.of("placa", "marca", "modelo", "ano", "cor", "status", "criadoEm", "atualizadoEm");
         Pageable validatedPageable = pageableValidator.validate(pageable, allowedFields);
 
-        Page<VeiculoResponse> responses = listarVeiculosUseCase.execute(validatedPageable);
-        Page<VeiculoResponseDto> dtos = mapper.toDtoPage(responses);
+        Page<VeiculoResponse> responses = listarVeiculosInput.execute(validatedPageable);
+        Page<VeiculoResponseDto> dtos = presenter.prepararViewModelPage(responses);
 
         return ResponseEntity.ok(dtos);
     }
@@ -134,8 +138,8 @@ public class VeiculoController {
             @PathVariable UUID id) {
         log.info("Inativando veículo ID: {}", id);
 
-        VeiculoResponse response = inativarVeiculoUseCase.execute(id);
-        VeiculoResponseDto dto = mapper.toDto(response);
+        VeiculoResponse response = inativarVeiculoInput.execute(id);
+        VeiculoResponseDto dto = presenter.prepararViewModel(response);
 
         return ResponseEntity.ok(dto);
     }
@@ -152,8 +156,8 @@ public class VeiculoController {
             @PathVariable UUID id) {
         log.info("Reativando veículo ID: {}", id);
 
-        VeiculoResponse response = reativarVeiculoUseCase.execute(id);
-        VeiculoResponseDto dto = mapper.toDto(response);
+        VeiculoResponse response = reativarVeiculoInput.execute(id);
+        VeiculoResponseDto dto = presenter.prepararViewModel(response);
 
         return ResponseEntity.ok(dto);
     }

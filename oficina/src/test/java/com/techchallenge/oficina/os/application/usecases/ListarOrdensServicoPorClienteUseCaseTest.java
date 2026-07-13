@@ -1,8 +1,8 @@
 package com.techchallenge.oficina.os.application.usecases;
 
+import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
-import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,7 +28,7 @@ import static org.mockito.Mockito.*;
 class ListarOrdensServicoPorClienteUseCaseTest {
 
     @Mock
-    private OrdemServicoRepository ordemServicoRepository;
+    private OrdemServicoGateway gateway;
 
     @InjectMocks
     private ListarOrdensServicoPorClienteUseCase useCase;
@@ -54,7 +53,7 @@ class ListarOrdensServicoPorClienteUseCaseTest {
         List<OrdemServico> ordensServico = List.of(ordemServico1, ordemServico2);
         Page<OrdemServico> page = new PageImpl<>(ordensServico);
 
-        when(ordemServicoRepository.findByFilters(eq(clienteId), eq(null), eq(null), 
+        when(gateway.findByFilters(eq(clienteId), eq(null), eq(null),
                 eq(null), eq(null), any(Pageable.class))).thenReturn(page);
 
         // Act
@@ -63,7 +62,7 @@ class ListarOrdensServicoPorClienteUseCaseTest {
         // Assert
         assertNotNull(response);
         assertEquals(2, response.getTotalElements());
-        verify(ordemServicoRepository, times(1)).findByFilters(eq(clienteId), eq(null), eq(null), 
+        verify(gateway, times(1)).findByFilters(eq(clienteId), eq(null), eq(null),
                 eq(null), eq(null), any(Pageable.class));
     }
 
@@ -77,7 +76,7 @@ class ListarOrdensServicoPorClienteUseCaseTest {
         );
 
         assertEquals("Cliente ID é obrigatório", exception.getMessage());
-        verify(ordemServicoRepository, never()).findByFilters(any(), any(), any(), any(), any(), any());
+        verify(gateway, never()).findByFilters(any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -86,7 +85,7 @@ class ListarOrdensServicoPorClienteUseCaseTest {
         // Arrange
         Page<OrdemServico> emptyPage = Page.empty();
 
-        when(ordemServicoRepository.findByFilters(eq(clienteId), eq(null), eq(null), 
+        when(gateway.findByFilters(eq(clienteId), eq(null), eq(null),
                 eq(null), eq(null), any(Pageable.class))).thenReturn(emptyPage);
 
         // Act
@@ -95,7 +94,7 @@ class ListarOrdensServicoPorClienteUseCaseTest {
         // Assert
         assertNotNull(response);
         assertEquals(0, response.getTotalElements());
-        verify(ordemServicoRepository, times(1)).findByFilters(eq(clienteId), eq(null), eq(null), 
+        verify(gateway, times(1)).findByFilters(eq(clienteId), eq(null), eq(null),
                 eq(null), eq(null), any(Pageable.class));
     }
 
@@ -106,14 +105,14 @@ class ListarOrdensServicoPorClienteUseCaseTest {
         Pageable customPageable = PageRequest.of(2, 20);
         Page<OrdemServico> emptyPage = Page.empty();
 
-        when(ordemServicoRepository.findByFilters(eq(clienteId), eq(null), eq(null), 
+        when(gateway.findByFilters(eq(clienteId), eq(null), eq(null),
                 eq(null), eq(null), eq(customPageable))).thenReturn(emptyPage);
 
         // Act
         useCase.execute(clienteId, customPageable);
 
         // Assert
-        verify(ordemServicoRepository, times(1)).findByFilters(eq(clienteId), eq(null), eq(null), 
+        verify(gateway, times(1)).findByFilters(eq(clienteId), eq(null), eq(null),
                 eq(null), eq(null), eq(customPageable));
     }
 
@@ -127,7 +126,7 @@ class ListarOrdensServicoPorClienteUseCaseTest {
         List<OrdemServico> ordensServico = List.of(ordemServico1);
         Page<OrdemServico> page = new PageImpl<>(ordensServico);
 
-        when(ordemServicoRepository.findByFilters(eq(clienteId), eq(null), eq(null), 
+        when(gateway.findByFilters(eq(clienteId), eq(null), eq(null),
                 eq(null), eq(null), any(Pageable.class))).thenReturn(page);
 
         // Act

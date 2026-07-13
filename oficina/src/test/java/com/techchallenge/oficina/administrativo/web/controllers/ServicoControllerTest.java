@@ -11,6 +11,7 @@ import com.techchallenge.oficina.administrativo.web.dto.AtualizarPrecoServicoReq
 import com.techchallenge.oficina.administrativo.web.dto.CriarServicoRequest;
 import com.techchallenge.oficina.administrativo.web.dto.ServicoResponseDto;
 import com.techchallenge.oficina.administrativo.web.mappers.ServicoWebMapper;
+import com.techchallenge.oficina.administrativo.web.presenters.ServicoPresenter;
 import com.techchallenge.oficina.sharedkernel.common.PageableValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -65,7 +66,7 @@ class ServicoControllerTest {
     private AtualizarDadosServicoUseCase atualizarDadosServicoUseCase;
 
     @Mock
-    private ServicoWebMapper mapper;
+    private ServicoPresenter presenter;
 
     @Mock
     private PageableValidator pageableValidator;
@@ -109,7 +110,7 @@ class ServicoControllerTest {
         request.setPreco(new BigDecimal("150.00"));
 
         when(criarServicoUseCase.execute(any(CriarServicoCommand.class))).thenReturn(servicoResponse);
-        when(mapper.toDto(any(ServicoResponse.class))).thenReturn(servicoResponseDto);
+        when(presenter.prepararViewModel(any(ServicoResponse.class))).thenReturn(servicoResponseDto);
 
         // Act & Assert
         mockMvc.perform(post("/v1/admin/servicos")
@@ -123,7 +124,7 @@ class ServicoControllerTest {
                 .andExpect(jsonPath("$.ativo").value(true));
 
         verify(criarServicoUseCase, times(1)).execute(any(CriarServicoCommand.class));
-        verify(mapper, times(1)).toDto(any(ServicoResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(ServicoResponse.class));
     }
 
     @Test
@@ -132,7 +133,7 @@ class ServicoControllerTest {
         // Arrange
         UUID servicoId = servicoResponse.getId();
         when(buscarServicoUseCase.execute(servicoId)).thenReturn(servicoResponse);
-        when(mapper.toDto(any(ServicoResponse.class))).thenReturn(servicoResponseDto);
+        when(presenter.prepararViewModel(any(ServicoResponse.class))).thenReturn(servicoResponseDto);
 
         // Act & Assert
         mockMvc.perform(get("/v1/admin/servicos/{id}", servicoId))
@@ -141,7 +142,7 @@ class ServicoControllerTest {
                 .andExpect(jsonPath("$.nome").value("Troca de Óleo"));
 
         verify(buscarServicoUseCase, times(1)).execute(servicoId);
-        verify(mapper, times(1)).toDto(any(ServicoResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(ServicoResponse.class));
     }
 
     @Test
@@ -154,7 +155,7 @@ class ServicoControllerTest {
 
         when(pageableValidator.validate(any(Pageable.class), any())).thenReturn(pageable);
         when(listarServicosUseCase.execute(any(Pageable.class))).thenReturn(responsePage);
-        when(mapper.toDtoPage(any())).thenReturn(dtoPage);
+        when(presenter.prepararViewModelPage(any())).thenReturn(dtoPage);
 
         // Act & Assert
         mockMvc.perform(get("/v1/admin/servicos")
@@ -166,7 +167,7 @@ class ServicoControllerTest {
 
         verify(pageableValidator, times(1)).validate(any(Pageable.class), any());
         verify(listarServicosUseCase, times(1)).execute(any(Pageable.class));
-        verify(mapper, times(1)).toDtoPage(any());
+        verify(presenter, times(1)).prepararViewModelPage(any());
     }
 
     @Test
@@ -185,14 +186,14 @@ class ServicoControllerTest {
                 .build();
 
         when(inativarServicoUseCase.execute(servicoId)).thenReturn(inativadoResponse);
-        when(mapper.toDto(any(ServicoResponse.class))).thenReturn(servicoResponseDto);
+        when(presenter.prepararViewModel(any(ServicoResponse.class))).thenReturn(servicoResponseDto);
 
         // Act & Assert
         mockMvc.perform(patch("/v1/admin/servicos/{id}/inativar", servicoId))
                 .andExpect(status().isOk());
 
         verify(inativarServicoUseCase, times(1)).execute(servicoId);
-        verify(mapper, times(1)).toDto(any(ServicoResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(ServicoResponse.class));
     }
 
     @Test
@@ -201,14 +202,14 @@ class ServicoControllerTest {
         // Arrange
         UUID servicoId = servicoResponse.getId();
         when(ativarServicoUseCase.execute(servicoId)).thenReturn(servicoResponse);
-        when(mapper.toDto(any(ServicoResponse.class))).thenReturn(servicoResponseDto);
+        when(presenter.prepararViewModel(any(ServicoResponse.class))).thenReturn(servicoResponseDto);
 
         // Act & Assert
         mockMvc.perform(patch("/v1/admin/servicos/{id}/ativar", servicoId))
                 .andExpect(status().isOk());
 
         verify(ativarServicoUseCase, times(1)).execute(servicoId);
-        verify(mapper, times(1)).toDto(any(ServicoResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(ServicoResponse.class));
     }
 
     @Test
@@ -230,7 +231,7 @@ class ServicoControllerTest {
                 .build();
 
         when(atualizarPrecoServicoUseCase.execute(eq(servicoId), any(AtualizarPrecoServicoCommand.class))).thenReturn(atualizadoResponse);
-        when(mapper.toDto(any(ServicoResponse.class))).thenReturn(servicoResponseDto);
+        when(presenter.prepararViewModel(any(ServicoResponse.class))).thenReturn(servicoResponseDto);
 
         // Act & Assert
         mockMvc.perform(patch("/v1/admin/servicos/{id}/preco", servicoId)
@@ -239,7 +240,7 @@ class ServicoControllerTest {
                 .andExpect(status().isOk());
 
         verify(atualizarPrecoServicoUseCase, times(1)).execute(eq(servicoId), any(AtualizarPrecoServicoCommand.class));
-        verify(mapper, times(1)).toDto(any(ServicoResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(ServicoResponse.class));
     }
 
     @Test
@@ -252,7 +253,7 @@ class ServicoControllerTest {
         request.setDescricao("Troca de óleo sintético");
 
         when(atualizarDadosServicoUseCase.execute(eq(servicoId), any(AtualizarDadosServicoCommand.class))).thenReturn(servicoResponse);
-        when(mapper.toDto(any(ServicoResponse.class))).thenReturn(servicoResponseDto);
+        when(presenter.prepararViewModel(any(ServicoResponse.class))).thenReturn(servicoResponseDto);
 
         // Act & Assert
         mockMvc.perform(patch("/v1/admin/servicos/{id}/dados", servicoId)
@@ -261,7 +262,7 @@ class ServicoControllerTest {
                 .andExpect(status().isOk());
 
         verify(atualizarDadosServicoUseCase, times(1)).execute(eq(servicoId), any(AtualizarDadosServicoCommand.class));
-        verify(mapper, times(1)).toDto(any(ServicoResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(ServicoResponse.class));
     }
 
     @Test

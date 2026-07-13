@@ -1,8 +1,8 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.ServicoGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ServicoResponse;
 import com.techchallenge.oficina.administrativo.domain.model.entities.Servico;
-import com.techchallenge.oficina.administrativo.domain.repositories.ServicoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 class ListarServicosUseCaseTest {
 
     @Mock
-    private ServicoRepository repository;
+    private ServicoGateway gateway;
 
     @InjectMocks
     private ListarServicosUseCase useCase;
@@ -50,7 +50,7 @@ class ListarServicosUseCaseTest {
     @DisplayName("Deve listar serviços com paginação com sucesso")
     void deveListarServicosComPaginacaoComSucesso() {
         // Arrange
-        when(repository.findAll(pageable)).thenReturn(servicoPage);
+        when(gateway.findAll(pageable)).thenReturn(servicoPage);
 
         // Act
         Page<ServicoResponse> result = useCase.execute(pageable);
@@ -59,7 +59,7 @@ class ListarServicosUseCaseTest {
         assertNotNull(result);
         assertEquals(3, result.getContent().size());
         assertEquals(3, result.getTotalElements());
-        verify(repository, times(1)).findAll(pageable);
+        verify(gateway, times(1)).findAll(pageable);
     }
 
     @Test
@@ -67,7 +67,7 @@ class ListarServicosUseCaseTest {
     void deveRetornarPaginaVaziaQuandoNaoHaServicos() {
         // Arrange
         Page<Servico> emptyPage = new PageImpl<>(List.of());
-        when(repository.findAll(pageable)).thenReturn(emptyPage);
+        when(gateway.findAll(pageable)).thenReturn(emptyPage);
 
         // Act
         Page<ServicoResponse> result = useCase.execute(pageable);
@@ -76,7 +76,7 @@ class ListarServicosUseCaseTest {
         assertNotNull(result);
         assertTrue(result.getContent().isEmpty());
         assertEquals(0, result.getTotalElements());
-        verify(repository, times(1)).findAll(pageable);
+        verify(gateway, times(1)).findAll(pageable);
     }
 
     @Test
@@ -84,7 +84,7 @@ class ListarServicosUseCaseTest {
     void deveListarServicosComPaginaSizeDiferente() {
         // Arrange
         Pageable pageable5 = PageRequest.of(0, 5);
-        when(repository.findAll(pageable5)).thenReturn(servicoPage);
+        when(gateway.findAll(pageable5)).thenReturn(servicoPage);
 
         // Act
         Page<ServicoResponse> result = useCase.execute(pageable5);
@@ -92,7 +92,7 @@ class ListarServicosUseCaseTest {
         // Assert
         assertNotNull(result);
         assertEquals(3, result.getContent().size());
-        verify(repository, times(1)).findAll(pageable5);
+        verify(gateway, times(1)).findAll(pageable5);
     }
 
     @Test
@@ -101,7 +101,7 @@ class ListarServicosUseCaseTest {
         // Arrange
         Pageable pageable1 = PageRequest.of(1, 10);
         Page<Servico> emptyPage = new PageImpl<>(List.of());
-        when(repository.findAll(pageable1)).thenReturn(emptyPage);
+        when(gateway.findAll(pageable1)).thenReturn(emptyPage);
 
         // Act
         Page<ServicoResponse> result = useCase.execute(pageable1);
@@ -109,14 +109,14 @@ class ListarServicosUseCaseTest {
         // Assert
         assertNotNull(result);
         assertTrue(result.getContent().isEmpty());
-        verify(repository, times(1)).findAll(pageable1);
+        verify(gateway, times(1)).findAll(pageable1);
     }
 
     @Test
     @DisplayName("Deve mapear corretamente para ServicoResponse")
     void deveMapearCorretamenteParaServicoResponse() {
         // Arrange
-        when(repository.findAll(pageable)).thenReturn(servicoPage);
+        when(gateway.findAll(pageable)).thenReturn(servicoPage);
 
         // Act
         Page<ServicoResponse> result = useCase.execute(pageable);
@@ -133,7 +133,7 @@ class ListarServicosUseCaseTest {
     @DisplayName("Deve manter informações de paginação no response")
     void deveManterInformacoesDePaginacaoNoResponse() {
         // Arrange
-        when(repository.findAll(pageable)).thenReturn(servicoPage);
+        when(gateway.findAll(pageable)).thenReturn(servicoPage);
 
         // Act
         Page<ServicoResponse> result = useCase.execute(pageable);
@@ -152,7 +152,7 @@ class ListarServicosUseCaseTest {
         // Arrange
         Servico servico = Servico.criar("Troca de Óleo", "Troca de óleo sintético", new BigDecimal("150.00"));
         Page<Servico> singlePage = new PageImpl<>(List.of(servico));
-        when(repository.findAll(pageable)).thenReturn(singlePage);
+        when(gateway.findAll(pageable)).thenReturn(singlePage);
 
         // Act
         Page<ServicoResponse> result = useCase.execute(pageable);
@@ -167,7 +167,7 @@ class ListarServicosUseCaseTest {
     @DisplayName("Deve manter preço nos responses")
     void deveManterPrecoNosResponses() {
         // Arrange
-        when(repository.findAll(pageable)).thenReturn(servicoPage);
+        when(gateway.findAll(pageable)).thenReturn(servicoPage);
 
         // Act
         Page<ServicoResponse> result = useCase.execute(pageable);
@@ -183,7 +183,7 @@ class ListarServicosUseCaseTest {
     @DisplayName("Deve manter status nos responses")
     void deveManterStatusNosResponses() {
         // Arrange
-        when(repository.findAll(pageable)).thenReturn(servicoPage);
+        when(gateway.findAll(pageable)).thenReturn(servicoPage);
 
         // Act
         Page<ServicoResponse> result = useCase.execute(pageable);

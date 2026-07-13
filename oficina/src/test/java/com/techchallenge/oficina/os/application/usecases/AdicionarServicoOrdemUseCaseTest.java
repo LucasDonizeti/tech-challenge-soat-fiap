@@ -9,12 +9,12 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Nome;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa;
 import com.techchallenge.oficina.os.application.usecases.commands.AdicionarServicoOrdemCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
 import com.techchallenge.oficina.os.domain.exceptions.ValidacaoOrdemServicoException;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusOS;
-import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,7 +36,7 @@ import static org.mockito.Mockito.*;
 class AdicionarServicoOrdemUseCaseTest {
 
     @Mock
-    private OrdemServicoRepository ordemServicoRepository;
+    private OrdemServicoGateway gateway;
 
     @Mock
     private BuscarServicoUseCase buscarServicoUseCase;
@@ -74,9 +74,9 @@ class AdicionarServicoOrdemUseCaseTest {
     @DisplayName("Deve adicionar serviço à ordem de serviço com sucesso quando status é RECEBIDA")
     void deveAdicionarServicoAOrdemServicoComSucesso() {
         // Arrange
-        when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
+        when(gateway.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
         when(buscarServicoUseCase.execute(command.getServicoId())).thenReturn(servicoResponse);
-        when(ordemServicoRepository.save(any(OrdemServico.class))).thenReturn(ordemServico);
+        when(gateway.save(any(OrdemServico.class))).thenReturn(ordemServico);
 
         // Act
         OrdemServicoResponse response = useCase.execute(command);
@@ -85,9 +85,9 @@ class AdicionarServicoOrdemUseCaseTest {
         assertNotNull(response);
         assertEquals(ordemServico.getId(), response.getId());
 
-        verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
+        verify(gateway, times(1)).findById(command.getOrdemServicoId());
         verify(buscarServicoUseCase, times(1)).execute(command.getServicoId());
-        verify(ordemServicoRepository, times(1)).save(any(OrdemServico.class));
+        verify(gateway, times(1)).save(any(OrdemServico.class));
     }
 
     @Test
@@ -95,7 +95,7 @@ class AdicionarServicoOrdemUseCaseTest {
     void deveLancarExcecaoQuandoOrdemServicoNaoEstaRecebida() {
         // Arrange
         ordemServico.atualizarStatus(StatusOS.EM_DIAGNOSTICO);
-        when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
+        when(gateway.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
         when(buscarServicoUseCase.execute(command.getServicoId())).thenReturn(servicoResponse);
 
         // Act & Assert
@@ -106,16 +106,16 @@ class AdicionarServicoOrdemUseCaseTest {
 
         assertTrue(exception.getMessage().contains("Não é permitido adicionar ou remover serviços quando a OS está no status"));
 
-        verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
+        verify(gateway, times(1)).findById(command.getOrdemServicoId());
         verify(buscarServicoUseCase, times(1)).execute(command.getServicoId());
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).save(any());
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando ordem de serviço não encontrada")
     void deveLancarExcecaoQuandoOrdemServicoNaoEncontrada() {
         // Arrange
-        when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.empty());
+        when(gateway.findById(command.getOrdemServicoId())).thenReturn(Optional.empty());
 
         // Act & Assert
         OrdemServicoNaoEncontradaException exception = assertThrows(
@@ -125,9 +125,9 @@ class AdicionarServicoOrdemUseCaseTest {
 
         assertTrue(exception.getMessage().contains("Ordem de Serviço não encontrada"));
 
-        verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
+        verify(gateway, times(1)).findById(command.getOrdemServicoId());
         verify(buscarServicoUseCase, never()).execute(any());
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).save(any());
     }
 
     @Test
@@ -136,18 +136,18 @@ class AdicionarServicoOrdemUseCaseTest {
         // Act & Assert
         assertThrows(NullPointerException.class, () -> useCase.execute(null));
 
-        verify(ordemServicoRepository, never()).findById(any());
+        verify(gateway, never()).findById(any());
         verify(buscarServicoUseCase, never()).execute(any());
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).save(any());
     }
 
     @Test
     @DisplayName("Deve propagar exceção quando repository falha")
     void devePropagarExcecaoQuandoRepositoryFalha() {
         // Arrange
-        when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
+        when(gateway.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
         when(buscarServicoUseCase.execute(command.getServicoId())).thenReturn(servicoResponse);
-        when(ordemServicoRepository.save(any(OrdemServico.class))).thenThrow(new RuntimeException("Erro ao salvar no banco"));
+        when(gateway.save(any(OrdemServico.class))).thenThrow(new RuntimeException("Erro ao salvar no banco"));
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -157,8 +157,8 @@ class AdicionarServicoOrdemUseCaseTest {
 
         assertEquals("Erro ao salvar no banco", exception.getMessage());
 
-        verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
+        verify(gateway, times(1)).findById(command.getOrdemServicoId());
         verify(buscarServicoUseCase, times(1)).execute(command.getServicoId());
-        verify(ordemServicoRepository, times(1)).save(any(OrdemServico.class));
+        verify(gateway, times(1)).save(any(OrdemServico.class));
     }
 }

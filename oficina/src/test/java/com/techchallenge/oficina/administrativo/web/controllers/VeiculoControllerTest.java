@@ -7,6 +7,7 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Status
 import com.techchallenge.oficina.administrativo.web.dto.CriarVeiculoRequest;
 import com.techchallenge.oficina.administrativo.web.dto.VeiculoResponseDto;
 import com.techchallenge.oficina.administrativo.web.mappers.VeiculoWebMapper;
+import com.techchallenge.oficina.administrativo.web.presenters.VeiculoPresenter;
 import com.techchallenge.oficina.sharedkernel.common.PageableValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -57,7 +58,7 @@ class VeiculoControllerTest {
     private ListarVeiculosUseCase listarVeiculosUseCase;
 
     @Mock
-    private VeiculoWebMapper mapper;
+    private VeiculoPresenter presenter;
 
     @Mock
     private PageableValidator pageableValidator;
@@ -122,7 +123,7 @@ class VeiculoControllerTest {
         request.setClienteId(UUID.randomUUID());
 
         when(criarVeiculoUseCase.execute(any())).thenReturn(veiculoResponse);
-        when(mapper.toDto(any(VeiculoResponse.class))).thenReturn(veiculoResponseDto);
+        when(presenter.prepararViewModel(any(VeiculoResponse.class))).thenReturn(veiculoResponseDto);
 
         // Act & Assert
         mockMvc.perform(post("/v1/admin/veiculos")
@@ -134,7 +135,7 @@ class VeiculoControllerTest {
                 .andExpect(jsonPath("$.modelo").value("Corolla"));
 
         verify(criarVeiculoUseCase, times(1)).execute(any());
-        verify(mapper, times(1)).toDto(any(VeiculoResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(VeiculoResponse.class));
     }
 
     @Test
@@ -143,7 +144,7 @@ class VeiculoControllerTest {
         // Arrange
         UUID id = veiculoResponse.getId();
         when(buscarVeiculoUseCase.execute(id)).thenReturn(veiculoResponse);
-        when(mapper.toDto(any(VeiculoResponse.class))).thenReturn(veiculoResponseDto);
+        when(presenter.prepararViewModel(any(VeiculoResponse.class))).thenReturn(veiculoResponseDto);
 
         // Act & Assert
         mockMvc.perform(get("/v1/admin/veiculos/{id}", id))
@@ -152,7 +153,7 @@ class VeiculoControllerTest {
                 .andExpect(jsonPath("$.marca").value("Toyota"));
 
         verify(buscarVeiculoUseCase, times(1)).execute(id);
-        verify(mapper, times(1)).toDto(any(VeiculoResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(VeiculoResponse.class));
     }
 
     @Test
@@ -162,7 +163,7 @@ class VeiculoControllerTest {
         UUID clienteId = UUID.randomUUID();
         List<VeiculoResponse> responses = List.of(veiculoResponse);
         when(buscarVeiculosPorClienteUseCase.execute(clienteId)).thenReturn(responses);
-        when(mapper.toDtoList(any())).thenReturn(List.of(veiculoResponseDto));
+        when(presenter.prepararViewModelList(any())).thenReturn(List.of(veiculoResponseDto));
 
         // Act & Assert
         mockMvc.perform(get("/v1/admin/veiculos/cliente/{clienteId}", clienteId))
@@ -170,7 +171,7 @@ class VeiculoControllerTest {
                 .andExpect(jsonPath("$").isArray());
 
         verify(buscarVeiculosPorClienteUseCase, times(1)).execute(clienteId);
-        verify(mapper, times(1)).toDtoList(any());
+        verify(presenter, times(1)).prepararViewModelList(any());
     }
 
     @Test
@@ -181,7 +182,7 @@ class VeiculoControllerTest {
         Page<VeiculoResponse> page = new PageImpl<>(List.of(veiculoResponse), pageable, 1);
         when(pageableValidator.validate(any(Pageable.class), any())).thenReturn(pageable);
         when(listarVeiculosUseCase.execute(any(Pageable.class))).thenReturn(page);
-        when(mapper.toDtoPage(any())).thenReturn(new PageImpl<>(List.of(veiculoResponseDto), pageable, 1));
+        when(presenter.prepararViewModelPage(any())).thenReturn(new PageImpl<>(List.of(veiculoResponseDto), pageable, 1));
 
         // Act & Assert
         mockMvc.perform(get("/v1/admin/veiculos")
@@ -192,7 +193,7 @@ class VeiculoControllerTest {
 
         verify(pageableValidator, times(1)).validate(any(Pageable.class), any());
         verify(listarVeiculosUseCase, times(1)).execute(any(Pageable.class));
-        verify(mapper, times(1)).toDtoPage(any());
+        verify(presenter, times(1)).prepararViewModelPage(any());
     }
 
     @Test
@@ -215,14 +216,14 @@ class VeiculoControllerTest {
                 .build();
 
         when(inativarVeiculoUseCase.execute(id)).thenReturn(inativadoResponse);
-        when(mapper.toDto(any(VeiculoResponse.class))).thenReturn(veiculoResponseDto);
+        when(presenter.prepararViewModel(any(VeiculoResponse.class))).thenReturn(veiculoResponseDto);
 
         // Act & Assert
         mockMvc.perform(patch("/v1/admin/veiculos/{id}/inativar", id))
                 .andExpect(status().isOk());
 
         verify(inativarVeiculoUseCase, times(1)).execute(id);
-        verify(mapper, times(1)).toDto(any(VeiculoResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(VeiculoResponse.class));
     }
 
     @Test
@@ -231,14 +232,14 @@ class VeiculoControllerTest {
         // Arrange
         UUID id = veiculoResponse.getId();
         when(reativarVeiculoUseCase.execute(id)).thenReturn(veiculoResponse);
-        when(mapper.toDto(any(VeiculoResponse.class))).thenReturn(veiculoResponseDto);
+        when(presenter.prepararViewModel(any(VeiculoResponse.class))).thenReturn(veiculoResponseDto);
 
         // Act & Assert
         mockMvc.perform(patch("/v1/admin/veiculos/{id}/reativar", id))
                 .andExpect(status().isOk());
 
         verify(reativarVeiculoUseCase, times(1)).execute(id);
-        verify(mapper, times(1)).toDto(any(VeiculoResponse.class));
+        verify(presenter, times(1)).prepararViewModel(any(VeiculoResponse.class));
     }
 
     @Test

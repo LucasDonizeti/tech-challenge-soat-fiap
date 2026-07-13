@@ -7,13 +7,13 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Nome;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa;
 import com.techchallenge.oficina.os.application.usecases.commands.EnviarOrcamentoAoClienteCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
 import com.techchallenge.oficina.os.domain.exceptions.ValidacaoOrdemServicoException;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
 import com.techchallenge.oficina.os.domain.model.entities.ItemServico;
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusOS;
-import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,7 +35,7 @@ import static org.mockito.Mockito.*;
 class EnviarOrcamentoAoClienteUseCaseTest {
 
     @Mock
-    private OrdemServicoRepository ordemServicoRepository;
+    private OrdemServicoGateway gateway;
 
     @InjectMocks
     private EnviarOrcamentoAoClienteUseCase useCase;
@@ -66,8 +66,8 @@ class EnviarOrcamentoAoClienteUseCaseTest {
     @DisplayName("Deve enviar orçamento ao cliente com sucesso")
     void deveEnviarOrcamentoAoClienteComSucesso() {
         // Arrange
-        when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
-        when(ordemServicoRepository.save(any(OrdemServico.class))).thenReturn(ordemServico);
+        when(gateway.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServico));
+        when(gateway.save(any(OrdemServico.class))).thenReturn(ordemServico);
 
         // Act
         OrdemServicoResponse response = useCase.execute(command);
@@ -77,15 +77,15 @@ class EnviarOrcamentoAoClienteUseCaseTest {
         assertEquals(ordemServico.getId(), response.getId());
         assertEquals(StatusOS.AGUARDANDO_APROVACAO.toString(), response.getStatus());
 
-        verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
-        verify(ordemServicoRepository, times(1)).save(any(OrdemServico.class));
+        verify(gateway, times(1)).findById(command.getOrdemServicoId());
+        verify(gateway, times(1)).save(any(OrdemServico.class));
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando ordem de serviço não encontrada")
     void deveLancarExcecaoQuandoOrdemServicoNaoEncontrada() {
         // Arrange
-        when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.empty());
+        when(gateway.findById(command.getOrdemServicoId())).thenReturn(Optional.empty());
 
         // Act & Assert
         OrdemServicoNaoEncontradaException exception = assertThrows(
@@ -95,8 +95,8 @@ class EnviarOrcamentoAoClienteUseCaseTest {
 
         assertTrue(exception.getMessage().contains("Ordem de Serviço não encontrada"));
 
-        verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, times(1)).findById(command.getOrdemServicoId());
+        verify(gateway, never()).save(any());
     }
 
     @Test
@@ -107,7 +107,7 @@ class EnviarOrcamentoAoClienteUseCaseTest {
                 Cliente.criar(Nome.of("Maria Silva"), CPF.of("98765432100"), Email.of("maria@email.com")),
                 new Veiculo(Placa.of("XYZ5678"), "Chevrolet", "Onix", 2021, "Prata")
         );
-        when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServicoRecebida));
+        when(gateway.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServicoRecebida));
 
         // Act & Assert
         ValidacaoOrdemServicoException exception = assertThrows(
@@ -117,8 +117,8 @@ class EnviarOrcamentoAoClienteUseCaseTest {
 
         assertTrue(exception.getMessage().contains("Só é possível enviar orçamento ao cliente quando a OS está no status EM_DIAGNOSTICO"));
 
-        verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, times(1)).findById(command.getOrdemServicoId());
+        verify(gateway, never()).save(any());
     }
 
     @Test
@@ -132,7 +132,7 @@ class EnviarOrcamentoAoClienteUseCaseTest {
         // Simula que a OS já está em EM_DIAGNOSTICO mas sem serviços (caso edge)
         ordemServicoSemServicos.atualizarStatus(StatusOS.EM_DIAGNOSTICO);
 
-        when(ordemServicoRepository.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServicoSemServicos));
+        when(gateway.findById(command.getOrdemServicoId())).thenReturn(Optional.of(ordemServicoSemServicos));
 
         // Act & Assert
         ValidacaoOrdemServicoException exception = assertThrows(
@@ -142,8 +142,8 @@ class EnviarOrcamentoAoClienteUseCaseTest {
 
         assertTrue(exception.getMessage().contains("OS deve ter pelo menos um serviço para enviar orçamento ao cliente"));
 
-        verify(ordemServicoRepository, times(1)).findById(command.getOrdemServicoId());
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, times(1)).findById(command.getOrdemServicoId());
+        verify(gateway, never()).save(any());
     }
 
     @Test
@@ -152,7 +152,7 @@ class EnviarOrcamentoAoClienteUseCaseTest {
         // Act & Assert
         assertThrows(NullPointerException.class, () -> useCase.execute(null));
 
-        verify(ordemServicoRepository, never()).findById(any());
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).findById(any());
+        verify(gateway, never()).save(any());
     }
 }

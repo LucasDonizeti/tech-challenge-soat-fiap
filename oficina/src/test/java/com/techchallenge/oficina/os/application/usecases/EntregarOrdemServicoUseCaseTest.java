@@ -1,10 +1,10 @@
 package com.techchallenge.oficina.os.application.usecases;
 
 import com.techchallenge.oficina.os.application.usecases.commands.EntregarOrdemServicoCommand;
+import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
 import com.techchallenge.oficina.os.domain.exceptions.OrdemServicoNaoEncontradaException;
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
-import com.techchallenge.oficina.os.domain.repositories.OrdemServicoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 class EntregarOrdemServicoUseCaseTest {
 
     @Mock
-    private OrdemServicoRepository ordemServicoRepository;
+    private OrdemServicoGateway gateway;
 
     @InjectMocks
     private EntregarOrdemServicoUseCase useCase;
@@ -45,24 +45,24 @@ class EntregarOrdemServicoUseCaseTest {
     @DisplayName("Deve entregar ordem de serviço com sucesso")
     void deveEntregarOrdemServicoComSucesso() {
         // Arrange
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
-        when(ordemServicoRepository.save(any(OrdemServico.class))).thenReturn(ordemServico);
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
+        when(gateway.save(any(OrdemServico.class))).thenReturn(ordemServico);
 
         // Act
         OrdemServicoResponse response = useCase.execute(command);
 
         // Assert
         assertNotNull(response);
-        verify(ordemServicoRepository, times(1)).findById(ordemServicoId);
+        verify(gateway, times(1)).findById(ordemServicoId);
         verify(ordemServico, times(1)).entregar();
-        verify(ordemServicoRepository, times(1)).save(any(OrdemServico.class));
+        verify(gateway, times(1)).save(any(OrdemServico.class));
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando ordem de serviço não encontrada")
     void deveLancarExcecaoQuandoOrdemServicoNaoEncontrada() {
         // Arrange
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.empty());
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.empty());
 
         // Act & Assert
         OrdemServicoNaoEncontradaException exception = assertThrows(
@@ -71,9 +71,9 @@ class EntregarOrdemServicoUseCaseTest {
         );
 
         assertTrue(exception.getMessage().contains(ordemServicoId.toString()));
-        verify(ordemServicoRepository, times(1)).findById(ordemServicoId);
+        verify(gateway, times(1)).findById(ordemServicoId);
         verify(ordemServico, never()).entregar();
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).save(any());
     }
 
     @Test
@@ -82,16 +82,16 @@ class EntregarOrdemServicoUseCaseTest {
         // Act & Assert
         assertThrows(NullPointerException.class, () -> useCase.execute(null));
 
-        verify(ordemServicoRepository, never()).findById(any());
+        verify(gateway, never()).findById(any());
         verify(ordemServico, never()).entregar();
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).save(any());
     }
 
     @Test
     @DisplayName("Deve propagar exceção quando domínio falha")
     void devePropagarExcecaoQuandoDominioFalha() {
         // Arrange
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
         doThrow(new RuntimeException("Status inválido para entrega")).when(ordemServico).entregar();
 
         // Act & Assert
@@ -101,17 +101,17 @@ class EntregarOrdemServicoUseCaseTest {
         );
 
         assertEquals("Status inválido para entrega", exception.getMessage());
-        verify(ordemServicoRepository, times(1)).findById(ordemServicoId);
+        verify(gateway, times(1)).findById(ordemServicoId);
         verify(ordemServico, times(1)).entregar();
-        verify(ordemServicoRepository, never()).save(any());
+        verify(gateway, never()).save(any());
     }
 
     @Test
     @DisplayName("Deve propagar exceção quando repository falha ao salvar")
     void devePropagarExcecaoQuandoRepositoryFalhaAoSalvar() {
         // Arrange
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
-        when(ordemServicoRepository.save(any(OrdemServico.class)))
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
+        when(gateway.save(any(OrdemServico.class)))
                 .thenThrow(new RuntimeException("Erro ao salvar no banco"));
 
         // Act & Assert
@@ -121,24 +121,24 @@ class EntregarOrdemServicoUseCaseTest {
         );
 
         assertEquals("Erro ao salvar no banco", exception.getMessage());
-        verify(ordemServicoRepository, times(1)).findById(ordemServicoId);
+        verify(gateway, times(1)).findById(ordemServicoId);
         verify(ordemServico, times(1)).entregar();
-        verify(ordemServicoRepository, times(1)).save(any(OrdemServico.class));
+        verify(gateway, times(1)).save(any(OrdemServico.class));
     }
 
     @Test
     @DisplayName("Deve chamar entregar antes de salvar")
     void deveChamarEntregarAntesDeSalvar() {
         // Arrange
-        when(ordemServicoRepository.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
-        when(ordemServicoRepository.save(any(OrdemServico.class))).thenReturn(ordemServico);
+        when(gateway.findById(ordemServicoId)).thenReturn(Optional.of(ordemServico));
+        when(gateway.save(any(OrdemServico.class))).thenReturn(ordemServico);
 
         // Act
         useCase.execute(command);
 
         // Assert
-        verify(ordemServicoRepository, times(1)).findById(ordemServicoId);
+        verify(gateway, times(1)).findById(ordemServicoId);
         verify(ordemServico, times(1)).entregar();
-        verify(ordemServicoRepository, times(1)).save(any(OrdemServico.class));
+        verify(gateway, times(1)).save(any(OrdemServico.class));
     }
 }

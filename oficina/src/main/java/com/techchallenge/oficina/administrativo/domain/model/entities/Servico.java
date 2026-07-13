@@ -13,31 +13,21 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Entity
-@Table(name = "servicos")
 @Getter
 public class Servico extends AbstractAggregateRoot<Servico> {
-    
-    @Id
-    @Column(name = "id", columnDefinition = "BINARY(16)")
+
     private UUID id;
-    
-    @Column(name = "nome", nullable = false, length = 100)
+
     private String nome;
-    
-    @Column(name = "descricao", length = 500)
+
     private String descricao;
-    
-    @Column(name = "preco", nullable = false, precision = 10, scale = 2)
+
     private BigDecimal preco;
-    
-    @Column(name = "ativo", nullable = false)
+
     private Boolean ativo;
-    
-    @Column(name = "criado_em", nullable = false)
+
     private LocalDateTime criadoEm;
-    
-    @Column(name = "atualizado_em", nullable = false)
+
     private LocalDateTime atualizadoEm;
     
     // Construtor padrão para JPA

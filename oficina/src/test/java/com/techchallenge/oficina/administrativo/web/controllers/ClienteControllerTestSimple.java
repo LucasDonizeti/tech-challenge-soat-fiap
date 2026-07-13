@@ -6,6 +6,7 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Status
 import com.techchallenge.oficina.administrativo.web.dto.ClienteResponseDto;
 import com.techchallenge.oficina.administrativo.web.dto.CriarClienteRequest;
 import com.techchallenge.oficina.administrativo.web.mappers.ClienteWebMapper;
+import com.techchallenge.oficina.administrativo.web.presenters.ClientePresenter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -48,7 +49,7 @@ class ClienteControllerSimpleTest {
     private ListarClientesUseCase listarClientesUseCase;
 
     @Mock
-    private ClienteWebMapper mapper;
+    private ClientePresenter presenter;
 
     @InjectMocks
     private ClienteController clienteController;
@@ -83,7 +84,7 @@ class ClienteControllerSimpleTest {
         ClienteResponseDto dto = ClienteResponseDto.from(response);
 
         when(criarClienteUseCase.execute(any())).thenReturn(response);
-        when(mapper.toDto(response)).thenReturn(dto);
+        when(presenter.prepararViewModel(response)).thenReturn(dto);
 
         // Act & Assert
         mockMvc.perform(post("/v1/admin/clientes")
@@ -113,7 +114,7 @@ class ClienteControllerSimpleTest {
         ClienteResponseDto dto = ClienteResponseDto.from(response);
 
         when(buscarClienteUseCase.execute(any())).thenReturn(response);
-        when(mapper.toDto(response)).thenReturn(dto);
+        when(presenter.prepararViewModel(response)).thenReturn(dto);
 
         // Act & Assert
         mockMvc.perform(get("/v1/admin/clientes/{id}", clienteId))

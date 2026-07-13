@@ -1,10 +1,10 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.commands.DebitarEstoqueMROCommand;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.MROGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
 import com.techchallenge.oficina.administrativo.domain.model.entities.MRO;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.TipoMRO;
-import com.techchallenge.oficina.administrativo.domain.repositories.MRORepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 class DebitarEstoqueMROUseCaseTest {
 
     @Mock
-    private MRORepository repository;
+    private MROGateway gateway;
 
     @InjectMocks
     private DebitarEstoqueMROUseCase useCase;
@@ -58,8 +58,8 @@ class DebitarEstoqueMROUseCaseTest {
     @DisplayName("Deve debitar estoque do MRO com sucesso")
     void deveDebitarEstoqueMROComSucesso() {
         // Arrange
-        when(repository.findById(mroId)).thenReturn(Optional.of(mro));
-        when(repository.save(any(MRO.class))).thenReturn(mro);
+        when(gateway.findById(mroId)).thenReturn(Optional.of(mro));
+        when(gateway.save(any(MRO.class))).thenReturn(mro);
 
         // Act
         MROResponse response = useCase.execute(command);
@@ -69,8 +69,8 @@ class DebitarEstoqueMROUseCaseTest {
         assertEquals(mroId, response.getId());
         assertEquals(90, response.getQuantidadeEstoque());
 
-        verify(repository, times(1)).findById(mroId);
-        verify(repository, times(1)).save(any(MRO.class));
+        verify(gateway, times(1)).findById(mroId);
+        verify(gateway, times(1)).save(any(MRO.class));
     }
 
     @Test
@@ -79,7 +79,7 @@ class DebitarEstoqueMROUseCaseTest {
         // Arrange
         UUID idNaoExistente = UUID.randomUUID();
         DebitarEstoqueMROCommand commandNaoExistente = new DebitarEstoqueMROCommand(idNaoExistente, 10);
-        when(repository.findById(idNaoExistente)).thenReturn(Optional.empty());
+        when(gateway.findById(idNaoExistente)).thenReturn(Optional.empty());
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -89,8 +89,8 @@ class DebitarEstoqueMROUseCaseTest {
 
         assertTrue(exception.getMessage().contains("MRO não encontrado"));
 
-        verify(repository, times(1)).findById(idNaoExistente);
-        verify(repository, never()).save(any(MRO.class));
+        verify(gateway, times(1)).findById(idNaoExistente);
+        verify(gateway, never()).save(any(MRO.class));
     }
 
     @Test
@@ -99,8 +99,8 @@ class DebitarEstoqueMROUseCaseTest {
         // Act & Assert
         assertThrows(NullPointerException.class, () -> useCase.execute(null));
 
-        verify(repository, never()).findById(any());
-        verify(repository, never()).save(any(MRO.class));
+        verify(gateway, never()).findById(any());
+        verify(gateway, never()).save(any(MRO.class));
     }
 
     @Test
@@ -108,8 +108,8 @@ class DebitarEstoqueMROUseCaseTest {
     void deveDebitarQuantidade1() {
         // Arrange
         DebitarEstoqueMROCommand command1 = new DebitarEstoqueMROCommand(mroId, 1);
-        when(repository.findById(mroId)).thenReturn(Optional.of(mro));
-        when(repository.save(any(MRO.class))).thenReturn(mro);
+        when(gateway.findById(mroId)).thenReturn(Optional.of(mro));
+        when(gateway.save(any(MRO.class))).thenReturn(mro);
 
         // Act
         MROResponse response = useCase.execute(command1);
@@ -118,8 +118,8 @@ class DebitarEstoqueMROUseCaseTest {
         assertNotNull(response);
         assertEquals(99, response.getQuantidadeEstoque());
 
-        verify(repository, times(1)).findById(mroId);
-        verify(repository, times(1)).save(any(MRO.class));
+        verify(gateway, times(1)).findById(mroId);
+        verify(gateway, times(1)).save(any(MRO.class));
     }
 
     @Test
@@ -138,8 +138,8 @@ class DebitarEstoqueMROUseCaseTest {
                 LocalDateTime.now()
         );
         DebitarEstoqueMROCommand commandGrande = new DebitarEstoqueMROCommand(mroId, 500);
-        when(repository.findById(mroId)).thenReturn(Optional.of(mroGrande));
-        when(repository.save(any(MRO.class))).thenReturn(mroGrande);
+        when(gateway.findById(mroId)).thenReturn(Optional.of(mroGrande));
+        when(gateway.save(any(MRO.class))).thenReturn(mroGrande);
 
         // Act
         MROResponse response = useCase.execute(commandGrande);
@@ -148,15 +148,15 @@ class DebitarEstoqueMROUseCaseTest {
         assertNotNull(response);
         assertEquals(500, response.getQuantidadeEstoque());
 
-        verify(repository, times(1)).findById(mroId);
-        verify(repository, times(1)).save(any(MRO.class));
+        verify(gateway, times(1)).findById(mroId);
+        verify(gateway, times(1)).save(any(MRO.class));
     }
 
     @Test
     @DisplayName("Deve propagar exceção quando repository falha")
     void devePropagarExcecaoQuandoRepositoryFalha() {
         // Arrange
-        when(repository.findById(mroId)).thenThrow(new RuntimeException("Erro de conexão"));
+        when(gateway.findById(mroId)).thenThrow(new RuntimeException("Erro de conexão"));
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -166,7 +166,7 @@ class DebitarEstoqueMROUseCaseTest {
 
         assertEquals("Erro de conexão", exception.getMessage());
 
-        verify(repository, times(1)).findById(mroId);
-        verify(repository, never()).save(any(MRO.class));
+        verify(gateway, times(1)).findById(mroId);
+        verify(gateway, never()).save(any(MRO.class));
     }
 }

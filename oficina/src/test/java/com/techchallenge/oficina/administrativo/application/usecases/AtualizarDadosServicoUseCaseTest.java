@@ -1,9 +1,9 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
 import com.techchallenge.oficina.administrativo.application.usecases.commands.AtualizarDadosServicoCommand;
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.ServicoGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ServicoResponse;
 import com.techchallenge.oficina.administrativo.domain.model.entities.Servico;
-import com.techchallenge.oficina.administrativo.domain.repositories.ServicoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 class AtualizarDadosServicoUseCaseTest {
 
     @Mock
-    private ServicoRepository repository;
+    private ServicoGateway gateway;
 
     @InjectMocks
     private AtualizarDadosServicoUseCase useCase;
@@ -49,8 +49,8 @@ class AtualizarDadosServicoUseCaseTest {
     @DisplayName("Deve atualizar dados do serviço com sucesso")
     void deveAtualizarDadosDoServicoComSucesso() {
         // Arrange
-        when(repository.findById(servicoId)).thenReturn(Optional.of(servico));
-        when(repository.save(any(Servico.class))).thenReturn(servico);
+        when(gateway.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(gateway.save(any(Servico.class))).thenReturn(servico);
 
         // Act
         ServicoResponse result = useCase.execute(servicoId, command);
@@ -59,15 +59,15 @@ class AtualizarDadosServicoUseCaseTest {
         assertNotNull(result);
         assertEquals("Troca de Óleo Premium", servico.getNome());
         assertEquals("Troca de óleo sintético premium", servico.getDescricao());
-        verify(repository, times(1)).findById(servicoId);
-        verify(repository, times(1)).save(any(Servico.class));
+        verify(gateway, times(1)).findById(servicoId);
+        verify(gateway, times(1)).save(any(Servico.class));
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando serviço não encontrado")
     void deveLancarExcecaoQuandoServicoNaoEncontrado() {
         // Arrange
-        when(repository.findById(servicoId)).thenReturn(Optional.empty());
+        when(gateway.findById(servicoId)).thenReturn(Optional.empty());
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(
@@ -76,8 +76,8 @@ class AtualizarDadosServicoUseCaseTest {
         );
 
         assertTrue(exception.getMessage().contains("Serviço não encontrado"));
-        verify(repository, times(1)).findById(servicoId);
-        verify(repository, never()).save(any());
+        verify(gateway, times(1)).findById(servicoId);
+        verify(gateway, never()).save(any());
     }
 
     @Test
@@ -85,8 +85,8 @@ class AtualizarDadosServicoUseCaseTest {
     void deveAtualizarApenasONome() {
         // Arrange
         AtualizarDadosServicoCommand commandNome = new AtualizarDadosServicoCommand("Troca de Óleo Sintético", null);
-        when(repository.findById(servicoId)).thenReturn(Optional.of(servico));
-        when(repository.save(any(Servico.class))).thenReturn(servico);
+        when(gateway.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(gateway.save(any(Servico.class))).thenReturn(servico);
 
         // Act
         ServicoResponse result = useCase.execute(servicoId, commandNome);
@@ -95,7 +95,7 @@ class AtualizarDadosServicoUseCaseTest {
         assertNotNull(result);
         assertEquals("Troca de Óleo Sintético", servico.getNome());
         assertNull(servico.getDescricao());
-        verify(repository, times(1)).save(any(Servico.class));
+        verify(gateway, times(1)).save(any(Servico.class));
     }
 
     @Test
@@ -103,8 +103,8 @@ class AtualizarDadosServicoUseCaseTest {
     void deveAtualizarApenasADescricao() {
         // Arrange
         AtualizarDadosServicoCommand commandDescricao = new AtualizarDadosServicoCommand("Troca de Óleo", "Nova descrição detalhada");
-        when(repository.findById(servicoId)).thenReturn(Optional.of(servico));
-        when(repository.save(any(Servico.class))).thenReturn(servico);
+        when(gateway.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(gateway.save(any(Servico.class))).thenReturn(servico);
 
         // Act
         ServicoResponse result = useCase.execute(servicoId, commandDescricao);
@@ -112,15 +112,15 @@ class AtualizarDadosServicoUseCaseTest {
         // Assert
         assertNotNull(result);
         assertEquals("Nova descrição detalhada", servico.getDescricao());
-        verify(repository, times(1)).save(any(Servico.class));
+        verify(gateway, times(1)).save(any(Servico.class));
     }
 
     @Test
     @DisplayName("Deve manter preço inalterado")
     void deveManterPrecoInalterado() {
         // Arrange
-        when(repository.findById(servicoId)).thenReturn(Optional.of(servico));
-        when(repository.save(any(Servico.class))).thenReturn(servico);
+        when(gateway.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(gateway.save(any(Servico.class))).thenReturn(servico);
 
         BigDecimal precoOriginal = servico.getPreco();
 
@@ -135,8 +135,8 @@ class AtualizarDadosServicoUseCaseTest {
     @DisplayName("Deve manter status inalterado")
     void deveManterStatusInalterado() {
         // Arrange
-        when(repository.findById(servicoId)).thenReturn(Optional.of(servico));
-        when(repository.save(any(Servico.class))).thenReturn(servico);
+        when(gateway.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(gateway.save(any(Servico.class))).thenReturn(servico);
 
         Boolean statusOriginal = servico.getAtivo();
 
@@ -151,8 +151,8 @@ class AtualizarDadosServicoUseCaseTest {
     @DisplayName("Deve retornar response com dados atualizados")
     void deveRetornarResponseComDadosAtualizados() {
         // Arrange
-        when(repository.findById(servicoId)).thenReturn(Optional.of(servico));
-        when(repository.save(any(Servico.class))).thenReturn(servico);
+        when(gateway.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(gateway.save(any(Servico.class))).thenReturn(servico);
 
         // Act
         ServicoResponse result = useCase.execute(servicoId, command);
@@ -169,8 +169,8 @@ class AtualizarDadosServicoUseCaseTest {
     void deveAtualizarNomeComCaracteresEspeciais() {
         // Arrange
         AtualizarDadosServicoCommand commandEspecial = new AtualizarDadosServicoCommand("Troca de Óleo (Sintético)", "Descrição com acentuação");
-        when(repository.findById(servicoId)).thenReturn(Optional.of(servico));
-        when(repository.save(any(Servico.class))).thenReturn(servico);
+        when(gateway.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(gateway.save(any(Servico.class))).thenReturn(servico);
 
         // Act
         ServicoResponse result = useCase.execute(servicoId, commandEspecial);
@@ -179,7 +179,7 @@ class AtualizarDadosServicoUseCaseTest {
         assertNotNull(result);
         assertEquals("Troca de Óleo (Sintético)", servico.getNome());
         assertEquals("Descrição com acentuação", servico.getDescricao());
-        verify(repository, times(1)).save(any(Servico.class));
+        verify(gateway, times(1)).save(any(Servico.class));
     }
 
     @Test
@@ -187,8 +187,8 @@ class AtualizarDadosServicoUseCaseTest {
     void deveAtualizarDescricaoVaziaParaNull() {
         // Arrange
         AtualizarDadosServicoCommand commandVazio = new AtualizarDadosServicoCommand("Troca de Óleo", "");
-        when(repository.findById(servicoId)).thenReturn(Optional.of(servico));
-        when(repository.save(any(Servico.class))).thenReturn(servico);
+        when(gateway.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(gateway.save(any(Servico.class))).thenReturn(servico);
 
         // Act
         ServicoResponse result = useCase.execute(servicoId, commandVazio);
@@ -196,6 +196,6 @@ class AtualizarDadosServicoUseCaseTest {
         // Assert
         assertNotNull(result);
         assertEquals("Troca de Óleo", servico.getNome());
-        verify(repository, times(1)).save(any(Servico.class));
+        verify(gateway, times(1)).save(any(Servico.class));
     }
 }

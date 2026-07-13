@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.administrativo.application.usecases;
 
+import com.techchallenge.oficina.administrativo.application.usecases.ports.output.VeiculoGateway;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.VeiculoResponse;
 import com.techchallenge.oficina.administrativo.domain.model.aggregates.Cliente;
 import com.techchallenge.oficina.administrativo.domain.model.entities.Veiculo;
@@ -7,7 +8,6 @@ import com.techchallenge.oficina.administrativo.domain.model.valueobjects.CPF;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Email;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Nome;
 import com.techchallenge.oficina.administrativo.domain.model.valueobjects.Placa;
-import com.techchallenge.oficina.administrativo.domain.repositories.VeiculoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -31,7 +30,7 @@ import static org.mockito.Mockito.*;
 class ListarVeiculosUseCaseTest {
 
     @Mock
-    private VeiculoRepository repository;
+    private VeiculoGateway gateway;
 
     @InjectMocks
     private ListarVeiculosUseCase useCase;
@@ -84,7 +83,7 @@ class ListarVeiculosUseCaseTest {
         List<Veiculo> veiculos = List.of(veiculo1, veiculo2, veiculo3);
         Pageable pageable = PageRequest.of(0, 10);
         Page<Veiculo> pageVeiculos = new PageImpl<>(veiculos, pageable, veiculos.size());
-        when(repository.findAll(pageable)).thenReturn(pageVeiculos);
+        when(gateway.findAll(pageable)).thenReturn(pageVeiculos);
 
         // Act
         Page<VeiculoResponse> response = useCase.execute(pageable);
@@ -97,7 +96,7 @@ class ListarVeiculosUseCaseTest {
         assertEquals("Honda", response.getContent().get(1).getMarca());
         assertEquals("Chevrolet", response.getContent().get(2).getMarca());
 
-        verify(repository, times(1)).findAll(pageable);
+        verify(gateway, times(1)).findAll(pageable);
     }
 
     @Test
@@ -107,7 +106,7 @@ class ListarVeiculosUseCaseTest {
         List<Veiculo> veiculos = List.of();
         Pageable pageable = PageRequest.of(0, 10);
         Page<Veiculo> pageVeiculos = new PageImpl<>(veiculos, pageable, 0);
-        when(repository.findAll(pageable)).thenReturn(pageVeiculos);
+        when(gateway.findAll(pageable)).thenReturn(pageVeiculos);
 
         // Act
         Page<VeiculoResponse> response = useCase.execute(pageable);
@@ -117,7 +116,7 @@ class ListarVeiculosUseCaseTest {
         assertEquals(0, response.getTotalElements());
         assertTrue(response.getContent().isEmpty());
 
-        verify(repository, times(1)).findAll(pageable);
+        verify(gateway, times(1)).findAll(pageable);
     }
 
     @Test
@@ -127,7 +126,7 @@ class ListarVeiculosUseCaseTest {
         List<Veiculo> veiculos = List.of(veiculo1, veiculo2, veiculo3);
         Pageable pageable = PageRequest.of(0, 2);
         Page<Veiculo> pageVeiculos = new PageImpl<>(veiculos.subList(0, 2), pageable, veiculos.size());
-        when(repository.findAll(pageable)).thenReturn(pageVeiculos);
+        when(gateway.findAll(pageable)).thenReturn(pageVeiculos);
 
         // Act
         Page<VeiculoResponse> response = useCase.execute(pageable);
@@ -139,7 +138,7 @@ class ListarVeiculosUseCaseTest {
         assertEquals(0, response.getNumber());
         assertEquals(2, response.getSize());
 
-        verify(repository, times(1)).findAll(pageable);
+        verify(gateway, times(1)).findAll(pageable);
     }
 
     @Test
@@ -149,7 +148,7 @@ class ListarVeiculosUseCaseTest {
         List<Veiculo> veiculos = List.of(veiculo1, veiculo2);
         Pageable pageable = PageRequest.of(5, 10);
         Page<Veiculo> pageVeiculos = new PageImpl<>(List.of(), pageable, veiculos.size());
-        when(repository.findAll(pageable)).thenReturn(pageVeiculos);
+        when(gateway.findAll(pageable)).thenReturn(pageVeiculos);
 
         // Act
         Page<VeiculoResponse> response = useCase.execute(pageable);
@@ -159,7 +158,7 @@ class ListarVeiculosUseCaseTest {
         assertEquals(2, response.getTotalElements());
         assertEquals(0, response.getContent().size());
 
-        verify(repository, times(1)).findAll(pageable);
+        verify(gateway, times(1)).findAll(pageable);
     }
 
     @Test
@@ -170,7 +169,7 @@ class ListarVeiculosUseCaseTest {
         List<Veiculo> veiculos = List.of(veiculo1, veiculo2);
         Pageable pageable = PageRequest.of(0, 10);
         Page<Veiculo> pageVeiculos = new PageImpl<>(veiculos, pageable, veiculos.size());
-        when(repository.findAll(pageable)).thenReturn(pageVeiculos);
+        when(gateway.findAll(pageable)).thenReturn(pageVeiculos);
 
         // Act
         Page<VeiculoResponse> response = useCase.execute(pageable);
@@ -181,6 +180,6 @@ class ListarVeiculosUseCaseTest {
         assertEquals("ATIVO", response.getContent().get(0).getStatus().name());
         assertEquals("INATIVO", response.getContent().get(1).getStatus().name());
 
-        verify(repository, times(1)).findAll(pageable);
+        verify(gateway, times(1)).findAll(pageable);
     }
 }
