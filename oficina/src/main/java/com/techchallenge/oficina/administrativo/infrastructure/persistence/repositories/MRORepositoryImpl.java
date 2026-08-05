@@ -35,6 +35,12 @@ public class MRORepositoryImpl implements MRORepository {
     }
     
     @Override
+    public Optional<MRO> findByCodigo(String codigo) {
+        return jpaRepository.findByCodigo(codigo)
+                .map(mapper::toDomain);
+    }
+    
+    @Override
     public Page<MRO> findAll(Pageable pageable) {
         Page<MROEntity> entities = jpaRepository.findAll(pageable);
         return entities.map(mapper::toDomain);

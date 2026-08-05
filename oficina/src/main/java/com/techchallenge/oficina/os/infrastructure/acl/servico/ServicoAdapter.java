@@ -15,4 +15,9 @@ public interface ServicoAdapter {
      * Busca um Serviço por ID
      */
     Optional<ServicoIntegrationDto> buscarPorId(UUID id);
+
+    /**
+     * Busca um Serviço por código
+     */
+    Optional<ServicoIntegrationDto> buscarPorCodigo(String codigo);
 }

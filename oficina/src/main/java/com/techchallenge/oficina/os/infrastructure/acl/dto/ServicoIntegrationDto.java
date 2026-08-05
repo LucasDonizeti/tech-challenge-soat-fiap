@@ -21,6 +21,7 @@ public class ServicoIntegrationDto {
     
     private UUID id;
     private String nome;
+    private String codigo;
     private String descricao;
     private BigDecimal preco;
     private Boolean ativo;

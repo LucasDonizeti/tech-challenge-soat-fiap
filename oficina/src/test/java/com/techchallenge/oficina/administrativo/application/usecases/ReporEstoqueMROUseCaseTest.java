@@ -42,6 +42,7 @@ class ReporEstoqueMROUseCaseTest {
         mro = MRO.reconstruir(
                 mroId,
                 "Óleo Motor 5W30",
+                "MRO-TESTE",
                 "Óleo para motor automotivo",
                 TipoMRO.INSUMO,
                 50,
@@ -129,6 +130,7 @@ class ReporEstoqueMROUseCaseTest {
         MRO mroBaixo = MRO.reconstruir(
                 mroId,
                 "Produto Baixo",
+                "MRO-TESTE",
                 "Descrição",
                 TipoMRO.PECA,
                 10,

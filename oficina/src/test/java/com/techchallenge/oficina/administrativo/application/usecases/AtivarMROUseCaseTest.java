@@ -40,6 +40,7 @@ class AtivarMROUseCaseTest {
         mro = MRO.reconstruir(
                 mroId,
                 "Óleo Motor 5W30",
+                "MRO-TESTE",
                 "Óleo para motor automotivo",
                 TipoMRO.INSUMO,
                 100,

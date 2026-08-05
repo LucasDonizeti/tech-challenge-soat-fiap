@@ -23,6 +23,9 @@ public class MROResponseDto {
     
     @Schema(description = "Nome do MRO", example = "Óleo de Motor 5W30")
     private String nome;
+
+    @Schema(description = "Código único do MRO", example = "MRO-0001")
+    private String codigo;
     
     @Schema(description = "Descrição do MRO", example = "Óleo sintético para motor")
     private String descricao;
@@ -53,6 +56,7 @@ public class MROResponseDto {
         return MROResponseDto.builder()
                 .id(response.getId())
                 .nome(response.getNome())
+                .codigo(response.getCodigo())
                 .descricao(response.getDescricao())
                 .tipo(response.getTipo())
                 .quantidadeEstoque(response.getQuantidadeEstoque())

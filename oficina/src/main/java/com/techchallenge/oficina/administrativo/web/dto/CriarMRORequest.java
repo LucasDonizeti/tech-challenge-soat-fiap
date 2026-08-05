@@ -15,6 +15,9 @@ public class CriarMRORequest {
     
     @NotBlank(message = "Nome é obrigatório")
     private String nome;
+
+    @NotBlank(message = "Código é obrigatório")
+    private String codigo;
     
     private String descricao;
     
@@ -31,6 +34,6 @@ public class CriarMRORequest {
     
     public CriarMROCommand toCommand() {
         TipoMRO tipoEnum = TipoMRO.valueOf(tipo.toUpperCase());
-        return new CriarMROCommand(nome, descricao, tipoEnum, quantidadeEstoque, precoUnitario);
+        return new CriarMROCommand(nome, codigo, descricao, tipoEnum, quantidadeEstoque, precoUnitario);
     }
 }

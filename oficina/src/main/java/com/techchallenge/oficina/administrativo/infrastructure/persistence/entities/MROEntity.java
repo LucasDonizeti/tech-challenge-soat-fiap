@@ -26,6 +26,9 @@ public class MROEntity {
     @Column(name = "nome", nullable = false, length = 100)
     private String nome;
     
+    @Column(name = "codigo", nullable = false, length = 30, unique = true)
+    private String codigo;
+    
     @Column(name = "descricao", length = 500)
     private String descricao;
     

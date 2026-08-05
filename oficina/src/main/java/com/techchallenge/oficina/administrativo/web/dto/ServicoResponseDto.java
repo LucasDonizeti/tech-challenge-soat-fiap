@@ -23,6 +23,9 @@ public class ServicoResponseDto {
     
     @Schema(description = "Nome do serviço", example = "Troca de Óleo")
     private String nome;
+
+    @Schema(description = "Código único do serviço", example = "SVC-001")
+    private String codigo;
     
     @Schema(description = "Descrição do serviço", example = "Troca completa de óleo do motor")
     private String descricao;
@@ -47,6 +50,7 @@ public class ServicoResponseDto {
         return ServicoResponseDto.builder()
                 .id(response.getId())
                 .nome(response.getNome())
+                .codigo(response.getCodigo())
                 .descricao(response.getDescricao())
                 .preco(response.getPreco())
                 .ativo(response.getAtivo())

@@ -36,6 +36,7 @@ class CriarMROUseCaseTest {
     void setUp() {
         command = new CriarMROCommand(
                 "Óleo Motor 5W30",
+                "MRO-TESTE",
                 "Óleo para motor automotivo",
                 TipoMRO.INSUMO,
                 100,
@@ -44,6 +45,7 @@ class CriarMROUseCaseTest {
 
         mro = MRO.criar(
                 "Óleo Motor 5W30",
+                "MRO-TESTE",
                 "Óleo para motor automotivo",
                 TipoMRO.INSUMO,
                 100,
@@ -79,6 +81,7 @@ class CriarMROUseCaseTest {
         // Arrange
         CriarMROCommand commandZeroEstoque = new CriarMROCommand(
                 "Graxa Automotiva",
+                "MRO-TESTE",
                 "Graxa para lubrificação",
                 TipoMRO.INSUMO,
                 null,
@@ -87,6 +90,7 @@ class CriarMROUseCaseTest {
 
         MRO mroZeroEstoque = MRO.criar(
                 "Graxa Automotiva",
+                "MRO-TESTE",
                 "Graxa para lubrificação",
                 TipoMRO.INSUMO,
                 null,
@@ -111,6 +115,7 @@ class CriarMROUseCaseTest {
         // Arrange
         CriarMROCommand commandPeca = new CriarMROCommand(
                 "Filtro de Óleo",
+                "MRO-TESTE",
                 "Filtro para motor",
                 TipoMRO.PECA,
                 50,
@@ -119,6 +124,7 @@ class CriarMROUseCaseTest {
 
         MRO mroPeca = MRO.criar(
                 "Filtro de Óleo",
+                "MRO-TESTE",
                 "Filtro para motor",
                 TipoMRO.PECA,
                 50,
@@ -143,6 +149,7 @@ class CriarMROUseCaseTest {
         // Arrange
         CriarMROCommand commandSemDescricao = new CriarMROCommand(
                 "Parafuso M8",
+                "MRO-TESTE",
                 null,
                 TipoMRO.PECA,
                 500,
@@ -151,6 +158,7 @@ class CriarMROUseCaseTest {
 
         MRO mroSemDescricao = MRO.criar(
                 "Parafuso M8",
+                "MRO-TESTE",
                 null,
                 TipoMRO.PECA,
                 500,

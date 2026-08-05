@@ -24,6 +24,7 @@ class ServicoResponseTest {
         Servico servico = Servico.reconstruir(
                 id,
                 "Troca de Óleo",
+                "SVC001",
                 "Troca completa de óleo do motor",
                 new BigDecimal("150.00"),
                 true,
@@ -62,6 +63,7 @@ class ServicoResponseTest {
         UUID id = UUID.randomUUID();
         Servico servico = Servico.reconstruir(
                 id,
+                "SVC001",
                 "Servico Descontinuado",
                 "Descrição",
                 new BigDecimal("100.00"),
@@ -85,6 +87,7 @@ class ServicoResponseTest {
         UUID id = UUID.randomUUID();
         Servico servico = Servico.reconstruir(
                 id,
+                "SVC001",
                 "Servico Sem Descricao",
                 null,
                 new BigDecimal("80.00"),
@@ -108,6 +111,7 @@ class ServicoResponseTest {
         UUID id = UUID.randomUUID();
         Servico servico = Servico.reconstruir(
                 id,
+                "SVC001",
                 "Alinhamento",
                 "Alinhamento de direção",
                 new BigDecimal("89.90"),

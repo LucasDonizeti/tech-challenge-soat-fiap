@@ -23,6 +23,7 @@ public class CriarServicoUseCase implements CriarServicoInput {
         // Criação do serviço
         Servico servico = Servico.criar(
             command.getNome(),
+            command.getCodigo(),
             command.getDescricao(),
             command.getPreco()
         );

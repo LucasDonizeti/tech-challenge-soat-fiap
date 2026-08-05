@@ -21,6 +21,7 @@ public class MROIntegrationDto {
     
     private UUID id;
     private String nome;
+    private String codigo;
     private String descricao;
     private String tipo; // PECA ou INSUMO
     private Integer quantidadeEstoque;

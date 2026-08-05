@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.testcontainers.shaded.org.bouncycastle.cms.PasswordRecipientId;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -22,6 +23,7 @@ class MROIntegrationDtoTest {
     private Integer quantidadeEstoque;
     private BigDecimal precoUnitario;
     private Boolean ativo;
+    private String codigo;
 
     @BeforeEach
     void setUp() {
@@ -32,6 +34,7 @@ class MROIntegrationDtoTest {
         quantidadeEstoque = 100;
         precoUnitario = new BigDecimal("45.90");
         ativo = true;
+        codigo = "COD001";
     }
 
     @Test
@@ -41,6 +44,7 @@ class MROIntegrationDtoTest {
         MROIntegrationDto dto = MROIntegrationDto.builder()
                 .id(id)
                 .nome(nome)
+                .codigo(codigo)
                 .descricao(descricao)
                 .tipo(tipo)
                 .quantidadeEstoque(quantidadeEstoque)
@@ -50,6 +54,7 @@ class MROIntegrationDtoTest {
 
         // Assert
         assertNotNull(dto);
+        assertEquals(codigo, dto.getCodigo());
         assertEquals(id, dto.getId());
         assertEquals(nome, dto.getNome());
         assertEquals(descricao, dto.getDescricao());
@@ -64,12 +69,13 @@ class MROIntegrationDtoTest {
     void deveCriarMROIntegrationDtoComAllArgsConstructor() {
         // Act
         MROIntegrationDto dto = new MROIntegrationDto(
-                id, nome, descricao, tipo, quantidadeEstoque, precoUnitario, ativo
+                id, nome, codigo, descricao, tipo, quantidadeEstoque, precoUnitario, ativo
         );
 
         // Assert
         assertNotNull(dto);
         assertEquals(id, dto.getId());
+        assertEquals(codigo, dto.getCodigo());
         assertEquals(nome, dto.getNome());
         assertEquals(descricao, dto.getDescricao());
         assertEquals(tipo, dto.getTipo());

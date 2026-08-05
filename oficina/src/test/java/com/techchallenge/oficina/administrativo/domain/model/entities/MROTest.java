@@ -36,7 +36,7 @@ class MROTest {
     @DisplayName("Deve criar MRO com sucesso")
     void deveCriarMROComSucesso() {
         // Act
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar( nome, "PC001", descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Assert
         assertNotNull(mro);
@@ -57,7 +57,7 @@ class MROTest {
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
                 ValidacaoMROException.class,
-                () -> MRO.criar(null, descricao, tipo, quantidadeEstoque, precoUnitario)
+                () -> MRO.criar(null, null, descricao, tipo, quantidadeEstoque, precoUnitario)
         );
 
         assertEquals("Nome não pode ser vazio", exception.getMessage());
@@ -69,7 +69,7 @@ class MROTest {
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
                 ValidacaoMROException.class,
-                () -> MRO.criar("", descricao, tipo, quantidadeEstoque, precoUnitario)
+                () -> MRO.criar("", "", descricao, tipo, quantidadeEstoque, precoUnitario)
         );
 
         assertEquals("Nome não pode ser vazio", exception.getMessage());
@@ -81,7 +81,7 @@ class MROTest {
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
                 ValidacaoMROException.class,
-                () -> MRO.criar("   ", descricao, tipo, quantidadeEstoque, precoUnitario)
+                () -> MRO.criar("   ", "   ", descricao, tipo, quantidadeEstoque, precoUnitario)
         );
 
         assertEquals("Nome não pode ser vazio", exception.getMessage());
@@ -93,7 +93,7 @@ class MROTest {
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
                 ValidacaoMROException.class,
-                () -> MRO.criar(nome, descricao, tipo, quantidadeEstoque, null)
+                () -> MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, null)
         );
 
         assertEquals("Preço deve ser maior que zero", exception.getMessage());
@@ -105,7 +105,7 @@ class MROTest {
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
                 ValidacaoMROException.class,
-                () -> MRO.criar(nome, descricao, tipo, quantidadeEstoque, BigDecimal.ZERO)
+                () -> MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, BigDecimal.ZERO)
         );
 
         assertEquals("Preço deve ser maior que zero", exception.getMessage());
@@ -117,7 +117,7 @@ class MROTest {
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
                 ValidacaoMROException.class,
-                () -> MRO.criar(nome, descricao, tipo, quantidadeEstoque, new BigDecimal("-10.00"))
+                () -> MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, new BigDecimal("-10.00"))
         );
 
         assertEquals("Preço deve ser maior que zero", exception.getMessage());
@@ -129,7 +129,7 @@ class MROTest {
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
                 ValidacaoMROException.class,
-                () -> MRO.criar(nome, descricao, tipo, -5, precoUnitario)
+                () -> MRO.criar("PC001", nome, descricao, tipo, -5, precoUnitario)
         );
 
         assertEquals("Quantidade de estoque não pode ser negativa", exception.getMessage());
@@ -139,7 +139,7 @@ class MROTest {
     @DisplayName("Deve aceitar estoque nulo e definir como zero")
     void deveAceitarEstoqueNuloEDefinirComoZero() {
         // Act
-        MRO mro = MRO.criar(nome, descricao, tipo, null, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, null, precoUnitario);
 
         // Assert
         assertEquals(0, mro.getQuantidadeEstoque());
@@ -149,7 +149,7 @@ class MROTest {
     @DisplayName("Deve aceitar descrição nula")
     void deveAceitarDescricaoNula() {
         // Act
-        MRO mro = MRO.criar(nome, null, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, null, tipo, quantidadeEstoque, precoUnitario);
 
         // Assert
         assertNull(mro.getDescricao());
@@ -159,7 +159,7 @@ class MROTest {
     @DisplayName("Deve atualizar preço com sucesso")
     void deveAtualizarPrecoComSucesso() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
         BigDecimal novoPreco = new BigDecimal("55.90");
 
         // Act
@@ -174,7 +174,7 @@ class MROTest {
     @DisplayName("Deve lançar exceção ao atualizar preço para nulo")
     void deveLancarExcecaoAoAtualizarPrecoParaNulo() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
@@ -189,7 +189,7 @@ class MROTest {
     @DisplayName("Deve lançar exceção ao atualizar preço para zero")
     void deveLancarExcecaoAoAtualizarPrecoParaZero() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
@@ -204,7 +204,7 @@ class MROTest {
     @DisplayName("Deve atualizar estoque com sucesso")
     void deveAtualizarEstoqueComSucesso() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
         Integer novaQuantidade = 150;
 
         // Act
@@ -219,7 +219,7 @@ class MROTest {
     @DisplayName("Deve lançar exceção ao atualizar estoque para nulo")
     void deveLancarExcecaoAoAtualizarEstoqueParaNulo() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
@@ -234,7 +234,7 @@ class MROTest {
     @DisplayName("Deve lançar exceção ao atualizar estoque para negativo")
     void deveLancarExcecaoAoAtualizarEstoqueParaNegativo() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
@@ -249,7 +249,7 @@ class MROTest {
     @DisplayName("Deve debitar estoque com sucesso")
     void deveDebitarEstoqueComSucesso() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
         Integer quantidadeDebitar = 10;
 
         // Act
@@ -264,7 +264,7 @@ class MROTest {
     @DisplayName("Deve lançar exceção ao debitar estoque nulo")
     void deveLancarExcecaoAoDebitarEstoqueNulo() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
@@ -279,7 +279,7 @@ class MROTest {
     @DisplayName("Deve lançar exceção ao debitar estoque zero")
     void deveLancarExcecaoAoDebitarEstoqueZero() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
@@ -294,7 +294,7 @@ class MROTest {
     @DisplayName("Deve lançar exceção ao debitar estoque negativo")
     void deveLancarExcecaoAoDebitarEstoqueNegativo() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
@@ -309,7 +309,7 @@ class MROTest {
     @DisplayName("Deve lançar exceção ao debitar estoque insuficiente")
     void deveLancarExcecaoAoDebitarEstoqueInsuficiente() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, 5, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, 5, precoUnitario);
 
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
@@ -324,7 +324,7 @@ class MROTest {
     @DisplayName("Deve repor estoque com sucesso")
     void deveReporEstoqueComSucesso() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
         Integer quantidadeRepor = 50;
 
         // Act
@@ -339,7 +339,7 @@ class MROTest {
     @DisplayName("Deve lançar exceção ao repor estoque nulo")
     void deveLancarExcecaoAoReporEstoqueNulo() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
@@ -354,7 +354,7 @@ class MROTest {
     @DisplayName("Deve lançar exceção ao repor estoque zero")
     void deveLancarExcecaoAoReporEstoqueZero() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
@@ -369,7 +369,7 @@ class MROTest {
     @DisplayName("Deve lançar exceção ao repor estoque negativo")
     void deveLancarExcecaoAoReporEstoqueNegativo() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
@@ -384,7 +384,7 @@ class MROTest {
     @DisplayName("Deve atualizar dados com sucesso")
     void deveAtualizarDadosComSucesso() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
         String novoNome = "Óleo Motor 10W40";
         String novaDescricao = "Óleo para motor diesel";
         TipoMRO novoTipo = TipoMRO.INSUMO;
@@ -403,7 +403,7 @@ class MROTest {
     @DisplayName("Deve lançar exceção ao atualizar dados com nome nulo")
     void deveLancarExcecaoAoAtualizarDadosComNomeNulo() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
@@ -418,7 +418,7 @@ class MROTest {
     @DisplayName("Deve lançar exceção ao atualizar dados com nome vazio")
     void deveLancarExcecaoAoAtualizarDadosComNomeVazio() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
@@ -433,7 +433,7 @@ class MROTest {
     @DisplayName("Deve ativar MRO com sucesso")
     void deveAtivarMROComSucesso() {
         // Arrange
-        MRO mro = MRO.reconstruir(id, nome, descricao, tipo, quantidadeEstoque, precoUnitario, false, LocalDateTime.now(), LocalDateTime.now());
+        MRO mro = MRO.reconstruir(id, "PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario, false, LocalDateTime.now(), LocalDateTime.now());
 
         // Act
         mro.ativar();
@@ -447,7 +447,7 @@ class MROTest {
     @DisplayName("Deve lançar exceção ao ativar MRO já ativo")
     void deveLancarExcecaoAoAtivarMROJaAtivo() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
@@ -462,7 +462,7 @@ class MROTest {
     @DisplayName("Deve desativar MRO com sucesso")
     void deveDesativarMROComSucesso() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Act
         mro.desativar();
@@ -476,7 +476,7 @@ class MROTest {
     @DisplayName("Deve lançar exceção ao desativar MRO já inativo")
     void deveLancarExcecaoAoDesativarMROJaInativo() {
         // Arrange
-        MRO mro = MRO.reconstruir(id, nome, descricao, tipo, quantidadeEstoque, precoUnitario, false, LocalDateTime.now(), LocalDateTime.now());
+        MRO mro = MRO.reconstruir(id, "PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario, false, LocalDateTime.now(), LocalDateTime.now());
 
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
@@ -495,7 +495,7 @@ class MROTest {
         LocalDateTime atualizadoEm = LocalDateTime.now();
 
         // Act
-        MRO mro = MRO.reconstruir(id, nome, descricao, tipo, quantidadeEstoque, precoUnitario, true, criadoEm, atualizadoEm);
+        MRO mro = MRO.reconstruir(id, nome, "PC001", descricao, tipo, quantidadeEstoque, precoUnitario, true, criadoEm, atualizadoEm);
 
         // Assert
         assertEquals(id, mro.getId());
@@ -513,8 +513,8 @@ class MROTest {
     @DisplayName("Deve verificar se é peça")
     void deveVerificarSeEPeca() {
         // Arrange
-        MRO mroPeca = MRO.criar(nome, descricao, TipoMRO.PECA, quantidadeEstoque, precoUnitario);
-        MRO mroInsumo = MRO.criar(nome, descricao, TipoMRO.INSUMO, quantidadeEstoque, precoUnitario);
+        MRO mroPeca = MRO.criar("PC001", nome, descricao, TipoMRO.PECA, quantidadeEstoque, precoUnitario);
+        MRO mroInsumo = MRO.criar("INC001", nome, descricao, TipoMRO.INSUMO, quantidadeEstoque, precoUnitario);
 
         // Assert
         assertTrue(mroPeca.isPeca());
@@ -525,8 +525,8 @@ class MROTest {
     @DisplayName("Deve verificar se é insumo")
     void deveVerificarSeEInsumo() {
         // Arrange
-        MRO mroPeca = MRO.criar(nome, descricao, TipoMRO.PECA, quantidadeEstoque, precoUnitario);
-        MRO mroInsumo = MRO.criar(nome, descricao, TipoMRO.INSUMO, quantidadeEstoque, precoUnitario);
+        MRO mroPeca = MRO.criar("PC001", nome, descricao, TipoMRO.PECA, quantidadeEstoque, precoUnitario);
+        MRO mroInsumo = MRO.criar("INC001", nome, descricao, TipoMRO.INSUMO, quantidadeEstoque, precoUnitario);
 
         // Assert
         assertTrue(mroInsumo.isInsumo());
@@ -537,7 +537,7 @@ class MROTest {
     @DisplayName("Deve verificar se tem estoque suficiente")
     void deveVerificarSeTemEstoqueSuficiente() {
         // Arrange
-        MRO mro = MRO.criar(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        MRO mro = MRO.criar("PC001", nome, descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Assert
         assertTrue(mro.temEstoqueSuficiente(50));

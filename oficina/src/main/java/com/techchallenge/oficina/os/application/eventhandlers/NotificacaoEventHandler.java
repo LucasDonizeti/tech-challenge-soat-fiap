@@ -70,4 +70,16 @@ public class NotificacaoEventHandler {
             log.error("Erro ao processar evento VeiculoEntregue", e);
         }
     }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleOrcamentoRecusado(OrcamentoRecusadoEvent event) {
+        log.info("Processando evento OrcamentoRecusado para OS ID: {}", event.ordemServicoId());
+        try {
+            ordemServicoRepository.findById(event.ordemServicoId())
+                    .ifPresent(os -> notificacaoOSService.notificarOrcamentoRecusado(os, event.motivoRecusa()));
+        } catch (Exception e) {
+            log.error("Erro ao processar evento OrcamentoRecusado", e);
+        }
+    }
 }

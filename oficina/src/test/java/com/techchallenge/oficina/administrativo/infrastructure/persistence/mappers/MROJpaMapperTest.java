@@ -42,6 +42,7 @@ class MROJpaMapperTest {
         MROEntity entity = new MROEntity(
                 UUID.randomUUID(),
                 "Another Test",
+                "COD001",
                 "Another Description",
                 TipoMRO.PECA, // Use o enum diretamente
                 20,
@@ -71,8 +72,8 @@ class MROJpaMapperTest {
     @Test
     void toDomainList_validList() {
         List<MROEntity> entities = List.of(
-                new MROEntity(UUID.randomUUID(), "Entity 1", "Desc 1", TipoMRO.PECA, 1, BigDecimal.valueOf(1.0), true, LocalDateTime.now(), LocalDateTime.now()),
-                new MROEntity(UUID.randomUUID(), "Entity 2", "Desc 2", TipoMRO.INSUMO, 2, BigDecimal.valueOf(2.0), false, LocalDateTime.now(), LocalDateTime.now())
+                new MROEntity(UUID.randomUUID(), "Entity 1", "COD001", "Desc 1", TipoMRO.PECA, 1, BigDecimal.valueOf(1.0), true, LocalDateTime.now(), LocalDateTime.now()),
+                new MROEntity(UUID.randomUUID(), "Entity 2", "COD001", "Desc 2", TipoMRO.INSUMO, 2, BigDecimal.valueOf(2.0), false, LocalDateTime.now(), LocalDateTime.now())
         );
 
         List<MRO> domainList = mapper.toDomainList(entities);
