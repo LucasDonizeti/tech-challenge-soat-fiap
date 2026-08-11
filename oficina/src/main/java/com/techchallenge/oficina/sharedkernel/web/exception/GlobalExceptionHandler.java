@@ -1,11 +1,13 @@
 package com.techchallenge.oficina.sharedkernel.web.exception;
 
+import com.techchallenge.oficina.sharedkernel.domain.exceptions.ClienteNaoEncontradoException;
 import com.techchallenge.oficina.sharedkernel.domain.exceptions.DomainException;
 import com.techchallenge.oficina.sharedkernel.web.dto.ErrorResponse;
 import com.techchallenge.oficina.sharedkernel.web.dto.FieldError;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,6 +21,34 @@ import java.util.List;
 @ControllerAdvice(basePackages = "com.techchallenge.oficina")
 @Slf4j
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, WebRequest request) {
+        log.warn("Acesso negado: {}", ex.getMessage());
+        ErrorResponse error = ErrorResponse.of(
+            HttpStatus.FORBIDDEN.value(),
+            HttpStatus.FORBIDDEN.getReasonPhrase(),
+            "Acesso negado",
+            "ACCESS_DENIED",
+            request.getDescription(false).replace("uri=", "")
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
+    @ExceptionHandler(ClienteNaoEncontradoException.class)
+    public ResponseEntity<ErrorResponse> handleClienteNaoEncontrado(ClienteNaoEncontradoException ex, WebRequest request) {
+        log.warn("Cliente não encontrado: {}", ex.getMessage());
+
+        ErrorResponse error = ErrorResponse.of(
+            HttpStatus.NOT_FOUND.value(),
+            HttpStatus.NOT_FOUND.getReasonPhrase(),
+            ex.getMessage(),
+            ex.getErrorCode(),
+            request.getDescription(false).replace("uri=", "")
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
 
     @ExceptionHandler(DomainException.class)
     public ResponseEntity<ErrorResponse> handleDomainException(DomainException ex, WebRequest request) {

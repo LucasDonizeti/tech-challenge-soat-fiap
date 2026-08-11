@@ -28,6 +28,7 @@ public class ClienteJpaMapper {
                 .cpf(cliente.getCpf() != null ? cliente.getCpf().getValor() : null)
                 .cnpj(cliente.getCnpj() != null ? cliente.getCnpj().getValor() : null)
                 .email(cliente.getEmail().getEndereco())
+                // senhaHash NÃO vem do domínio — é gerenciado diretamente via JPA pelo AuthClienteController
                 .status(toEntityStatus(cliente.getStatus()))
                 .criadoEm(cliente.getCriadoEm())
                 .atualizadoEm(cliente.getAtualizadoEm())
