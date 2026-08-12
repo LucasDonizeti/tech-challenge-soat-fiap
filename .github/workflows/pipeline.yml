@@ -165,10 +165,10 @@ jobs:
           RDS_ENDPOINT: ${{ steps.rds-info.outputs.rds_endpoint }}
           DB_PASSWORD: ${{ steps.rds-secret.outputs.db_password }}
         run: |
-          helm upgrade --install ${{ env.HELM_RELEASE_NAME }} ${{ env.HELM_CHART_PATH }} \
+          helm upgrade --install ${{ env.HELM_RELEASE_NAME }} ./${{ env.HELM_CHART_PATH }} \
             --namespace ${{ env.K8S_NAMESPACE }} \
             --create-namespace \
-            -f ${{ env.HELM_CHART_PATH }}/values-prod.yaml \
+            -f ./${{ env.HELM_CHART_PATH }}/values-prod.yaml \
             --set image.repository=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }} \
             --set image.tag=$IMAGE_TAG \
             --set secret.SPRING_DATASOURCE_URL="jdbc:mysql://${RDS_ENDPOINT}:3306/oficina" \
@@ -177,7 +177,7 @@ jobs:
             --set secret.JWT_SECRET="${{ secrets.JWT_SECRET }}" \
             --set secret.SECURITY_USER_NAME="${{ secrets.SECURITY_USER_NAME }}" \
             --set secret.SECURITY_USER_PASSWORD="${{ secrets.SECURITY_USER_PASSWORD }}" \
-            --atomic \
+            --rollback-on-failure \
             --timeout 10m \
             --wait
 
