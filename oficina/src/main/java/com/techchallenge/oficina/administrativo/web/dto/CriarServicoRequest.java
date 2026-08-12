@@ -13,6 +13,9 @@ public class CriarServicoRequest {
     
     @NotBlank(message = "Nome é obrigatório")
     private String nome;
+
+    @NotBlank(message = "Código é obrigatório")
+    private String codigo;
     
     private String descricao;
     
@@ -21,6 +24,6 @@ public class CriarServicoRequest {
     private BigDecimal preco;
     
     public CriarServicoCommand toCommand() {
-        return new CriarServicoCommand(nome, descricao, preco);
+        return new CriarServicoCommand(nome, codigo, descricao, preco);
     }
 }

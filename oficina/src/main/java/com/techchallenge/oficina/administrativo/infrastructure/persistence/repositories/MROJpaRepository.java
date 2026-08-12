@@ -16,6 +16,8 @@ import java.util.UUID;
 @Repository
 public interface MROJpaRepository extends JpaRepository<MROEntity, UUID> {
     
+    Optional<MROEntity> findByCodigo(String codigo);
+
     @Query("SELECT m FROM MROEntity m WHERE m.ativo = :ativo")
     List<MROEntity> findByAtivo(@Param("ativo") Boolean ativo);
     

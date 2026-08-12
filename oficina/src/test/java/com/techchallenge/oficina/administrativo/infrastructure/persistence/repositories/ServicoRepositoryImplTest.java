@@ -50,6 +50,7 @@ class ServicoRepositoryImplTest {
 
         servico = Servico.criar(
                 "Troca de Óleo",
+                "COD001",
                 "Troca de óleo sintético",
                 new BigDecimal("150.00")
         );

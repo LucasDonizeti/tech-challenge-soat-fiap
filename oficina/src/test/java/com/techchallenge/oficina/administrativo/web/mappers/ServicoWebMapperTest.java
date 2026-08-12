@@ -30,7 +30,7 @@ class ServicoWebMapperTest {
     @DisplayName("Deve converter ServicoResponse para DTO com sucesso")
     void deveConverterServicoResponseParaDTO() {
         // Arrange
-        Servico servico = Servico.criar("Troca de Óleo", "Troca de óleo sintético", new BigDecimal("150.00"));
+        Servico servico = Servico.criar("Troca de Óleo","COD001", "Troca de óleo sintético", new BigDecimal("150.00"));
         ServicoResponse response = ServicoResponse.from(servico);
 
         // Act
@@ -49,8 +49,8 @@ class ServicoWebMapperTest {
     @DisplayName("Deve converter lista de ServicoResponse para lista de DTOs")
     void deveConverterListaDeServicoResponseParaListaDeDTOs() {
         // Arrange
-        Servico servico1 = Servico.criar("Troca de Óleo", "Troca de óleo sintético", new BigDecimal("150.00"));
-        Servico servico2 = Servico.criar("Troca de Pneu", "Troca de pneu", new BigDecimal("200.00"));
+        Servico servico1 = Servico.criar("Troca de Óleo","COD001", "Troca de óleo sintético", new BigDecimal("150.00"));
+        Servico servico2 = Servico.criar("Troca de Pneu","COD002", "Troca de pneu", new BigDecimal("200.00"));
 
         ServicoResponse response1 = ServicoResponse.from(servico1);
         ServicoResponse response2 = ServicoResponse.from(servico2);
@@ -71,8 +71,8 @@ class ServicoWebMapperTest {
     @DisplayName("Deve converter página de ServicoResponse para página de DTOs")
     void deveConverterPaginaDeServicoResponseParaPaginaDeDTOs() {
         // Arrange
-        Servico servico1 = Servico.criar("Troca de Óleo", "Troca de óleo sintético", new BigDecimal("150.00"));
-        Servico servico2 = Servico.criar("Troca de Pneu", "Troca de pneu", new BigDecimal("200.00"));
+        Servico servico1 = Servico.criar("Troca de Óleo","COD001", "Troca de óleo sintético", new BigDecimal("150.00"));
+        Servico servico2 = Servico.criar("Troca de Pneu","COD002", "Troca de pneu", new BigDecimal("200.00"));
 
         ServicoResponse response1 = ServicoResponse.from(servico1);
         ServicoResponse response2 = ServicoResponse.from(servico2);
@@ -123,7 +123,7 @@ class ServicoWebMapperTest {
     @DisplayName("Deve manter informações de paginação ao converter página")
     void deveManterInformacoesDePaginacaoAoConverterPagina() {
         // Arrange
-        Servico servico = Servico.criar("Troca de Óleo", "Troca de óleo sintético", new BigDecimal("150.00"));
+        Servico servico = Servico.criar("Troca de Óleo","COD001", "Troca de óleo sintético", new BigDecimal("150.00"));
         ServicoResponse response = ServicoResponse.from(servico);
 
         Page<ServicoResponse> responsePage = new PageImpl<>(List.of(response));
@@ -143,7 +143,7 @@ class ServicoWebMapperTest {
     @DisplayName("Deve converter serviço inativo corretamente")
     void deveConverterServicoInativoCorretamente() {
         // Arrange
-        Servico servico = Servico.criar("Troca de Óleo", "Troca de óleo sintético", new BigDecimal("150.00"));
+        Servico servico = Servico.criar("Troca de Óleo","COD001", "Troca de óleo sintético", new BigDecimal("150.00"));
         servico.desativar();
         ServicoResponse response = ServicoResponse.from(servico);
 
@@ -159,7 +159,7 @@ class ServicoWebMapperTest {
     @DisplayName("Deve converter preço decimal corretamente")
     void deveConverterPrecoDecimalCorretamente() {
         // Arrange
-        Servico servico = Servico.criar("Troca de Óleo", "Troca de óleo sintético", new BigDecimal("175.50"));
+        Servico servico = Servico.criar("Troca de Óleo","COD001", "Troca de óleo sintético", new BigDecimal("175.50"));
         ServicoResponse response = ServicoResponse.from(servico);
 
         // Act
@@ -174,7 +174,7 @@ class ServicoWebMapperTest {
     @DisplayName("Deve converter serviço com descrição null")
     void deveConverterServicoComDescricaoNull() {
         // Arrange
-        Servico servico = Servico.criar("Troca de Óleo", null, new BigDecimal("150.00"));
+        Servico servico = Servico.criar("Troca de Óleo","COD001", null, new BigDecimal("150.00"));
         ServicoResponse response = ServicoResponse.from(servico);
 
         // Act
@@ -189,7 +189,7 @@ class ServicoWebMapperTest {
     @DisplayName("Deve manter ID ao converter")
     void deveManterIdAoConverter() {
         // Arrange
-        Servico servico = Servico.criar("Troca de Óleo", "Troca de óleo sintético", new BigDecimal("150.00"));
+        Servico servico = Servico.criar("Troca de Óleo","COD001", "Troca de óleo sintético", new BigDecimal("150.00"));
         UUID id = servico.getId();
         ServicoResponse response = ServicoResponse.from(servico);
 

@@ -15,6 +15,11 @@ public interface MROAdapter {
      * Busca um MRO por ID
      */
     Optional<MROIntegrationDto> buscarPorId(UUID id);
+
+    /**
+     * Busca um MRO por código
+     */
+    Optional<MROIntegrationDto> buscarPorCodigo(String codigo);
     
     /**
      * Verifica se um MRO tem estoque suficiente

@@ -23,6 +23,7 @@ public class CriarMROUseCase implements CriarMROInput {
         // Criação do MRO
         MRO mro = MRO.criar(
             command.getNome(),
+            command.getCodigo(),
             command.getDescricao(),
             command.getTipo(),
             command.getQuantidadeEstoque(),

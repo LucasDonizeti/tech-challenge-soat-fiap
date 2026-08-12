@@ -44,6 +44,7 @@ class AtualizarEstoqueMROUseCaseTest {
 
         mro = MRO.criar(
                 "Óleo Motor 5W30",
+                "MRO-TESTE",
                 "Óleo para motor automotivo",
                 TipoMRO.INSUMO,
                 100,

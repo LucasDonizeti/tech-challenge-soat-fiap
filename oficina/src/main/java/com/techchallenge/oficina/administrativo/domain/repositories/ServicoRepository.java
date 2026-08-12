@@ -14,6 +14,8 @@ public interface ServicoRepository {
     
     Optional<Servico> findById(UUID id);
     
+    Optional<Servico> findByCodigo(String codigo);
+    
     Page<Servico> findAll(Pageable pageable);
     
     List<Servico> findAll();

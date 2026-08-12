@@ -18,6 +18,8 @@ public class MRO extends AbstractAggregateRoot<MRO> {
 
     private String nome;
 
+    private String codigo;
+
     private String descricao;
 
     private TipoMRO tipo;
@@ -36,10 +38,11 @@ public class MRO extends AbstractAggregateRoot<MRO> {
     protected MRO() {}
     
     // Factory method para criação
-    public static MRO criar(String nome, String descricao, TipoMRO tipo, Integer quantidadeEstoque, BigDecimal precoUnitario) {
+    public static MRO criar(String nome, String codigo, String descricao, TipoMRO tipo, Integer quantidadeEstoque, BigDecimal precoUnitario) {
         MRO mro = new MRO();
         mro.id = UUID.randomUUID();
         mro.nome = nome;
+        mro.codigo = codigo;
         mro.descricao = descricao;
         mro.tipo = tipo;
         mro.quantidadeEstoque = quantidadeEstoque != null ? quantidadeEstoque : 0;
@@ -66,10 +69,11 @@ public class MRO extends AbstractAggregateRoot<MRO> {
     }
     
     // Factory method para reconstrução a partir de dados persistidos (usado pelo mapper)
-    public static MRO reconstruir(UUID id, String nome, String descricao, TipoMRO tipo, Integer quantidadeEstoque, BigDecimal precoUnitario, Boolean ativo, LocalDateTime criadoEm, LocalDateTime atualizadoEm) {
+    public static MRO reconstruir(UUID id, String nome, String codigo, String descricao, TipoMRO tipo, Integer quantidadeEstoque, BigDecimal precoUnitario, Boolean ativo, LocalDateTime criadoEm, LocalDateTime atualizadoEm) {
         MRO mro = new MRO();
         mro.id = id;
         mro.nome = nome;
+        mro.codigo = codigo;
         mro.descricao = descricao;
         mro.tipo = tipo;
         mro.quantidadeEstoque = quantidadeEstoque;

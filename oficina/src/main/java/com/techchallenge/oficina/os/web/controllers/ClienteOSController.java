@@ -1,5 +1,6 @@
 package com.techchallenge.oficina.os.web.controllers;
 
+import com.techchallenge.oficina.administrativo.infrastructure.persistence.repositories.ClienteJpaRepository;
 import com.techchallenge.oficina.os.application.usecases.commands.AprovarOrcamentoCommand;
 import com.techchallenge.oficina.os.application.usecases.ports.input.AprovarOrcamentoInput;
 import com.techchallenge.oficina.os.application.usecases.ports.input.ListarOrdensServicoPorClienteInput;
@@ -18,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -38,15 +41,27 @@ public class ClienteOSController {
     private final ListarOrdensServicoPorClienteInput listarOrdensServicoPorClienteInput;
     private final ClienteOSPresenter presenter;
     private final PageableValidator pageableValidator;
+    private final ClienteJpaRepository clienteJpaRepository;
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Listar ordens de serviço por cliente", description = "Retorna todas as ordens de serviço de um cliente paginadas (endpoint público)")
+    private UUID resolveClienteId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getName() == null) {
+            throw new IllegalArgumentException("Cliente não autenticado");
+        }
+
+        String username = authentication.getName();
+        return clienteJpaRepository.findByCpf(username)
+                .map(cliente -> cliente.getId())
+                .or(() -> clienteJpaRepository.findByCnpj(username).map(cliente -> cliente.getId()))
+                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado: " + username));
+    }
+
+    @GetMapping
+    @Operation(summary = "Listar ordens de serviço do cliente logado", description = "Retorna todas as ordens de serviço do cliente autenticado paginadas")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista de ordens de serviço retornada com sucesso")
     })
     public ResponseEntity<Page<OrdemServicoResponseDto>> listarPorCliente(
-            @Parameter(description = "ID do cliente", example = "550e8400-e29b-41d4-a716-446655440000", required = true)
-            @PathVariable UUID id,
             @Parameter(description = "Número da página (padrão: 0)", example = "0")
             @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Tamanho da página (padrão: 10)", example = "10")
@@ -54,13 +69,14 @@ public class ClienteOSController {
             @Parameter(description = "Campo de ordenação (ex: status, dataCriacao, dataInicioExecucao)", example = "dataCriacao")
             @RequestParam(defaultValue = "dataCriacao") String sort,
             Pageable pageable) {
-        log.info("Listando ordens de serviço por cliente: clienteId={}", id);
+        UUID clienteId = resolveClienteId();
+        log.info("Listando ordens de serviço do cliente autenticado: clienteId={}", clienteId);
 
         // Validar e limitar os campos de ordenação para evitar erros de Sort
         Set<String> allowedFields = Set.of("status", "dataCriacao", "dataInicioExecucao", "dataFinalizacao", "valorTotal");
         Pageable validatedPageable = pageableValidator.validate(pageable, allowedFields);
 
-        Page<OrdemServicoResponse> responses = listarOrdensServicoPorClienteInput.execute(id, validatedPageable);
+        Page<OrdemServicoResponse> responses = listarOrdensServicoPorClienteInput.execute(clienteId, validatedPageable);
         Page<OrdemServicoResponseDto> dtos = presenter.prepararViewModelPage(responses);
 
         return ResponseEntity.ok(dtos);

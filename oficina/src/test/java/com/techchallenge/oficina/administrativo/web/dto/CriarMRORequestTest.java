@@ -21,6 +21,7 @@ class CriarMRORequestTest {
         request.setNome("Óleo Motor 5W30");
         request.setDescricao("Óleo para motor automotivo");
         request.setTipo("INSUMO");
+        request.setCodigo("COD001");
         request.setQuantidadeEstoque(100);
         request.setPrecoUnitario(new BigDecimal("45.90"));
 
@@ -43,6 +44,7 @@ class CriarMRORequestTest {
         CriarMRORequest request = new CriarMRORequest();
         request.setNome("Filtro de Óleo");
         request.setTipo("PECA");
+        request.setCodigo("COD001");
         request.setQuantidadeEstoque(50);
         request.setPrecoUnitario(new BigDecimal("25.00"));
 
@@ -62,6 +64,7 @@ class CriarMRORequestTest {
         request.setNome("Produto");
         request.setTipo("insumo");
         request.setQuantidadeEstoque(10);
+        request.setCodigo("COD001");
         request.setPrecoUnitario(new BigDecimal("10.00"));
 
         // Act
@@ -80,6 +83,7 @@ class CriarMRORequestTest {
         request.setNome("Produto");
         request.setTipo("PECA");
         request.setDescricao(null);
+        request.setCodigo("COD001");
         request.setQuantidadeEstoque(100);
         request.setPrecoUnitario(new BigDecimal("15.00"));
 
@@ -98,6 +102,7 @@ class CriarMRORequestTest {
         CriarMRORequest request = new CriarMRORequest();
         request.setNome("Produto");
         request.setTipo("INSUMO");
+        request.setCodigo("COD001");
         request.setQuantidadeEstoque(0);
         request.setPrecoUnitario(new BigDecimal("10.00"));
 

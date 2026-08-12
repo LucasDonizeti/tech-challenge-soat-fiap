@@ -19,6 +19,7 @@ public class MROJpaMapper {
         return MROEntity.builder()
                 .id(mro.getId())
                 .nome(mro.getNome())
+                .codigo(mro.getCodigo())
                 .descricao(mro.getDescricao())
                 .tipo(mro.getTipo())
                 .quantidadeEstoque(mro.getQuantidadeEstoque())
@@ -37,6 +38,7 @@ public class MROJpaMapper {
         return MRO.reconstruir(
             entity.getId(),
             entity.getNome(),
+            entity.getCodigo(),
             entity.getDescricao(),
             entity.getTipo(),
             entity.getQuantidadeEstoque(),

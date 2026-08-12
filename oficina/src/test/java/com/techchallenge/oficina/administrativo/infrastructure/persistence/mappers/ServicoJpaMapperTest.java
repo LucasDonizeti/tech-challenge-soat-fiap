@@ -34,6 +34,7 @@ class ServicoJpaMapperTest {
         Servico servico = Servico.reconstruir(
                 UUID.randomUUID(),
                 "Limpeza do carro",
+                "COD001",
                 "Lavagem e polimento do veículo",
                 BigDecimal.valueOf(99.99),
                 true,

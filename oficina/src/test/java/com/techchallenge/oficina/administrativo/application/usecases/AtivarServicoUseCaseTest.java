@@ -36,7 +36,7 @@ class AtivarServicoUseCaseTest {
     @BeforeEach
     void setUp() {
         servicoId = UUID.randomUUID();
-        servico = Servico.criar("Troca de Óleo", "Descrição", new BigDecimal("150.00"));
+        servico = Servico.criar("Troca de Óleo", "COD-TESTE", "Descrição", new BigDecimal("150.00"));
         servico.desativar();
     }
 

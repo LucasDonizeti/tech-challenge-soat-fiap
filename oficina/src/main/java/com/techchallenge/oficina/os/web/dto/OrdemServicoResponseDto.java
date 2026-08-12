@@ -28,7 +28,9 @@ public class OrdemServicoResponseDto {
     @Schema(description = "Dados do veículo")
     private VeiculoDto veiculo;
     
-    @Schema(description = "Status da ordem de serviço (RECEBIDA, EM_DIAGNOSTICO, AGUARDANDO_APROVACAO, EM_EXECUCAO, FINALIZADA, ENTREGUE)", allowableValues = {"RECEBIDA", "EM_DIAGNOSTICO", "AGUARDANDO_APROVACAO", "EM_EXECUCAO", "FINALIZADA", "ENTREGUE"}, example = "RECEBIDA")
+    @Schema(description = "Status da ordem de serviço (RECEBIDA, EM_DIAGNOSTICO, AGUARDANDO_APROVACAO, EM_EXECUCAO, FINALIZADA, ENTREGUE, CANCELADA)",
+            allowableValues = {"RECEBIDA", "EM_DIAGNOSTICO", "AGUARDANDO_APROVACAO", "EM_EXECUCAO", "FINALIZADA", "ENTREGUE", "CANCELADA"},
+            example = "RECEBIDA")
     private String status;
     
     @Schema(description = "Data de criação da ordem", example = "2024-01-15T10:30:00")

@@ -44,6 +44,7 @@ class ListarMROsUseCaseTest {
         MRO mro1 = MRO.reconstruir(
                 UUID.randomUUID(),
                 "Óleo Motor 5W30",
+                "MRO-TESTE",
                 "Óleo para motor automotivo",
                 TipoMRO.INSUMO,
                 100,
@@ -56,6 +57,7 @@ class ListarMROsUseCaseTest {
         MRO mro2 = MRO.reconstruir(
                 UUID.randomUUID(),
                 "Filtro de Óleo",
+                "MRO-TESTE",
                 "Filtro para motor",
                 TipoMRO.PECA,
                 50,

@@ -42,6 +42,7 @@ class AtualizarDadosMROUseCaseTest {
         mro = MRO.reconstruir(
                 mroId,
                 "Óleo Motor Antigo",
+                "MRO-TESTE",
                 "Descrição antiga",
                 TipoMRO.INSUMO,
                 100,

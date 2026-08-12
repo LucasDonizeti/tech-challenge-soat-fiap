@@ -34,6 +34,12 @@ public class ServicoRepositoryImpl implements ServicoRepository {
     }
     
     @Override
+    public Optional<Servico> findByCodigo(String codigo) {
+        return jpaRepository.findByCodigo(codigo)
+                .map(mapper::toDomain);
+    }
+    
+    @Override
     public Page<Servico> findAll(Pageable pageable) {
         Page<ServicoEntity> entities = jpaRepository.findAll(pageable);
         return entities.map(mapper::toDomain);

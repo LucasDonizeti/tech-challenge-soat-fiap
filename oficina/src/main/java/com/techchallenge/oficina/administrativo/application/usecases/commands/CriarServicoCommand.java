@@ -9,20 +9,25 @@ import java.math.BigDecimal;
 public class CriarServicoCommand {
 
     private final String nome;
+    private final String codigo;
     private final String descricao;
     private final BigDecimal preco;
 
-    public CriarServicoCommand(String nome, String descricao, BigDecimal preco) {
-        validate(nome, preco);
+    public CriarServicoCommand(String nome, String codigo, String descricao, BigDecimal preco) {
+        validate(nome, codigo, preco);
 
         this.nome = nome;
+        this.codigo = codigo;
         this.descricao = descricao;
         this.preco = preco;
     }
 
-    private void validate(String nome, BigDecimal preco) {
+    private void validate(String nome, String codigo, BigDecimal preco) {
         if (nome == null || nome.isBlank()) {
             throw new ValidacaoServicoException("Nome é obrigatório");
+        }
+        if (codigo == null || codigo.isBlank()) {
+            throw new ValidacaoServicoException("Código é obrigatório");
         }
         if (preco == null || preco.compareTo(BigDecimal.ZERO) <= 0) {
             throw new ValidacaoServicoException("Preço deve ser maior que zero");

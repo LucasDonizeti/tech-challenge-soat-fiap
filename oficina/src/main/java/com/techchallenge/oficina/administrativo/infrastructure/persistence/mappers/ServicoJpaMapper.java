@@ -18,6 +18,7 @@ public class ServicoJpaMapper {
         return ServicoEntity.builder()
                 .id(servico.getId())
                 .nome(servico.getNome())
+                .codigo(servico.getCodigo())
                 .descricao(servico.getDescricao())
                 .preco(servico.getPreco())
                 .ativo(servico.getAtivo())
@@ -34,6 +35,7 @@ public class ServicoJpaMapper {
         return Servico.reconstruir(
             entity.getId(),
             entity.getNome(),
+            entity.getCodigo(),
             entity.getDescricao(),
             entity.getPreco(),
             entity.getAtivo(),

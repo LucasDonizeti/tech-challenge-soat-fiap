@@ -14,6 +14,7 @@ public class ServicoResponse {
     
     private final UUID id;
     private final String nome;
+    private final String codigo;
     private final String descricao;
     private final BigDecimal preco;
     private final Boolean ativo;
@@ -28,6 +29,7 @@ public class ServicoResponse {
         return ServicoResponse.builder()
                 .id(servico.getId())
                 .nome(servico.getNome())
+                .codigo(servico.getCodigo())
                 .descricao(servico.getDescricao())
                 .preco(servico.getPreco())
                 .ativo(servico.getAtivo())
