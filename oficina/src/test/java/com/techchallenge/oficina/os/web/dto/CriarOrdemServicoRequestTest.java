@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,105 +24,119 @@ class CriarOrdemServicoRequestTest {
     @DisplayName("Deve criar CriarOrdemServicoCommand com dados válidos")
     void deveCriarCriarOrdemServicoCommandComDadosValidos() {
         // Arrange
-        UUID clienteId = UUID.randomUUID();
-        UUID veiculoId = UUID.randomUUID();
-        request.setClienteId(clienteId);
-        request.setVeiculoId(veiculoId);
+        String cpfOuCnpj = "52998224725";
+        String placa = "ABC1234";
+        List<String> codigosServico = List.of("SVC001");
+        request.setCpfOuCnpj(cpfOuCnpj);
+        request.setPlaca(placa);
+        request.setCodigosServico(codigosServico);
 
         // Act
         CriarOrdemServicoCommand command = request.toCommand();
 
         // Assert
         assertNotNull(command);
-        assertEquals(clienteId, command.getClienteId());
-        assertEquals(veiculoId, command.getVeiculoId());
+        assertEquals(cpfOuCnpj, command.getCpfOuCnpj());
+        assertEquals(placa, command.getPlaca());
+        assertEquals(codigosServico, command.getCodigosServico());
     }
 
     @Test
-    @DisplayName("Deve permitir definir e obter clienteId")
-    void devePermitirDefinirEObterClienteId() {
+    @DisplayName("Deve permitir definir e obter cpfOuCnpj")
+    void devePermitirDefinirEObterCpfOuCnpj() {
         // Arrange
-        UUID clienteId = UUID.randomUUID();
+        String cpfOuCnpj = "52998224725";
 
         // Act
-        request.setClienteId(clienteId);
+        request.setCpfOuCnpj(cpfOuCnpj);
 
         // Assert
-        assertEquals(clienteId, request.getClienteId());
+        assertEquals(cpfOuCnpj, request.getCpfOuCnpj());
     }
 
     @Test
-    @DisplayName("Deve permitir definir e obter veiculoId")
-    void devePermitirDefinirEObterVeiculoId() {
+    @DisplayName("Deve permitir definir e obter placa")
+    void devePermitirDefinirEObterPlaca() {
         // Arrange
-        UUID veiculoId = UUID.randomUUID();
+        String placa = "ABC1234";
 
         // Act
-        request.setVeiculoId(veiculoId);
+        request.setPlaca(placa);
 
         // Assert
-        assertEquals(veiculoId, request.getVeiculoId());
+        assertEquals(placa, request.getPlaca());
     }
 
     @Test
-    @DisplayName("Deve permitir atualizar clienteId múltiplas vezes")
-    void devePermitirAtualizarClienteIdMultiplasVezes() {
+    @DisplayName("Deve permitir atualizar cpfOuCnpj múltiplas vezes")
+    void devePermitirAtualizarCpfOuCnpjMultiplasVezes() {
         // Act & Assert
-        UUID clienteId1 = UUID.randomUUID();
-        UUID clienteId2 = UUID.randomUUID();
+        String cpfOuCnpj1 = "52998224725";
+        String cpfOuCnpj2 = "12345678901";
 
-        request.setClienteId(clienteId1);
-        assertEquals(clienteId1, request.getClienteId());
+        request.setCpfOuCnpj(cpfOuCnpj1);
+        assertEquals(cpfOuCnpj1, request.getCpfOuCnpj());
 
-        request.setClienteId(clienteId2);
-        assertEquals(clienteId2, request.getClienteId());
+        request.setCpfOuCnpj(cpfOuCnpj2);
+        assertEquals(cpfOuCnpj2, request.getCpfOuCnpj());
     }
 
     @Test
-    @DisplayName("Deve permitir atualizar veiculoId múltiplas vezes")
-    void devePermitirAtualizarVeiculoIdMultiplasVezes() {
+    @DisplayName("Deve permitir atualizar placa múltiplas vezes")
+    void devePermitirAtualizarPlacaMultiplasVezes() {
         // Act & Assert
-        UUID veiculoId1 = UUID.randomUUID();
-        UUID veiculoId2 = UUID.randomUUID();
+        String placa1 = "ABC1234";
+        String placa2 = "XYZ5678";
 
-        request.setVeiculoId(veiculoId1);
-        assertEquals(veiculoId1, request.getVeiculoId());
+        request.setPlaca(placa1);
+        assertEquals(placa1, request.getPlaca());
 
-        request.setVeiculoId(veiculoId2);
-        assertEquals(veiculoId2, request.getVeiculoId());
+        request.setPlaca(placa2);
+        assertEquals(placa2, request.getPlaca());
     }
 
     @Test
-    @DisplayName("Deve criar command com clienteId específico")
-    void deveCriarCommandComClienteIdEspecifico() {
+    @DisplayName("Deve criar command com cpfOuCnpj específico")
+    void deveCriarCommandComCpfOuCnpjEspecifico() {
         // Arrange
-        UUID clienteId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        UUID veiculoId = UUID.randomUUID();
-        request.setClienteId(clienteId);
-        request.setVeiculoId(veiculoId);
+        String cpfOuCnpj = "52998224725";
+        String placa = "ABC1234";
+        List<String> codigosServico = List.of("SVC001");
+        request.setCpfOuCnpj(cpfOuCnpj);
+        request.setPlaca(placa);
+        request.setCodigosServico(codigosServico);
 
         // Act
         CriarOrdemServicoCommand command = request.toCommand();
 
         // Assert
         assertNotNull(command);
-        assertEquals(clienteId, command.getClienteId());
+        assertEquals(cpfOuCnpj, command.getCpfOuCnpj());
     }
 
     @Test
-    @DisplayName("Deve criar command com veiculoId específico")
-    void deveCriarCommandComVeiculoIdEspecifico() {
+    @DisplayName("Deve criar command com itens MRO")
+    void deveCriarCommandComItensMRO() {
         // Arrange
-        UUID clienteId = UUID.randomUUID();
-        UUID veiculoId = UUID.fromString("987e6543-e21b-43d2-a456-426614174999");
-        request.setClienteId(clienteId);
-        request.setVeiculoId(veiculoId);
+        String cpfOuCnpj = "52998224725";
+        String placa = "ABC1234";
+        List<String> codigosServico = List.of("SVC001");
+        CriarOrdemServicoRequest.ItemMRORequest itemMRO = new CriarOrdemServicoRequest.ItemMRORequest();
+        itemMRO.setCodigoMro("PC001");
+        itemMRO.setQuantidade(2);
+        
+        request.setCpfOuCnpj(cpfOuCnpj);
+        request.setPlaca(placa);
+        request.setCodigosServico(codigosServico);
+        request.setItensMRO(List.of(itemMRO));
 
         // Act
         CriarOrdemServicoCommand command = request.toCommand();
 
         // Assert
         assertNotNull(command);
-        assertEquals(veiculoId, command.getVeiculoId());
+        assertEquals(1, command.getItensMRO().size());
+        assertEquals("PC001", command.getItensMRO().get(0).getCodigoMro());
+        assertEquals(2, command.getItensMRO().get(0).getQuantidade());
     }
 }

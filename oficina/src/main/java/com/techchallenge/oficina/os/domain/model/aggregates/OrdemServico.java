@@ -199,6 +199,26 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
         
         registerEvent(new ServicoIniciadoEvent(id, clienteNome, clienteEmail, veiculoMarca, veiculoModelo, veiculoPlaca));
     }
+
+    public void recusarOrcamento(String motivo) {
+        if (this.status != StatusOS.AGUARDANDO_APROVACAO) {
+            throw new ValidacaoOrdemServicoException(
+                "Só é possível recusar orçamento quando a OS está no status AGUARDANDO_APROVACAO. Status atual: " + this.status);
+        }
+        this.status = StatusOS.CANCELADA;
+        this.dataFinalizacao = LocalDateTime.now();
+        log.info("Orçamento recusado - OS ID: {}, Status alterado para CANCELADA, Cliente: {}, Motivo: {}",
+                this.id, this.cliente != null ? this.cliente.getNome() : "N/A", motivo);
+
+        // Emitir evento de domínio
+        String clienteNome = cliente != null && cliente.getNome() != null ? cliente.getNome().getValor() : "Cliente";
+        String clienteEmail = cliente != null && cliente.getEmail() != null ? cliente.getEmail().getEndereco() : null;
+        String veiculoMarca = veiculo != null ? veiculo.getMarca() : null;
+        String veiculoModelo = veiculo != null ? veiculo.getModelo() : null;
+        String veiculoPlaca = veiculo != null && veiculo.getPlaca() != null ? veiculo.getPlaca().getFormatada() : null;
+
+        registerEvent(new OrcamentoRecusadoEvent(id, clienteNome, clienteEmail, veiculoMarca, veiculoModelo, veiculoPlaca, motivo));
+    }
     
     public void finalizar() {
         if (this.status != StatusOS.EM_EXECUCAO) {

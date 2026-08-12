@@ -23,7 +23,7 @@ class CriarMROCommandTest {
         BigDecimal precoUnitario = new BigDecimal("50.00");
 
         // Act
-        CriarMROCommand command = new CriarMROCommand(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        CriarMROCommand command = new CriarMROCommand( nome,"PC001", descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Assert
         assertNotNull(command);
@@ -43,7 +43,7 @@ class CriarMROCommandTest {
         BigDecimal precoUnitario = new BigDecimal("50.00");
 
         // Act
-        CriarMROCommand command = new CriarMROCommand(nome, null, tipo, null, precoUnitario);
+        CriarMROCommand command = new CriarMROCommand("PC001", nome, null, tipo, null, precoUnitario);
 
         // Assert
         assertNotNull(command);
@@ -59,7 +59,7 @@ class CriarMROCommandTest {
         BigDecimal precoUnitario = new BigDecimal("50.00");
 
         // Act
-        CriarMROCommand command = new CriarMROCommand(nome, null, tipo, 10, precoUnitario);
+        CriarMROCommand command = new CriarMROCommand("PC001", nome, null, tipo, 10, precoUnitario);
 
         // Assert
         assertNotNull(command);
@@ -72,7 +72,7 @@ class CriarMROCommandTest {
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
                 ValidacaoMROException.class,
-                () -> new CriarMROCommand(null, "Descrição", TipoMRO.PECA, 10, new BigDecimal("50.00"))
+                () -> new CriarMROCommand(null, null, "Descrição", TipoMRO.PECA, 10, new BigDecimal("50.00"))
         );
 
         assertEquals("Nome é obrigatório", exception.getMessage());
@@ -84,7 +84,7 @@ class CriarMROCommandTest {
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
                 ValidacaoMROException.class,
-                () -> new CriarMROCommand("", "Descrição", TipoMRO.PECA, 10, new BigDecimal("50.00"))
+                () -> new CriarMROCommand("", "", "Descrição", TipoMRO.PECA, 10, new BigDecimal("50.00"))
         );
 
         assertEquals("Nome é obrigatório", exception.getMessage());
@@ -96,7 +96,7 @@ class CriarMROCommandTest {
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
                 ValidacaoMROException.class,
-                () -> new CriarMROCommand("   ", "Descrição", TipoMRO.PECA, 10, new BigDecimal("50.00"))
+                () -> new CriarMROCommand("   ", "   ", "Descrição", TipoMRO.PECA, 10, new BigDecimal("50.00"))
         );
 
         assertEquals("Nome é obrigatório", exception.getMessage());
@@ -108,7 +108,7 @@ class CriarMROCommandTest {
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
                 ValidacaoMROException.class,
-                () -> new CriarMROCommand("Óleo Motor", "Descrição", null, 10, new BigDecimal("50.00"))
+                () -> new CriarMROCommand("PC001", "Óleo Motor", "Descrição", null, 10, new BigDecimal("50.00"))
         );
 
         assertEquals("Tipo é obrigatório", exception.getMessage());
@@ -120,7 +120,7 @@ class CriarMROCommandTest {
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
                 ValidacaoMROException.class,
-                () -> new CriarMROCommand("Óleo Motor", "Descrição", TipoMRO.PECA, -5, new BigDecimal("50.00"))
+                () -> new CriarMROCommand("PC001", "Óleo Motor", "Descrição", TipoMRO.PECA, -5, new BigDecimal("50.00"))
         );
 
         assertEquals("Quantidade de estoque não pode ser negativa", exception.getMessage());
@@ -132,7 +132,7 @@ class CriarMROCommandTest {
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
                 ValidacaoMROException.class,
-                () -> new CriarMROCommand("Óleo Motor", "Descrição", TipoMRO.PECA, 10, null)
+                () -> new CriarMROCommand("PC001", "Óleo Motor", "Descrição", TipoMRO.PECA, 10, null)
         );
 
         assertEquals("Preço unitário deve ser maior que zero", exception.getMessage());
@@ -144,7 +144,7 @@ class CriarMROCommandTest {
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
                 ValidacaoMROException.class,
-                () -> new CriarMROCommand("Óleo Motor", "Descrição", TipoMRO.PECA, 10, BigDecimal.ZERO)
+                () -> new CriarMROCommand("PC001", "Óleo Motor", "Descrição", TipoMRO.PECA, 10, BigDecimal.ZERO)
         );
 
         assertEquals("Preço unitário deve ser maior que zero", exception.getMessage());
@@ -156,7 +156,7 @@ class CriarMROCommandTest {
         // Act & Assert
         ValidacaoMROException exception = assertThrows(
                 ValidacaoMROException.class,
-                () -> new CriarMROCommand("Óleo Motor", "Descrição", TipoMRO.PECA, 10, new BigDecimal("-10.00"))
+                () -> new CriarMROCommand("PC001", "Óleo Motor", "Descrição", TipoMRO.PECA, 10, new BigDecimal("-10.00"))
         );
 
         assertEquals("Preço unitário deve ser maior que zero", exception.getMessage());
@@ -169,7 +169,7 @@ class CriarMROCommandTest {
         BigDecimal precoUnitario = new BigDecimal("50.00");
 
         // Act
-        CriarMROCommand command = new CriarMROCommand("Óleo Motor", "Descrição", TipoMRO.PECA, 0, precoUnitario);
+        CriarMROCommand command = new CriarMROCommand("PC001", "Óleo Motor", "Descrição", TipoMRO.PECA, 0, precoUnitario);
 
         // Assert
         assertNotNull(command);
@@ -183,7 +183,7 @@ class CriarMROCommandTest {
         BigDecimal precoUnitario = new BigDecimal("99.99");
 
         // Act
-        CriarMROCommand command = new CriarMROCommand("Óleo Motor", "Descrição", TipoMRO.PECA, 10, precoUnitario);
+        CriarMROCommand command = new CriarMROCommand("PC001", "Óleo Motor", "Descrição", TipoMRO.PECA, 10, precoUnitario);
 
         // Assert
         assertEquals(new BigDecimal("99.99"), command.getPrecoUnitario());
@@ -193,7 +193,7 @@ class CriarMROCommandTest {
     @DisplayName("Deve criar comando com tipo PECA")
     void deveCriarComandoComTipoPeca() {
         // Act
-        CriarMROCommand command = new CriarMROCommand("Filtro", "Descrição", TipoMRO.PECA, 10, new BigDecimal("50.00"));
+        CriarMROCommand command = new CriarMROCommand("PC001", "Filtro", "Descrição", TipoMRO.PECA, 10, new BigDecimal("50.00"));
 
         // Assert
         assertEquals(TipoMRO.PECA, command.getTipo());
@@ -203,7 +203,7 @@ class CriarMROCommandTest {
     @DisplayName("Deve criar comando com tipo INSUMO")
     void deveCriarComandoComTipoInsumo() {
         // Act
-        CriarMROCommand command = new CriarMROCommand("Graxa", "Descrição", TipoMRO.INSUMO, 10, new BigDecimal("50.00"));
+        CriarMROCommand command = new CriarMROCommand("INC001", "Graxa", "Descrição", TipoMRO.INSUMO, 10, new BigDecimal("50.00"));
 
         // Assert
         assertEquals(TipoMRO.INSUMO, command.getTipo());
@@ -220,7 +220,7 @@ class CriarMROCommandTest {
         BigDecimal precoUnitario = new BigDecimal("50.00");
 
         // Act
-        CriarMROCommand command = new CriarMROCommand(nome, descricao, tipo, quantidadeEstoque, precoUnitario);
+        CriarMROCommand command = new CriarMROCommand( nome, "PC001", descricao, tipo, quantidadeEstoque, precoUnitario);
 
         // Assert
         assertEquals(nome, command.getNome());
@@ -234,7 +234,7 @@ class CriarMROCommandTest {
     @DisplayName("Deve criar comando com quantidade estoque grande")
     void deveCriarComandoComQuantidadeEstoqueGrande() {
         // Act
-        CriarMROCommand command = new CriarMROCommand("Óleo Motor", "Descrição", TipoMRO.PECA, 1000, new BigDecimal("50.00"));
+        CriarMROCommand command = new CriarMROCommand("PC001", "Óleo Motor", "Descrição", TipoMRO.PECA, 1000, new BigDecimal("50.00"));
 
         // Assert
         assertEquals(1000, command.getQuantidadeEstoque());

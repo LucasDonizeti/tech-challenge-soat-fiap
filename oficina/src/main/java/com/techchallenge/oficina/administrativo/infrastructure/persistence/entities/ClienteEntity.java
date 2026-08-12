@@ -33,6 +33,13 @@ public class ClienteEntity {
     
     @Column(name = "email", length = 100, nullable = false, unique = true)
     private String email;
+
+    /**
+     * Hash BCrypt da senha do cliente.
+     * Usado EXCLUSIVAMENTE para autenticação — nunca deve ser exposto em DTOs de resposta.
+     */
+    @Column(name = "senha_hash", length = 255, nullable = true)
+    private String senhaHash;
     
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)

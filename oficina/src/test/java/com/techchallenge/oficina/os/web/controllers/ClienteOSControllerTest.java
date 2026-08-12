@@ -1,5 +1,7 @@
 package com.techchallenge.oficina.os.web.controllers;
 
+import com.techchallenge.oficina.administrativo.infrastructure.persistence.entities.ClienteEntity;
+import com.techchallenge.oficina.administrativo.infrastructure.persistence.repositories.ClienteJpaRepository;
 import com.techchallenge.oficina.os.application.usecases.AprovarOrcamentoUseCase;
 import com.techchallenge.oficina.os.application.usecases.BuscarOrdemServicoUseCase;
 import com.techchallenge.oficina.os.application.usecases.ListarOrdensServicoPorClienteUseCase;
@@ -24,12 +26,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -58,6 +64,9 @@ class ClienteOSControllerTest {
     private ClienteOSPresenter presenter;
 
     @Mock
+    private ClienteJpaRepository clienteJpaRepository;
+
+    @Mock
     private PageableValidator pageableValidator;
 
     @InjectMocks
@@ -75,10 +84,11 @@ class ClienteOSControllerTest {
     }
 
     @Test
-    @DisplayName("Deve listar ordens de serviço por cliente com sucesso")
-    void deveListarOrdensServicoPorClienteComSucesso() throws Exception {
+    @DisplayName("Deve listar ordens de serviço do cliente logado com sucesso")
+    void deveListarOrdensServicoDoClienteLogadoComSucesso() throws Exception {
         // Arrange
         UUID clienteId = UUID.randomUUID();
+        String clienteDocumento = "52998224725";
         OrdemServicoResponse response = OrdemServicoResponse.builder()
                 .id(UUID.randomUUID())
                 .status(StatusOS.AGUARDANDO_APROVACAO.toString())
@@ -88,6 +98,8 @@ class ClienteOSControllerTest {
         Page<OrdemServicoResponse> responsePage = new PageImpl<>(Collections.singletonList(response));
 
         when(listarOrdensServicoPorClienteUseCase.execute(eq(clienteId), any(Pageable.class))).thenReturn(responsePage);
+        when(clienteJpaRepository.findByCpf(clienteDocumento)).thenReturn(Optional.of(
+                ClienteEntity.builder().id(clienteId).cpf(clienteDocumento).build()));
         
         // Mock the mapper to return a simple DTO page
         OrdemServicoResponseDto dto = new OrdemServicoResponseDto();
@@ -100,11 +112,23 @@ class ClienteOSControllerTest {
         // Mock pageableValidator to return the same pageable
         when(pageableValidator.validate(any(Pageable.class), any(Set.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act
-        mockMvc.perform(get("/api/cliente/os/{id}", clienteId));
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        clienteDocumento,
+                        null,
+                        List.of(new SimpleGrantedAuthority("ROLE_CLIENTE"))
+                )
+        );
 
-        // Assert - just verify the use case was called correctly
-        verify(listarOrdensServicoPorClienteUseCase).execute(eq(clienteId), any(Pageable.class));
+        try {
+            // Act
+            mockMvc.perform(get("/api/cliente/os"));
+
+            // Assert - just verify the use case was called correctly
+            verify(listarOrdensServicoPorClienteUseCase).execute(eq(clienteId), any(Pageable.class));
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
     }
 
     @Test

@@ -121,6 +121,7 @@ class MROControllerTest {
         // Arrange
         CriarMRORequest request = new CriarMRORequest();
         request.setNome("Óleo Motor 5W30");
+        request.setCodigo("INC001");
         request.setDescricao("Óleo para motor automotivo");
         request.setTipo("INSUMO");
         request.setQuantidadeEstoque(100);

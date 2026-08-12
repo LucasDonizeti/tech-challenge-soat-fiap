@@ -3,8 +3,6 @@ package com.techchallenge.oficina.os.web.controllers;
 import com.techchallenge.oficina.os.application.usecases.commands.*;
 import com.techchallenge.oficina.os.application.usecases.ports.input.*;
 import com.techchallenge.oficina.os.application.usecases.responses.OrdemServicoResponse;
-import com.techchallenge.oficina.os.web.dto.OrdemServicoResponseDto;
-import com.techchallenge.oficina.os.web.dto.TempoMedioExecucaoResponseDto;
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusOS;
 import com.techchallenge.oficina.os.web.dto.*;
 import com.techchallenge.oficina.os.web.presenters.OrdemServicoPresenter;
@@ -55,24 +53,29 @@ public class OrdemServicoController {
     private final CancelarServicoInput cancelarServicoInput;
     private final EntregarOrdemServicoInput entregarOrdemServicoInput;
     private final CalcularTempoMedioExecucaoInput calcularTempoMedioExecucaoInput;
+    private final AprovarOrcamentoInput aprovarOrcamentoInput;
+    private final RecusarOrcamentoInput recusarOrcamentoInput;
     private final OrdemServicoPresenter presenter;
     private final PageableValidator pageableValidator;
 
     @PostMapping
-    @Operation(summary = "Criar ordem de serviço", description = "Cria uma nova ordem de serviço com status RECEBIDA")
+    @Operation(summary = "Abrir ordem de serviço",
+            description = "Cria uma nova OS com status RECEBIDA. Recebe CPF/CNPJ do cliente, placa do veículo, " +
+                          "lista de códigos de serviços e lista de códigos de MRO (peças/insumos). " +
+                          "Calcula o orçamento automaticamente e retorna o UUID da OS junto com o valor total.")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Ordem de serviço criada com sucesso",
                     content = @Content(schema = @Schema(implementation = OrdemServicoResponseDto.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Dados inválidos na requisição"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Cliente ou veículo não encontrado")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Cliente, veículo, serviço ou MRO não encontrado")
     })
     public ResponseEntity<OrdemServicoResponseDto> criar(@Valid @RequestBody CriarOrdemServicoRequest request) {
-        log.info("Recebendo requisição para criar ordem de serviço: clienteId={}, veiculoId={}", 
-                request.getClienteId(), request.getVeiculoId());
-        
+        log.info("Recebendo requisição para criar ordem de serviço: cpfOuCnpj={}, placa={}",
+                request.getCpfOuCnpj(), request.getPlaca());
+
         OrdemServicoResponse response = criarOrdemServicoInpuit.execute(request.toCommand());
         OrdemServicoResponseDto dto = presenter.prepararViewModel(response);
-        
+
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
@@ -400,6 +403,116 @@ public class OrdemServicoController {
     }
 
 
+
+    // -------------------------------------------------------------------------
+    // Endpoint 1: Callback externo de decisão de orçamento (Aprovação / Recusa)
+    // -------------------------------------------------------------------------
+
+    @PostMapping("/{id}/decisao-orcamento")
+    @Operation(
+            summary = "Callback de decisão de orçamento",
+            description = """
+                    Endpoint de callback externo que recebe a decisão do cliente sobre o orçamento.
+                    
+                    **APROVADO**: transiciona a OS de AGUARDANDO_APROVACAO para EM_EXECUCAO e dispara notificação de início dos serviços.
+                    
+                    **RECUSADO**: transiciona a OS para CANCELADA e dispara notificação informando o cancelamento.
+                    
+                    Em ambos os casos um evento de domínio é emitido e processado de forma assíncrona via Observer/Domain Events,
+                    gerando um log de notificação ao cliente (simulação de e-mail via ConsoleNotificacaoService).
+                    """)
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200", description = "Decisão processada com sucesso",
+                    content = @Content(schema = @Schema(implementation = OrdemServicoResponseDto.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400", description = "Decisão inválida ou OS não está aguardando aprovação"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404", description = "Ordem de serviço não encontrada")
+    })
+    public ResponseEntity<OrdemServicoResponseDto> processarDecisaoOrcamento(
+            @Parameter(description = "ID da ordem de serviço", required = true,
+                    example = "550e8400-e29b-41d4-a716-446655440000")
+            @PathVariable UUID id,
+            @Valid @RequestBody DecisaoOrcamentoRequest request) {
+
+        log.info("Recebendo decisão de orçamento via callback: ordemServicoId={}, decisao={}",
+                id, request.getDecisao());
+
+        OrdemServicoResponse response;
+
+        if (request.getDecisao() == DecisaoOrcamentoRequest.Decisao.APROVADO) {
+            response = aprovarOrcamentoInput.execute(new AprovarOrcamentoCommand(id));
+            log.info("Orçamento APROVADO via callback: ordemServicoId={}", id);
+        } else {
+            response = recusarOrcamentoInput.execute(
+                    new RecusarOrcamentoCommand(id, request.getMotivo()));
+            log.info("Orçamento RECUSADO via callback: ordemServicoId={}, motivo={}",
+                    id, request.getMotivo());
+        }
+
+        return ResponseEntity.ok(presenter.prepararViewModel(response));
+    }
+
+    // -------------------------------------------------------------------------
+    // Endpoint 2: Simulação/mock de notificação de mudança de status
+    // -------------------------------------------------------------------------
+
+    @PostMapping("/{id}/notificar-status")
+    @Operation(
+            summary = "Simular notificação de atualização de status",
+            description = """
+                    Endpoint de simulação que dispara manualmente uma notificação ao cliente
+                    sobre o status atual da OS (mock/log via ConsoleNotificacaoService).
+                    
+                    Em produção as notificações são disparadas automaticamente via Domain Events
+                    (@TransactionalEventListener) sempre que o status da OS muda. Este endpoint
+                    permite testar o mecanismo sem precisar avançar o fluxo da OS.
+                    
+                    A notificação é assíncrona e registrada no log da aplicação.
+                    """)
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "204", description = "Notificação disparada com sucesso"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404", description = "Ordem de serviço não encontrada"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400", description = "Status da OS não possui notificação associada")
+    })
+    public ResponseEntity<Void> simularNotificacaoStatus(
+            @Parameter(description = "ID da ordem de serviço", required = true,
+                    example = "550e8400-e29b-41d4-a716-446655440000")
+            @PathVariable UUID id) {
+
+        log.info("Simulando notificação de status: ordemServicoId={}", id);
+
+        OrdemServicoResponse os = buscarOrdemServicoInput.execute(id);
+        String statusAtual = os.getStatus();
+
+        log.info("Status atual da OS {}: {}. O sistema dispararia notificação automática " +
+                "via Domain Event ao cliente {} sobre este status.",
+                id, statusAtual,
+                os.getCliente() != null ? os.getCliente().getNome() : "N/A");
+
+        // As notificações reais são disparadas automaticamente pelos eventos de domínio:
+        //   AGUARDANDO_APROVACAO → OrcamentoProntoEvent      → NotificacaoEventHandler#handleOrcamentoPronto
+        //   EM_EXECUCAO          → ServicoIniciadoEvent      → NotificacaoEventHandler#handleServicoIniciado
+        //   FINALIZADA           → ServicoFinalizadoEvent    → NotificacaoEventHandler#handleServicoFinalizado
+        //   ENTREGUE             → VeiculoEntregueEvent      → NotificacaoEventHandler#handleVeiculoEntregue
+        //   CANCELADA            → OrcamentoRecusadoEvent    → NotificacaoEventHandler#handleOrcamentoRecusado
+        //
+        // Todos delegam para NotificacaoOSService → ConsoleNotificacaoService (log simulado).
+
+        if (statusAtual == null ||
+                (statusAtual.equals(StatusOS.RECEBIDA.name()) ||
+                 statusAtual.equals(StatusOS.EM_DIAGNOSTICO.name()))) {
+            log.warn("Status {} não possui notificação automática associada para OS {}",
+                    statusAtual, id);
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.noContent().build();
+    }
 
     @GetMapping("/admin/tempo-medio-execucao")
     @Operation(summary = "Calcular tempo médio de execução", description = "Calcula o tempo médio de execução das ordens de serviço finalizadas")

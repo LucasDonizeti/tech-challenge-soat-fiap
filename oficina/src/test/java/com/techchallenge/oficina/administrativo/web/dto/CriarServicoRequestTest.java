@@ -26,6 +26,7 @@ class CriarServicoRequestTest {
         request.setNome("Troca de Óleo");
         request.setDescricao("Troca completa de óleo");
         request.setPreco(new BigDecimal("150.00"));
+        request.setCodigo("COD001");
 
         // Act
         CriarServicoCommand command = request.toCommand();
@@ -43,6 +44,7 @@ class CriarServicoRequestTest {
         // Arrange
         request.setNome("Alinhamento");
         request.setPreco(new BigDecimal("100.00"));
+        request.setCodigo("COD001");
 
         // Act
         CriarServicoCommand command = request.toCommand();
@@ -115,6 +117,7 @@ class CriarServicoRequestTest {
         // Arrange
         request.setNome("Serviço");
         request.setPreco(new BigDecimal("125.50"));
+        request.setCodigo("COD001");
 
         // Act
         CriarServicoCommand command = request.toCommand();
@@ -130,6 +133,7 @@ class CriarServicoRequestTest {
         // Arrange
         request.setNome("Serviço");
         request.setPreco(new BigDecimal("5000.00"));
+        request.setCodigo("COD001");
 
         // Act
         CriarServicoCommand command = request.toCommand();
@@ -147,6 +151,7 @@ class CriarServicoRequestTest {
         request.setNome("Serviço");
         request.setDescricao(descricaoLonga);
         request.setPreco(new BigDecimal("200.00"));
+        request.setCodigo("COD001");
 
         // Act
         CriarServicoCommand command = request.toCommand();
@@ -162,6 +167,7 @@ class CriarServicoRequestTest {
         // Arrange
         request.setNome("Troca de Óleo & Filtros");
         request.setPreco(new BigDecimal("150.00"));
+        request.setCodigo("COD001");
 
         // Act
         CriarServicoCommand command = request.toCommand();

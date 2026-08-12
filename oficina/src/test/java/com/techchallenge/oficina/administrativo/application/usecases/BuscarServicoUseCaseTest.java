@@ -36,6 +36,7 @@ class BuscarServicoUseCaseTest {
         servicoId = UUID.randomUUID();
         servico = Servico.criar(
                 "Troca de Óleo",
+                "COD-TESTE",
                 "Troca de óleo sintético",
                 new BigDecimal("150.00")
         );

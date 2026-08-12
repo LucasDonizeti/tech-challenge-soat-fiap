@@ -1,13 +1,12 @@
 package com.techchallenge.oficina.os.infrastructure.acl.mro;
 
-import com.techchallenge.oficina.administrativo.application.usecases.DebitarEstoqueMROUseCase;
-import com.techchallenge.oficina.administrativo.application.usecases.ReporEstoqueMROUseCase;
 import com.techchallenge.oficina.administrativo.application.usecases.commands.DebitarEstoqueMROCommand;
 import com.techchallenge.oficina.administrativo.application.usecases.commands.ReporEstoqueMROCommand;
 import com.techchallenge.oficina.administrativo.application.usecases.ports.input.BuscarMROInput;
 import com.techchallenge.oficina.administrativo.application.usecases.ports.input.DebitarEstoqueMROInput;
 import com.techchallenge.oficina.administrativo.application.usecases.ports.input.ReporEstoqueMROInput;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.MROResponse;
+import com.techchallenge.oficina.administrativo.domain.repositories.MRORepository;
 import com.techchallenge.oficina.os.infrastructure.acl.dto.MROIntegrationDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +23,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class MROAdapterImpl implements MROAdapter {
-    
+
     private final BuscarMROInput buscarMROInput;
     private final DebitarEstoqueMROInput debitarEstoqueMROInput;
     private final ReporEstoqueMROInput reporEstoqueMROInput;
-    
+    private final MRORepository mroRepository;
+
     @Override
     public Optional<MROIntegrationDto> buscarPorId(UUID id) {
         log.debug("Buscando MRO por ID via ACL: {}", id);
@@ -40,26 +40,42 @@ public class MROAdapterImpl implements MROAdapter {
             return Optional.empty();
         }
     }
-    
+
+    @Override
+    public Optional<MROIntegrationDto> buscarPorCodigo(String codigo) {
+        log.debug("Buscando MRO por código via ACL: {}", codigo);
+        return mroRepository.findByCodigo(codigo)
+                .map(m -> MROIntegrationDto.builder()
+                        .id(m.getId())
+                        .nome(m.getNome())
+                        .codigo(m.getCodigo())
+                        .descricao(m.getDescricao())
+                        .tipo(m.getTipo() != null ? m.getTipo().name() : null)
+                        .quantidadeEstoque(m.getQuantidadeEstoque())
+                        .precoUnitario(m.getPrecoUnitario())
+                        .ativo(m.getAtivo())
+                        .build());
+    }
+
     @Override
     public boolean temEstoqueSuficiente(UUID mroId, Integer quantidade) {
         log.debug("Verificando estoque suficiente para MRO {} quantidade: {}", mroId, quantidade);
         Optional<MROIntegrationDto> mro = buscarPorId(mroId);
         return mro.isPresent() && mro.get().temEstoqueSuficiente(quantidade);
     }
-    
+
     @Override
     public void debitarEstoque(UUID mroId, Integer quantidade) {
         log.info("Debitando estoque do MRO {} quantidade: {}", mroId, quantidade);
         debitarEstoqueMROInput.execute(new DebitarEstoqueMROCommand(mroId, quantidade));
     }
-    
+
     @Override
     public void reporEstoque(UUID mroId, Integer quantidade) {
         log.info("Repondo estoque do MRO {} quantidade: {}", mroId, quantidade);
         reporEstoqueMROInput.execute(new ReporEstoqueMROCommand(mroId, quantidade));
     }
-    
+
     private MROIntegrationDto toIntegrationDto(MROResponse response) {
         if (response == null) {
             return null;
@@ -67,6 +83,7 @@ public class MROAdapterImpl implements MROAdapter {
         return MROIntegrationDto.builder()
                 .id(response.getId())
                 .nome(response.getNome())
+                .codigo(response.getCodigo())
                 .descricao(response.getDescricao())
                 .tipo(response.getTipo())
                 .quantidadeEstoque(response.getQuantidadeEstoque())

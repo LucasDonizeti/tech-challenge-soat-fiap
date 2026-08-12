@@ -39,9 +39,9 @@ class ListarServicosUseCaseTest {
     void setUp() {
         pageable = PageRequest.of(0, 10);
 
-        Servico servico1 = Servico.criar("Troca de Óleo", "Troca de óleo sintético", new BigDecimal("150.00"));
-        Servico servico2 = Servico.criar("Troca de Pneu", "Troca de pneu", new BigDecimal("200.00"));
-        Servico servico3 = Servico.criar("Alinhamento", "Alinhamento de direção", new BigDecimal("80.00"));
+        Servico servico1 = Servico.criar("Troca de Óleo", "COD-TESTE", "Troca de óleo sintético", new BigDecimal("150.00"));
+        Servico servico2 = Servico.criar("Troca de Pneu", "COD-TESTE", "Troca de pneu", new BigDecimal("200.00"));
+        Servico servico3 = Servico.criar("Alinhamento", "COD-TESTE", "Alinhamento de direção", new BigDecimal("80.00"));
 
         servicoPage = new PageImpl<>(List.of(servico1, servico2, servico3));
     }
@@ -150,7 +150,7 @@ class ListarServicosUseCaseTest {
     @DisplayName("Deve listar apenas um serviço")
     void deveListarApenasUmServico() {
         // Arrange
-        Servico servico = Servico.criar("Troca de Óleo", "Troca de óleo sintético", new BigDecimal("150.00"));
+        Servico servico = Servico.criar("Troca de Óleo", "COD-TESTE", "Troca de óleo sintético", new BigDecimal("150.00"));
         Page<Servico> singlePage = new PageImpl<>(List.of(servico));
         when(gateway.findAll(pageable)).thenReturn(singlePage);
 

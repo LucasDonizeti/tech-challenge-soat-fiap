@@ -1,8 +1,8 @@
 package com.techchallenge.oficina.os.infrastructure.acl.servico;
 
-import com.techchallenge.oficina.administrativo.application.usecases.BuscarServicoUseCase;
 import com.techchallenge.oficina.administrativo.application.usecases.ports.input.BuscarServicoInput;
 import com.techchallenge.oficina.administrativo.application.usecases.responses.ServicoResponse;
+import com.techchallenge.oficina.administrativo.domain.repositories.ServicoRepository;
 import com.techchallenge.oficina.os.infrastructure.acl.dto.ServicoIntegrationDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +21,7 @@ import java.util.UUID;
 public class ServicoAdapterImpl implements ServicoAdapter {
     
     private final BuscarServicoInput buscarServicoInput;
+    private final ServicoRepository servicoRepository;
     
     @Override
     public Optional<ServicoIntegrationDto> buscarPorId(UUID id) {
@@ -33,6 +34,20 @@ public class ServicoAdapterImpl implements ServicoAdapter {
             return Optional.empty();
         }
     }
+
+    @Override
+    public Optional<ServicoIntegrationDto> buscarPorCodigo(String codigo) {
+        log.debug("Buscando Serviço por código via ACL: {}", codigo);
+        return servicoRepository.findByCodigo(codigo)
+                .map(s -> ServicoIntegrationDto.builder()
+                        .id(s.getId())
+                        .nome(s.getNome())
+                        .codigo(s.getCodigo())
+                        .descricao(s.getDescricao())
+                        .preco(s.getPreco())
+                        .ativo(s.getAtivo())
+                        .build());
+    }
     
     private ServicoIntegrationDto toIntegrationDto(ServicoResponse response) {
         if (response == null) {
@@ -41,6 +56,7 @@ public class ServicoAdapterImpl implements ServicoAdapter {
         return ServicoIntegrationDto.builder()
                 .id(response.getId())
                 .nome(response.getNome())
+                .codigo(response.getCodigo())
                 .descricao(response.getDescricao())
                 .preco(response.getPreco())
                 .ativo(response.getAtivo())

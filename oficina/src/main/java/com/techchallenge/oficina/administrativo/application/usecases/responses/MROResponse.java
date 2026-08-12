@@ -14,6 +14,7 @@ public class MROResponse {
     
     private final UUID id;
     private final String nome;
+    private final String codigo;
     private final String descricao;
     private final String tipo;
     private final Integer quantidadeEstoque;
@@ -30,6 +31,7 @@ public class MROResponse {
         return MROResponse.builder()
                 .id(mro.getId())
                 .nome(mro.getNome())
+                .codigo(mro.getCodigo())
                 .descricao(mro.getDescricao())
                 .tipo(mro.getTipo() != null ? mro.getTipo().name() : null)
                 .quantidadeEstoque(mro.getQuantidadeEstoque())

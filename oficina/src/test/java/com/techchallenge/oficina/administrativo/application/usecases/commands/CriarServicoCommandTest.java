@@ -17,6 +17,7 @@ class CriarServicoCommandTest {
         // Act
         CriarServicoCommand command = new CriarServicoCommand(
                 "Troca de Óleo",
+                "SVC001",
                 "Troca completa de óleo",
                 new BigDecimal("150.00")
         );
@@ -34,6 +35,7 @@ class CriarServicoCommandTest {
         // Act
         CriarServicoCommand command = new CriarServicoCommand(
                 "Alinhamento",
+                "SVC001",
                 null,
                 new BigDecimal("100.00")
         );
@@ -51,7 +53,7 @@ class CriarServicoCommandTest {
         // Act & Assert
         ValidacaoServicoException exception = assertThrows(
                 ValidacaoServicoException.class,
-                () -> new CriarServicoCommand(null, "Descrição", new BigDecimal("100.00"))
+                () -> new CriarServicoCommand(null, null, "Descrição", new BigDecimal("100.00"))
         );
 
         assertEquals("Nome é obrigatório", exception.getMessage());
@@ -63,7 +65,7 @@ class CriarServicoCommandTest {
         // Act & Assert
         ValidacaoServicoException exception = assertThrows(
                 ValidacaoServicoException.class,
-                () -> new CriarServicoCommand("", "Descrição", new BigDecimal("100.00"))
+                () -> new CriarServicoCommand("", "", "Descrição", new BigDecimal("100.00"))
         );
 
         assertEquals("Nome é obrigatório", exception.getMessage());
@@ -75,7 +77,7 @@ class CriarServicoCommandTest {
         // Act & Assert
         ValidacaoServicoException exception = assertThrows(
                 ValidacaoServicoException.class,
-                () -> new CriarServicoCommand("Nome", "Descrição", null)
+                () -> new CriarServicoCommand("SVC001", "Nome", "Descrição", null)
         );
 
         assertEquals("Preço deve ser maior que zero", exception.getMessage());
@@ -87,7 +89,7 @@ class CriarServicoCommandTest {
         // Act & Assert
         ValidacaoServicoException exception = assertThrows(
                 ValidacaoServicoException.class,
-                () -> new CriarServicoCommand("Nome", "Descrição", BigDecimal.ZERO)
+                () -> new CriarServicoCommand("SVC001", "Nome", "Descrição", BigDecimal.ZERO)
         );
 
         assertEquals("Preço deve ser maior que zero", exception.getMessage());
@@ -99,7 +101,7 @@ class CriarServicoCommandTest {
         // Act & Assert
         ValidacaoServicoException exception = assertThrows(
                 ValidacaoServicoException.class,
-                () -> new CriarServicoCommand("Nome", "Descrição", new BigDecimal("-50.00"))
+                () -> new CriarServicoCommand("SVC001", "Nome", "Descrição", new BigDecimal("-50.00"))
         );
 
         assertEquals("Preço deve ser maior que zero", exception.getMessage());
@@ -109,7 +111,7 @@ class CriarServicoCommandTest {
     @DisplayName("Deve criar comando com preço decimal")
     void deveCriarComandoComPrecoDecimal() {
         // Act
-        CriarServicoCommand command = new CriarServicoCommand("Serviço", "Descrição", new BigDecimal("125.50"));
+        CriarServicoCommand command = new CriarServicoCommand("SVC001", "Serviço", "Descrição", new BigDecimal("125.50"));
 
         // Assert
         assertNotNull(command);
@@ -120,7 +122,7 @@ class CriarServicoCommandTest {
     @DisplayName("Deve criar comando com preço alto")
     void deveCriarComandoComPrecoAlto() {
         // Act
-        CriarServicoCommand command = new CriarServicoCommand("Serviço", "Descrição", new BigDecimal("5000.00"));
+        CriarServicoCommand command = new CriarServicoCommand("SVC001", "Serviço", "Descrição", new BigDecimal("5000.00"));
 
         // Assert
         assertNotNull(command);
@@ -131,7 +133,7 @@ class CriarServicoCommandTest {
     @DisplayName("Deve criar comando com descrição vazia")
     void deveCriarComandoComDescricaoVazia() {
         // Act
-        CriarServicoCommand command = new CriarServicoCommand("Serviço", "", new BigDecimal("100.00"));
+        CriarServicoCommand command = new CriarServicoCommand("SVC001", "Serviço", "", new BigDecimal("100.00"));
 
         // Assert
         assertNotNull(command);
@@ -145,7 +147,7 @@ class CriarServicoCommandTest {
         String nomeLongo = "Troca Completa de Óleo Sintético com Filtro e Verificação";
 
         // Act
-        CriarServicoCommand command = new CriarServicoCommand(nomeLongo, "Descrição", new BigDecimal("200.00"));
+        CriarServicoCommand command = new CriarServicoCommand(nomeLongo, "SVC001", "Descrição", new BigDecimal("200.00"));
 
         // Assert
         assertNotNull(command);

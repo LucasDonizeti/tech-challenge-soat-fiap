@@ -15,6 +15,8 @@ public interface MRORepository {
     
     Optional<MRO> findById(UUID id);
     
+    Optional<MRO> findByCodigo(String codigo);
+    
     Page<MRO> findAll(Pageable pageable);
     
     List<MRO> findAll();

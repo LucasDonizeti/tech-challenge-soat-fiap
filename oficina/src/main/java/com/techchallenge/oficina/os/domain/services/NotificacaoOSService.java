@@ -75,6 +75,22 @@ public class NotificacaoOSService {
     }
     
     /**
+     * Notifica o cliente que o orçamento foi recusado e a OS foi cancelada.
+     */
+    public void notificarOrcamentoRecusado(OrdemServico os, String motivo) {
+        try {
+            String email = obterEmailCliente(os);
+            String nome = obterNomeCliente(os);
+            String assunto = "Orçamento Recusado - Sua Oficina";
+            String mensagem = montarMensagemOrcamentoRecusado(os, motivo);
+
+            notificacaoService.notificarCliente(email, nome, assunto, mensagem);
+        } catch (NotificacaoException e) {
+            log.error("Erro ao notificar cliente sobre orçamento recusado. OS ID: {}", os.getId(), e);
+        }
+    }
+
+    /**
      * Notifica o cliente que o veículo foi entregue.
      */
     public void notificarVeiculoEntregue(OrdemServico os) {
@@ -181,7 +197,7 @@ public class NotificacaoOSService {
         StringBuilder sb = new StringBuilder();
         sb.append("Olá ").append(obterNomeCliente(os)).append(",\n\n");
         sb.append("Seu carro ");
-        
+
         if (os.getVeiculo() != null) {
             sb.append(os.getVeiculo().getMarca())
               .append(" ")
@@ -190,10 +206,32 @@ public class NotificacaoOSService {
               .append(os.getVeiculo().getPlaca().getFormatada())
               .append(")");
         }
-        
+
         sb.append(" foi entregue.\n");
         sb.append("Ordem de serviço: ").append(os.getId());
-        
+
+        return sb.toString();
+    }
+
+    private String montarMensagemOrcamentoRecusado(OrdemServico os, String motivo) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Olá ").append(obterNomeCliente(os)).append(",\n\n");
+        sb.append("Recebemos a sua recusa do orçamento para o carro ");
+
+        if (os.getVeiculo() != null) {
+            sb.append(os.getVeiculo().getMarca())
+              .append(" ")
+              .append(os.getVeiculo().getModelo())
+              .append(" (")
+              .append(os.getVeiculo().getPlaca().getFormatada())
+              .append(")");
+        }
+
+        sb.append(".\n\n");
+        sb.append("Motivo informado: ").append(motivo).append("\n\n");
+        sb.append("A ordem de serviço ").append(os.getId()).append(" foi cancelada.\n");
+        sb.append("Entre em contato conosco caso queira discutir alternativas.");
+
         return sb.toString();
     }
 }

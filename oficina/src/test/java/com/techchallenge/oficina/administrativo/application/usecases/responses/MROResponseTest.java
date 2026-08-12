@@ -25,6 +25,7 @@ class MROResponseTest {
         MRO mro = MRO.reconstruir(
                 id,
                 "Óleo Motor 5W30",
+                "INC001",
                 "Óleo para motor automotivo",
                 TipoMRO.INSUMO,
                 100,
@@ -67,6 +68,7 @@ class MROResponseTest {
         UUID id = UUID.randomUUID();
         MRO mro = MRO.reconstruir(
                 id,
+                "PC001",
                 "Produto Genérico",
                 "Descrição",
                 null,
@@ -93,6 +95,7 @@ class MROResponseTest {
         MRO mro = MRO.reconstruir(
                 id,
                 "Produto Sem Descrição",
+                "PC001",
                 null,
                 TipoMRO.PECA,
                 50,
@@ -117,6 +120,7 @@ class MROResponseTest {
         UUID id = UUID.randomUUID();
         MRO mro = MRO.reconstruir(
                 id,
+                "PC001",
                 "Produto Inativo",
                 "Descrição",
                 TipoMRO.PECA,
@@ -142,6 +146,7 @@ class MROResponseTest {
         UUID id = UUID.randomUUID();
         MRO mro = MRO.reconstruir(
                 id,
+                "INC001",
                 "Produto Sem Estoque",
                 "Descrição",
                 TipoMRO.INSUMO,
@@ -167,6 +172,7 @@ class MROResponseTest {
         UUID id = UUID.randomUUID();
         MRO mro = MRO.reconstruir(
                 id,
+                "PC001",
                 "Filtro de Óleo",
                 "Filtro para motor",
                 TipoMRO.PECA,

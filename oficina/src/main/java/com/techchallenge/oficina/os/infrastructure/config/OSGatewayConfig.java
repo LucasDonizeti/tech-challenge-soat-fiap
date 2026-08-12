@@ -8,6 +8,8 @@ import com.techchallenge.oficina.os.application.usecases.ports.input.*;
 import com.techchallenge.oficina.os.application.usecases.ports.output.ClienteGateway;
 import com.techchallenge.oficina.os.application.usecases.ports.output.OrdemServicoGateway;
 import com.techchallenge.oficina.os.application.usecases.ports.output.VeiculoGateway;
+import com.techchallenge.oficina.os.infrastructure.acl.mro.MROAdapter;
+import com.techchallenge.oficina.os.infrastructure.acl.servico.ServicoAdapter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,10 +17,12 @@ import org.springframework.context.annotation.Configuration;
 public class OSGatewayConfig {
 
     @Bean
-    public CriarOrdemServicoInpuit criarOrdemServicoInput(OrdemServicoGateway ordemServicoGateway, 
-                                                          ClienteGateway clienteGateway, 
-                                                          VeiculoGateway veiculoGateway) {
-        return new CriarOrdemServicoUseCase(ordemServicoGateway, clienteGateway, veiculoGateway);
+    public CriarOrdemServicoInpuit criarOrdemServicoInput(OrdemServicoGateway ordemServicoGateway,
+                                                          ClienteGateway clienteGateway,
+                                                          VeiculoGateway veiculoGateway,
+                                                          ServicoAdapter servicoAdapter,
+                                                          MROAdapter mroAdapter) {
+        return new CriarOrdemServicoUseCase(ordemServicoGateway, clienteGateway, veiculoGateway, servicoAdapter, mroAdapter);
     }
 
     @Bean
@@ -103,6 +107,11 @@ public class OSGatewayConfig {
     @Bean
     public AprovarOrcamentoInput aprovarOrcamentoInput(OrdemServicoGateway ordemServicoGateway){
         return new AprovarOrcamentoUseCase(ordemServicoGateway);
+    }
+
+    @Bean
+    public RecusarOrcamentoInput recusarOrcamentoInput(OrdemServicoGateway ordemServicoGateway) {
+        return new RecusarOrcamentoUseCase(ordemServicoGateway);
     }
 
     @Bean

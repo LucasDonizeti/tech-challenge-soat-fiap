@@ -36,8 +36,8 @@ class CriarServicoUseCaseTest {
         String nome = "Troca de Óleo";
         String descricao = "Troca de óleo do motor";
         BigDecimal preco = new BigDecimal("150.00");
-        command = new CriarServicoCommand(nome, descricao, preco);
-        servico = Servico.criar(nome, descricao, preco);
+        command = new CriarServicoCommand(nome, "COD-TESTE", descricao, preco);
+        servico = Servico.criar(nome, "COD-TESTE", descricao, preco);
     }
 
     @Test

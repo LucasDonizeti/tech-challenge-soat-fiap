@@ -106,6 +106,7 @@ class ServicoControllerTest {
         // Arrange
         CriarServicoRequest request = new CriarServicoRequest();
         request.setNome("Troca de Óleo");
+        request.setCodigo("SVC001");
         request.setDescricao("Troca de óleo do motor");
         request.setPreco(new BigDecimal("150.00"));
 

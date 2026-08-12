@@ -15,6 +15,8 @@ import java.util.UUID;
 @Repository
 public interface ServicoJpaRepository extends JpaRepository<ServicoEntity, UUID> {
     
+    Optional<ServicoEntity> findByCodigo(String codigo);
+
     @Query("SELECT s FROM ServicoEntity s WHERE s.ativo = :ativo")
     List<ServicoEntity> findByAtivo(@Param("ativo") Boolean ativo);
     

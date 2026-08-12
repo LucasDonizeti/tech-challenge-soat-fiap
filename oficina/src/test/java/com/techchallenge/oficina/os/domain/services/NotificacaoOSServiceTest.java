@@ -136,4 +136,47 @@ class NotificacaoOSServiceTest {
         
         assertDoesNotThrow(() -> notificacaoOSService.notificarVeiculoEntregue(ordemServico));
     }
+    
+    @Test
+    void notificarOrcamentoRecusado_deveChamarNotificacaoService() throws NotificacaoException {
+        String motivo = "Preço muito alto";
+        
+        notificacaoOSService.notificarOrcamentoRecusado(ordemServico, motivo);
+        
+        verify(notificacaoService, times(1)).notificarCliente(
+            eq("joao@email.com"),
+            eq("João Silva"),
+            eq("Orçamento Recusado - Sua Oficina"),
+            contains(motivo)
+        );
+    }
+    
+    @Test
+    void notificarOrcamentoRecusado_deveTratarExcecaoSemLancar() throws NotificacaoException {
+        doThrow(new NotificacaoException("Erro de teste"))
+            .when(notificacaoService).notificarCliente(anyString(), anyString(), anyString(), anyString());
+        
+        assertDoesNotThrow(() -> notificacaoOSService.notificarOrcamentoRecusado(ordemServico, "Motivo teste"));
+    }
+    
+    @Test
+    void montarMensagemOrcamentoRecusado_deveConterInformacoesCorretas() {
+        String motivo = "Preço acima do esperado";
+        
+        notificacaoOSService.notificarOrcamentoRecusado(ordemServico, motivo);
+        
+        verify(notificacaoService).notificarCliente(
+            eq("joao@email.com"),
+            eq("João Silva"),
+            eq("Orçamento Recusado - Sua Oficina"),
+            argThat(mensagem -> 
+                mensagem.contains("João Silva") &&
+                mensagem.contains("Fiat") &&
+                mensagem.contains("Uno") &&
+                mensagem.contains("ABC-1234") &&
+                mensagem.contains(motivo) &&
+                mensagem.contains("cancelada")
+            )
+        );
+    }
 }

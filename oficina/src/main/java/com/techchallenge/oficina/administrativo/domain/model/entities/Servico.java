@@ -8,7 +8,6 @@ import com.techchallenge.oficina.administrativo.domain.exceptions.ValidacaoServi
 import lombok.Getter;
 import org.springframework.data.domain.AbstractAggregateRoot;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -19,6 +18,8 @@ public class Servico extends AbstractAggregateRoot<Servico> {
     private UUID id;
 
     private String nome;
+
+    private String codigo;
 
     private String descricao;
 
@@ -34,10 +35,11 @@ public class Servico extends AbstractAggregateRoot<Servico> {
     protected Servico() {}
     
     // Factory method para criação
-    public static Servico criar(String nome, String descricao, BigDecimal preco) {
+    public static Servico criar(String nome, String codigo, String descricao, BigDecimal preco) {
         Servico servico = new Servico();
         servico.id = UUID.randomUUID();
         servico.nome = nome;
+        servico.codigo = codigo;
         servico.descricao = descricao;
         servico.preco = preco;
         servico.ativo = true;
@@ -59,10 +61,11 @@ public class Servico extends AbstractAggregateRoot<Servico> {
     }
     
     // Factory method para reconstrução a partir de dados persistidos (usado pelo mapper)
-    public static Servico reconstruir(UUID id, String nome, String descricao, BigDecimal preco, Boolean ativo, LocalDateTime criadoEm, LocalDateTime atualizadoEm) {
+    public static Servico reconstruir(UUID id, String nome, String codigo, String descricao, BigDecimal preco, Boolean ativo, LocalDateTime criadoEm, LocalDateTime atualizadoEm) {
         Servico servico = new Servico();
         servico.id = id;
         servico.nome = nome;
+        servico.codigo = codigo;
         servico.descricao = descricao;
         servico.preco = preco;
         servico.ativo = ativo;

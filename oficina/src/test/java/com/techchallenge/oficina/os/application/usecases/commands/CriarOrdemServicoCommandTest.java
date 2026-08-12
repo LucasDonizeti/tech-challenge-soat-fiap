@@ -4,6 +4,7 @@ import com.techchallenge.oficina.os.domain.exceptions.ValidacaoOrdemServicoExcep
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,95 +16,117 @@ class CriarOrdemServicoCommandTest {
     @DisplayName("Deve criar comando com dados válidos")
     void deveCriarComandoComDadosValidos() {
         // Arrange
-        UUID clienteId = UUID.randomUUID();
-        UUID veiculoId = UUID.randomUUID();
+        String cpfOuCnpj = "52998224725";
+        String placa = "ABC1234";
+        List<String> codigosServico = List.of("SVC001");
+        List<CriarOrdemServicoCommand.ItemMROCommand> itensMRO = List.of();
 
         // Act
-        CriarOrdemServicoCommand command = new CriarOrdemServicoCommand(clienteId, veiculoId);
+        CriarOrdemServicoCommand command = new CriarOrdemServicoCommand(cpfOuCnpj, placa, codigosServico, itensMRO);
 
         // Assert
         assertNotNull(command);
-        assertEquals(clienteId, command.getClienteId());
-        assertEquals(veiculoId, command.getVeiculoId());
+        assertEquals(cpfOuCnpj, command.getCpfOuCnpj());
+        assertEquals(placa, command.getPlaca());
+        assertEquals(codigosServico, command.getCodigosServico());
+        assertEquals(itensMRO, command.getItensMRO());
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando clienteId é nulo")
-    void deveLancarExcecaoQuandoClienteIdENulo() {
+    @DisplayName("Deve lançar exceção quando cpfOuCnpj é nulo")
+    void deveLancarExcecaoQuandoCpfOuCnpjENulo() {
         // Act & Assert
         ValidacaoOrdemServicoException exception = assertThrows(
                 ValidacaoOrdemServicoException.class,
-                () -> new CriarOrdemServicoCommand(null, UUID.randomUUID())
+                () -> new CriarOrdemServicoCommand(null, "ABC1234", List.of("SVC001"), List.of())
         );
 
-        assertEquals("Cliente ID é obrigatório", exception.getMessage());
+        assertEquals("CPF ou CNPJ do cliente é obrigatório", exception.getMessage());
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando veiculoId é nulo")
-    void deveLancarExcecaoQuandoVeiculoIdENulo() {
+    @DisplayName("Deve lançar exceção quando placa é nula")
+    void deveLancarExcecaoQuandoPlacaENula() {
         // Act & Assert
         ValidacaoOrdemServicoException exception = assertThrows(
                 ValidacaoOrdemServicoException.class,
-                () -> new CriarOrdemServicoCommand(UUID.randomUUID(), null)
+                () -> new CriarOrdemServicoCommand("52998224725", null, List.of("SVC001"), List.of())
         );
 
-        assertEquals("Veículo ID é obrigatório", exception.getMessage());
+        assertEquals("Placa do veículo é obrigatória", exception.getMessage());
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando ambos os IDs são nulos")
-    void deveLancarExcecaoQuandoAmbosOsIdsSaoNulos() {
+    @DisplayName("Deve lançar exceção quando lista de serviços é vazia")
+    void deveLancarExcecaoQuandoListaDeServicosEVazia() {
         // Act & Assert
         ValidacaoOrdemServicoException exception = assertThrows(
                 ValidacaoOrdemServicoException.class,
-                () -> new CriarOrdemServicoCommand(null, null)
+                () -> new CriarOrdemServicoCommand("52998224725", "ABC1234", List.of(), List.of())
         );
 
-        assertEquals("Cliente ID é obrigatório", exception.getMessage());
+        assertEquals("A lista de serviços não pode ser vazia", exception.getMessage());
     }
 
     @Test
-    @DisplayName("Deve criar comando com IDs específicos")
-    void deveCriarComandoComIdsEspecificos() {
+    @DisplayName("Deve criar comando com múltiplos serviços")
+    void deveCriarComandoComMultiplosServicos() {
         // Arrange
-        UUID clienteId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        UUID veiculoId = UUID.fromString("987e6543-e21b-43d2-a456-426614174999");
+        String cpfOuCnpj = "52998224725";
+        String placa = "ABC1234";
+        List<String> codigosServico = List.of("SVC001", "SVC002");
+        List<CriarOrdemServicoCommand.ItemMROCommand> itensMRO = List.of();
 
         // Act
-        CriarOrdemServicoCommand command = new CriarOrdemServicoCommand(clienteId, veiculoId);
+        CriarOrdemServicoCommand command = new CriarOrdemServicoCommand(cpfOuCnpj, placa, codigosServico, itensMRO);
 
         // Assert
         assertNotNull(command);
-        assertEquals(clienteId, command.getClienteId());
-        assertEquals(veiculoId, command.getVeiculoId());
+        assertEquals(2, command.getCodigosServico().size());
     }
 
     @Test
-    @DisplayName("Deve criar comando com clienteId específico")
-    void deveCriarComandoComClienteIdEspecifico() {
+    @DisplayName("Deve criar comando com itens MRO")
+    void deveCriarComandoComItensMRO() {
         // Arrange
-        UUID clienteId = UUID.fromString("111e2222-e33b-44d3-a456-426614174111");
+        String cpfOuCnpj = "52998224725";
+        String placa = "ABC1234";
+        List<String> codigosServico = List.of("SVC001");
+        List<CriarOrdemServicoCommand.ItemMROCommand> itensMRO = List.of(
+            new CriarOrdemServicoCommand.ItemMROCommand("PC001", 2)
+        );
 
         // Act
-        CriarOrdemServicoCommand command = new CriarOrdemServicoCommand(clienteId, UUID.randomUUID());
+        CriarOrdemServicoCommand command = new CriarOrdemServicoCommand(cpfOuCnpj, placa, codigosServico, itensMRO);
 
         // Assert
         assertNotNull(command);
-        assertEquals(clienteId, command.getClienteId());
+        assertEquals(1, command.getItensMRO().size());
+        assertEquals("PC001", command.getItensMRO().get(0).getCodigoMro());
+        assertEquals(2, command.getItensMRO().get(0).getQuantidade());
     }
 
     @Test
-    @DisplayName("Deve criar comando com veiculoId específico")
-    void deveCriarComandoComVeiculoIdEspecifico() {
-        // Arrange
-        UUID veiculoId = UUID.fromString("222e3333-e44b-55d3-a456-426614174222");
+    @DisplayName("Deve lançar exceção quando código MRO é nulo")
+    void deveLancarExcecaoQuandoCodigoMroENulo() {
+        // Act & Assert
+        ValidacaoOrdemServicoException exception = assertThrows(
+                ValidacaoOrdemServicoException.class,
+                () -> new CriarOrdemServicoCommand.ItemMROCommand(null, 1)
+        );
 
-        // Act
-        CriarOrdemServicoCommand command = new CriarOrdemServicoCommand(UUID.randomUUID(), veiculoId);
+        assertEquals("Código do MRO é obrigatório", exception.getMessage());
+    }
 
-        // Assert
-        assertNotNull(command);
-        assertEquals(veiculoId, command.getVeiculoId());
+    @Test
+    @DisplayName("Deve lançar exceção quando quantidade MRO é zero")
+    void deveLancarExcecaoQuandoQuantidadeMroEZero() {
+        // Act & Assert
+        ValidacaoOrdemServicoException exception = assertThrows(
+                ValidacaoOrdemServicoException.class,
+                () -> new CriarOrdemServicoCommand.ItemMROCommand("PC001", 0)
+        );
+
+        assertEquals("Quantidade do MRO deve ser maior que zero", exception.getMessage());
     }
 }

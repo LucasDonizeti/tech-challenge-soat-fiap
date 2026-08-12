@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Logs estruturados em JSON com Correlation ID — Requisito 2.3
+  Usa logstash-logback-encoder via spring-boot-starter-logging (Logback nativo).
+  Como o projeto não tem logstash-encoder, usamos um PatternLayout que emite JSON manualmente.
+-->
+<configuration>
+
+    <springProperty scope="context" name="appName"  source="spring.application.name"  defaultValue="oficina"/>
+    <springProperty scope="context" name="appEnv"   source="spring.profiles.active"   defaultValue="default"/>
+
+    <!-- ===================== CONSOLE – JSON estruturado ===================== -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--
+              Emite cada linha de log como um objeto JSON com os campos:
+                timestamp, level, correlationId, logger, thread, message
+              O correlationId vem do MDC (chave "correlationId").
+            -->
+            <pattern>{"timestamp":"%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ}","level":"%-5level","app":"%property{appName}","correlationId":"%X{correlationId:-NONE}","logger":"%logger{40}","thread":"%thread","message":"%replace(%msg%n%ex{full}){'[\r\n]+','\\n'}"}%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ===================== ROOT ===================== -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!-- Configuração por pacote mantida via application.yaml -->
+    <logger name="com.techchallenge.oficina" level="INFO"/>
+    <logger name="org.springframework.security"       level="WARN"/>
+    <logger name="io.jsonwebtoken"                    level="WARN"/>
+    <logger name="org.hibernate.SQL"                  level="WARN"/>
+    <logger name="org.flywaydb"                       level="INFO"/>
+
+</configuration>

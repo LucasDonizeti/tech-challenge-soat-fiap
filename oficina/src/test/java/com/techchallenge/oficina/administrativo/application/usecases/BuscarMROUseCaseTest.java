@@ -38,6 +38,7 @@ class BuscarMROUseCaseTest {
 
         mro = MRO.criar(
                 "Óleo Motor 5W30",
+                "MRO-TESTE",
                 "Óleo para motor automotivo",
                 TipoMRO.INSUMO,
                 100,
@@ -115,6 +116,7 @@ class BuscarMROUseCaseTest {
         // Arrange
         MRO mroPeca = MRO.criar(
                 "Filtro de Óleo",
+                "MRO-TESTE",
                 "Filtro para motor",
                 TipoMRO.PECA,
                 50,
@@ -139,6 +141,7 @@ class BuscarMROUseCaseTest {
         // Arrange
         MRO mroInativo = MRO.criar(
                 "Óleo Motor 5W30",
+                "MRO-TESTE",
                 "Óleo para motor automotivo",
                 TipoMRO.INSUMO,
                 100,
@@ -164,6 +167,7 @@ class BuscarMROUseCaseTest {
         // Arrange
         MRO mroEstoqueZero = MRO.criar(
                 "Graxa Automotiva",
+                "MRO-TESTE",
                 "Graxa para lubrificação",
                 TipoMRO.INSUMO,
                 0,

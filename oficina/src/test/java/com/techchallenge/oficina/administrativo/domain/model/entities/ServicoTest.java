@@ -21,7 +21,7 @@ class ServicoTest {
         BigDecimal preco = new BigDecimal("150.00");
 
         // Act
-        Servico servico = Servico.criar(nome, descricao, preco);
+        Servico servico = Servico.criar(nome, "SVC001", descricao, preco);
 
         // Assert
         assertNotNull(servico);
@@ -45,7 +45,7 @@ class ServicoTest {
         // Act & Assert
         ValidacaoServicoException exception = assertThrows(
                 ValidacaoServicoException.class,
-                () -> Servico.criar(nome, descricao, preco)
+                () -> Servico.criar( nome, "SVC001", descricao, preco)
         );
         
         assertEquals("Nome não pode ser vazio", exception.getMessage());
@@ -62,7 +62,7 @@ class ServicoTest {
         // Act & Assert
         ValidacaoServicoException exception = assertThrows(
                 ValidacaoServicoException.class,
-                () -> Servico.criar(nome, descricao, preco)
+                () -> Servico.criar( nome, "SVC001", descricao, preco)
         );
         
         assertEquals("Nome não pode ser vazio", exception.getMessage());
@@ -79,7 +79,7 @@ class ServicoTest {
         // Act & Assert
         ValidacaoServicoException exception = assertThrows(
                 ValidacaoServicoException.class,
-                () -> Servico.criar(nome, descricao, preco)
+                () -> Servico.criar( nome, "SVC001", descricao, preco)
         );
         
         assertEquals("Nome não pode ser vazio", exception.getMessage());
@@ -96,7 +96,7 @@ class ServicoTest {
         // Act & Assert
         ValidacaoServicoException exception = assertThrows(
                 ValidacaoServicoException.class,
-                () -> Servico.criar(nome, descricao, preco)
+                () -> Servico.criar("SVC001", nome, descricao, preco)
         );
         
         assertEquals("Preço deve ser maior que zero", exception.getMessage());
@@ -113,7 +113,7 @@ class ServicoTest {
         // Act & Assert
         ValidacaoServicoException exception = assertThrows(
                 ValidacaoServicoException.class,
-                () -> Servico.criar(nome, descricao, preco)
+                () -> Servico.criar("SVC001", nome, descricao, preco)
         );
         
         assertEquals("Preço deve ser maior que zero", exception.getMessage());
@@ -130,7 +130,7 @@ class ServicoTest {
         // Act & Assert
         ValidacaoServicoException exception = assertThrows(
                 ValidacaoServicoException.class,
-                () -> Servico.criar(nome, descricao, preco)
+                () -> Servico.criar("SVC001", nome, descricao, preco)
         );
         
         assertEquals("Preço deve ser maior que zero", exception.getMessage());
@@ -140,7 +140,7 @@ class ServicoTest {
     @DisplayName("Deve atualizar preço com sucesso")
     void deveAtualizarPrecoComSucesso() {
         // Arrange
-        Servico servico = Servico.criar("Serviço", "Descrição", new BigDecimal("100.00"));
+        Servico servico = Servico.criar("SVC001", "Serviço", "Descrição", new BigDecimal("100.00"));
         BigDecimal novoPreco = new BigDecimal("150.00");
 
         // Act
@@ -155,7 +155,7 @@ class ServicoTest {
     @DisplayName("Deve lançar exceção ao atualizar preço para zero")
     void deveLancarExcecaoQuandoAtualizarPrecoParaZero() {
         // Arrange
-        Servico servico = Servico.criar("Serviço", "Descrição", new BigDecimal("100.00"));
+        Servico servico = Servico.criar( "Serviço", "SVC001", "Descrição", new BigDecimal("100.00"));
 
         // Act & Assert
         ValidacaoServicoException exception = assertThrows(
@@ -170,7 +170,7 @@ class ServicoTest {
     @DisplayName("Deve lançar exceção ao atualizar preço para nulo")
     void deveLancarExcecaoQuandoAtualizarPrecoNulo() {
         // Arrange
-        Servico servico = Servico.criar("Serviço", "Descrição", new BigDecimal("100.00"));
+        Servico servico = Servico.criar("SVC001", "Serviço", "Descrição", new BigDecimal("100.00"));
 
         // Act & Assert
         ValidacaoServicoException exception = assertThrows(
@@ -185,7 +185,7 @@ class ServicoTest {
     @DisplayName("Deve atualizar dados com sucesso")
     void deveAtualizarDadosComSucesso() {
         // Arrange
-        Servico servico = Servico.criar("Serviço Antigo", "Descrição Antiga", new BigDecimal("100.00"));
+        Servico servico = Servico.criar("SVC001", "Serviço Antigo", "Descrição Antiga", new BigDecimal("100.00"));
         String novoNome = "Serviço Novo";
         String novaDescricao = "Descrição Nova";
 
@@ -202,7 +202,7 @@ class ServicoTest {
     @DisplayName("Deve lançar exceção ao atualizar dados com nome vazio")
     void deveLancarExcecaoQuandoAtualizarDadosComNomeVazio() {
         // Arrange
-        Servico servico = Servico.criar("Serviço", "Descrição", new BigDecimal("100.00"));
+        Servico servico = Servico.criar("SVC001", "Serviço", "Descrição", new BigDecimal("100.00"));
 
         // Act & Assert
         ValidacaoServicoException exception = assertThrows(
@@ -217,7 +217,7 @@ class ServicoTest {
     @DisplayName("Deve lançar exceção ao atualizar dados com nome nulo")
     void deveLancarExcecaoQuandoAtualizarDadosComNomeNulo() {
         // Arrange
-        Servico servico = Servico.criar("Serviço", "Descrição", new BigDecimal("100.00"));
+        Servico servico = Servico.criar("SVC001", "Serviço", "Descrição", new BigDecimal("100.00"));
 
         // Act & Assert
         ValidacaoServicoException exception = assertThrows(
@@ -232,7 +232,7 @@ class ServicoTest {
     @DisplayName("Deve ativar serviço com sucesso")
     void deveAtivarServicoComSucesso() {
         // Arrange
-        Servico servico = Servico.criar("Serviço", "Descrição", new BigDecimal("100.00"));
+        Servico servico = Servico.criar("SVC001", "Serviço", "Descrição", new BigDecimal("100.00"));
         servico.desativar();
 
         // Act
@@ -246,7 +246,7 @@ class ServicoTest {
     @DisplayName("Deve lançar exceção ao ativar serviço já ativo")
     void deveLancarExcecaoQuandoAtivarServicoJaAtivo() {
         // Arrange
-        Servico servico = Servico.criar("Serviço", "Descrição", new BigDecimal("100.00"));
+        Servico servico = Servico.criar("SVC001", "Serviço", "Descrição", new BigDecimal("100.00"));
 
         // Act & Assert
         ValidacaoServicoException exception = assertThrows(
@@ -261,7 +261,7 @@ class ServicoTest {
     @DisplayName("Deve desativar serviço com sucesso")
     void deveDesativarServicoComSucesso() {
         // Arrange
-        Servico servico = Servico.criar("Serviço", "Descrição", new BigDecimal("100.00"));
+        Servico servico = Servico.criar("SVC001", "Serviço", "Descrição", new BigDecimal("100.00"));
 
         // Act
         servico.desativar();
@@ -274,7 +274,7 @@ class ServicoTest {
     @DisplayName("Deve lançar exceção ao desativar serviço já inativo")
     void deveLancarExcecaoQuandoDesativarServicoJaInativo() {
         // Arrange
-        Servico servico = Servico.criar("Serviço", "Descrição", new BigDecimal("100.00"));
+        Servico servico = Servico.criar("SVC001", "Serviço", "Descrição", new BigDecimal("100.00"));
         servico.desativar();
 
         // Act & Assert
@@ -299,7 +299,7 @@ class ServicoTest {
         java.time.LocalDateTime atualizadoEm = java.time.LocalDateTime.now().minusDays(5);
 
         // Act
-        Servico servico = Servico.reconstruir(id, nome, descricao, preco, ativo, criadoEm, atualizadoEm);
+        Servico servico = Servico.reconstruir(id,  nome, "SVC001", descricao, preco, ativo, criadoEm, atualizadoEm);
 
         // Assert
         assertEquals(id, servico.getId());
