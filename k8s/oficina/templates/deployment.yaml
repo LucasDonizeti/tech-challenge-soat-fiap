@@ -42,7 +42,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.targetPort | default 8080 }}
+              containerPort: {{ .Values.service.ports[0].targetPort }}
               protocol: TCP
           # Variáveis do ConfigMap
           envFrom:
