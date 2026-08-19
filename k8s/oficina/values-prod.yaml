@@ -20,9 +20,11 @@ image:
   tag: "latest"
 
 service:
-  type: LoadBalancer
-  port: 80
-  targetPort: 8080
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 8080
+    nodePort: 30080
 
 imagePullSecrets:
   - name: aws-ecr-secret
