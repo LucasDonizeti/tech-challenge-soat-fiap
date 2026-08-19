@@ -22,9 +22,9 @@ image:
 service:
   type: NodePort
   ports:
-  - port: 80
-    targetPort: 8080
-    nodePort: 30080
+    - port: 80
+      targetPort: 8080
+      nodePort: 30080
 
 imagePullSecrets:
   - name: aws-ecr-secret
@@ -62,7 +62,7 @@ resources:
 livenessProbe:
   httpGet:
     path: /actuator/health/liveness
-    port: http
+    port: 8080
   initialDelaySeconds: 30
   periodSeconds: 15
   failureThreshold: 3
@@ -71,7 +71,7 @@ livenessProbe:
 readinessProbe:
   httpGet:
     path: /actuator/health/readiness
-    port: http
+    port: 8080
   initialDelaySeconds: 20
   periodSeconds: 10
   failureThreshold: 3
