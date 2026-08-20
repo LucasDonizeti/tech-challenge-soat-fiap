@@ -1,6 +1,6 @@
 {{- if .Values.httpRoute.enabled -}}
 {{- $fullName := include "oficina.fullname" . -}}
-{{- $svcPort := .Values.service.port -}}
+{{- $svcPort := (index .Values.service.ports 0).port -}}
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
