@@ -163,6 +163,13 @@
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>2.7.0</version>
 		</dependency>
+
+		<!-- Source: https://mvnrepository.com/artifact/com.newrelic.agent.java/newrelic-agent -->
+		<dependency>
+			<groupId>com.newrelic.agent.java</groupId>
+			<artifactId>newrelic-agent</artifactId>
+			<version>9.4.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>

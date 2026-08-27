@@ -177,6 +177,7 @@ jobs:
             --set secret.JWT_SECRET="${{ secrets.JWT_SECRET }}" \
             --set secret.SECURITY_USER_NAME="${{ secrets.SECURITY_USER_NAME }}" \
             --set secret.SECURITY_USER_PASSWORD="${{ secrets.SECURITY_USER_PASSWORD }}" \
+            --set secret.NEW_RELIC_LICENSE_KEY="${{ secrets.NEW_RELIC_LICENSE_KEY }}" \
             --rollback-on-failure \
             --timeout 10m \
             --wait
