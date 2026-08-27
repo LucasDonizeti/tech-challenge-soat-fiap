@@ -32,6 +32,15 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+
+      # 1. INIT CONTAINER: Baixa/copia o newrelic.jar para o volume em memória
+      initContainers:
+        - name: newrelic-java-init
+          image: newrelic/newrelic-java-init:9.4.0
+          volumeMounts:
+            - name: newrelic-agent
+              mountPath: /opt/newrelic
+
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.securityContext }}
@@ -44,17 +53,27 @@ spec:
             - name: http
               containerPort: {{ (index .Values.service.ports 0).targetPort }}
               protocol: TCP
-          # Variáveis do ConfigMap
+          
+          # Variáveis do ConfigMap e Secret
           envFrom:
             - configMapRef:
                 name: {{ include "oficina.fullname" . }}-configmap
             - secretRef:
                 name: {{ include "oficina.fullname" . }}-secret
-          # Variáveis extras (ex: REDIS_HOST) injetadas diretamente
+          
           {{- with .Values.extraEnv }}
           env:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          
+          # 2. MOUNT DO AGENTE: Conecta a pasta montada no container da aplicação
+          volumeMounts:
+            - name: newrelic-agent
+              mountPath: /opt/newrelic
+            {{- if .Values.volumeMounts }}
+            {{- toYaml .Values.volumeMounts | nindent 12 }}
+            {{- end }}
+
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
@@ -67,14 +86,15 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.volumeMounts }}
-          volumeMounts:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-      {{- with .Values.volumes }}
+
+      # 3. VOLUME COMPARTILHADO: Pasta emptyDir para trocar o jar entre os containers
       volumes:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        - name: newrelic-agent
+          emptyDir: {}
+        {{- if .Values.volumes }}
+        {{- toYaml .Values.volumes | nindent 8 }}
+        {{- end }}
+
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
