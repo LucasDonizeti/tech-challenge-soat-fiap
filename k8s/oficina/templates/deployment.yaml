@@ -37,6 +37,7 @@ spec:
       initContainers:
         - name: newrelic-java-init
           image: newrelic/newrelic-java-init:9.4.0
+          command: ['sh', '-c', 'cp -r /fig/* /opt/newrelic/ || cp -r /newrelic/* /opt/newrelic/ || cp /newrelic-agent.jar /opt/newrelic/newrelic.jar']
           volumeMounts:
             - name: newrelic-agent
               mountPath: /opt/newrelic
