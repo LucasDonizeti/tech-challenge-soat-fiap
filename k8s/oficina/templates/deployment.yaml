@@ -61,7 +61,7 @@ spec:
             - secretRef:
                 name: {{ include "oficina.fullname" . }}-secret
           
-          {{- with .Values.extraEnv }}
+          # Injeção do JAVA_TOOL_OPTIONS e mesclagem com extraEnv
           env:
             - name: JAVA_TOOL_OPTIONS
               value: "-javaagent:/opt/newrelic/newrelic.jar"
