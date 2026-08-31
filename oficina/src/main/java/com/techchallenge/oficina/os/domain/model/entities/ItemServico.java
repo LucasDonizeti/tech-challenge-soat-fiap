@@ -27,6 +27,7 @@ public class ItemServico {
     private BigDecimal valorMro;
     private LocalDateTime dataInicioExecucao;
     private LocalDateTime dataFinalizacao;
+    private LocalDateTime dataUltimaMudancaStatus;
     private OrdemServico ordemServico;
     private List<ItemMRO> mrosServicos = new ArrayList<>();
     
@@ -48,17 +49,21 @@ public class ItemServico {
         itemServico.observacoes = null;
         itemServico.valorServico = preco;
         itemServico.valorMro = BigDecimal.ZERO;
+        LocalDateTime timestamp = LocalDateTime.now();
 
-        itemServico.logMudancaStatus(null, itemServico.status, LocalDateTime.now());
+        itemServico.logMudancaStatus(null, itemServico.status, timestamp);
+
+        itemServico.dataUltimaMudancaStatus = timestamp;
 
         return itemServico;
     }
     
     // Factory method para reconstrução a partir de dados persistidos
-    public static ItemServico reconstruir(UUID id, UUID servicoId, String servicoNome, String servicoDescricao, 
-                                          StatusItemServico status, String observacoes, 
+    public static ItemServico reconstruir(UUID id, UUID servicoId, String servicoNome, String servicoDescricao,
+                                          StatusItemServico status, String observacoes,
                                           BigDecimal valorServico, BigDecimal valorMro,
-                                          LocalDateTime dataInicioExecucao, LocalDateTime dataFinalizacao) {
+                                          LocalDateTime dataInicioExecucao, LocalDateTime dataFinalizacao,
+                                          LocalDateTime dataUltimaMudancaStatus) {
         ItemServico itemServico = new ItemServico();
         itemServico.id = id;
         itemServico.servicoId = servicoId;
@@ -70,7 +75,8 @@ public class ItemServico {
         itemServico.valorMro = valorMro;
         itemServico.dataInicioExecucao = dataInicioExecucao;
         itemServico.dataFinalizacao = dataFinalizacao;
-        
+        itemServico.dataUltimaMudancaStatus = dataUltimaMudancaStatus;
+
         return itemServico;
     }
     
@@ -120,8 +126,11 @@ public class ItemServico {
         }
 
         this.status = novoStatus;
+        LocalDateTime timestamp = LocalDateTime.now();
 
-        logMudancaStatus(statusAnterior, this.status, LocalDateTime.now());
+        logMudancaStatus(statusAnterior, this.status, timestamp);
+
+        this.dataUltimaMudancaStatus = timestamp;
 
         // Verificar se todos os serviços estão concluídos para finalizar automaticamente
         if (novoStatus == StatusItemServico.CONCLUIDO && ordemServico != null) {
@@ -147,8 +156,14 @@ public class ItemServico {
     }
 
     private void logMudancaStatus(StatusItemServico statusAnterior, StatusItemServico statusAtual, LocalDateTime timestamp) {
-        log.info("Status do ItemServico alterado - ItemServico ID: {}, OS ID: {}, Status Anterior: {}, Status Atual: {}, Timestamp: {}",
-                this.id, ordemServico != null ? ordemServico.getId() : "N/A", statusAnterior != null ? statusAnterior : "N/A", statusAtual, timestamp);
+        String tempoEntreMudancas = "N/A";
+        if (dataUltimaMudancaStatus != null && statusAnterior != null) {
+            long segundos = java.time.Duration.between(dataUltimaMudancaStatus, timestamp).getSeconds();
+            tempoEntreMudancas = segundos + "s";
+        }
+
+        log.info("Status do ItemServico alterado - ItemServico ID: {}, OS ID: {}, Status Anterior: {}, Status Atual: {}, Tempo entre mudanças: {}",
+                this.id, ordemServico != null ? ordemServico.getId() : "N/A", statusAnterior != null ? statusAnterior : "N/A", statusAtual, tempoEntreMudancas);
     }
     
     public BigDecimal calcularValorTotal() {

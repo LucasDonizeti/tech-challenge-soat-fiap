@@ -62,7 +62,8 @@ class ItemServicoJpaMapperTest {
             new BigDecimal("150.00"),
             new BigDecimal("50.00"),
             dataInicio,
-            dataFim
+            dataFim,
+            null
         );
 
         // Act
@@ -163,6 +164,7 @@ class ItemServicoJpaMapperTest {
             new BigDecimal("100.00"),
             new BigDecimal("30.00"),
             null,
+            null,
             null
         );
         
@@ -175,6 +177,7 @@ class ItemServicoJpaMapperTest {
             null,
             new BigDecimal("150.00"),
             new BigDecimal("50.00"),
+            null,
             null,
             null
         );
@@ -255,6 +258,7 @@ class ItemServicoJpaMapperTest {
             new BigDecimal("100.00"),
             BigDecimal.ZERO,
             null,
+            null,
             null
         );
 
@@ -279,6 +283,7 @@ class ItemServicoJpaMapperTest {
             null,
             new BigDecimal("100.00"),
             BigDecimal.ZERO,
+            null,
             null,
             null
         );
@@ -305,6 +310,7 @@ class ItemServicoJpaMapperTest {
             new BigDecimal("100.00"),
             BigDecimal.ZERO,
             null,
+            null,
             null
         );
 
@@ -329,6 +335,7 @@ class ItemServicoJpaMapperTest {
             null,
             new BigDecimal("100.00"),
             BigDecimal.ZERO,
+            null,
             null,
             null
         );
@@ -363,6 +370,7 @@ class ItemServicoJpaMapperTest {
             null,
             new BigDecimal("100.00"),
             new BigDecimal("50.00"),
+            null,
             null,
             null
         );

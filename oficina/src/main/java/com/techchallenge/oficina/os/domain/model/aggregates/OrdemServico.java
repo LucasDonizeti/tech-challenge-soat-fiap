@@ -28,6 +28,7 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
     private LocalDateTime dataCriacao;
     private LocalDateTime dataInicioExecucao;
     private LocalDateTime dataFinalizacao;
+    private LocalDateTime dataUltimaMudancaStatus;
     private List<ItemServico> itensServico = new ArrayList<>();
     
     // Construtor padrão para JPA
@@ -51,13 +52,16 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
 
         ordemServico.logMudancaStatus(null, ordemServico.status, ordemServico.dataCriacao);
 
+        ordemServico.dataUltimaMudancaStatus = ordemServico.dataCriacao;
+
         return ordemServico;
     }
     
     // Factory method para reconstrução a partir de dados persistidos
-    public static OrdemServico reconstruir(UUID id, Cliente cliente, Veiculo veiculo, 
+    public static OrdemServico reconstruir(UUID id, Cliente cliente, Veiculo veiculo,
                                            StatusOS status, LocalDateTime dataCriacao,
-                                           LocalDateTime dataInicioExecucao, LocalDateTime dataFinalizacao) {
+                                           LocalDateTime dataInicioExecucao, LocalDateTime dataFinalizacao,
+                                           LocalDateTime dataUltimaMudancaStatus) {
         OrdemServico ordemServico = new OrdemServico();
         ordemServico.id = id;
         ordemServico.cliente = cliente;
@@ -66,7 +70,8 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
         ordemServico.dataCriacao = dataCriacao;
         ordemServico.dataInicioExecucao = dataInicioExecucao;
         ordemServico.dataFinalizacao = dataFinalizacao;
-        
+        ordemServico.dataUltimaMudancaStatus = dataUltimaMudancaStatus;
+
         return ordemServico;
     }
     
@@ -140,8 +145,14 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
     }
 
     private void logMudancaStatus(StatusOS statusAnterior, StatusOS statusAtual, LocalDateTime timestamp) {
-        log.info("Status da OS alterado - OS ID: {}, Status Anterior: {}, Status Atual: {}, Timestamp: {}",
-                this.id, statusAnterior != null ? statusAnterior : "N/A", statusAtual, timestamp);
+        String tempoEntreMudancas = "N/A";
+        if (dataUltimaMudancaStatus != null && statusAnterior != null) {
+            long segundos = java.time.Duration.between(dataUltimaMudancaStatus, timestamp).getSeconds();
+            tempoEntreMudancas = segundos + "s";
+        }
+
+        log.info("Status da OS alterado - OS ID: {}, Status Anterior: {}, Status Atual: {}, Tempo entre mudanças: {}",
+                this.id, statusAnterior != null ? statusAnterior : "N/A", statusAtual, tempoEntreMudancas);
     }
     
     public void atualizarStatus(StatusOS novoStatus) {
@@ -159,8 +170,11 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
         }
 
         this.status = novoStatus;
+        LocalDateTime timestamp = LocalDateTime.now();
 
-        logMudancaStatus(statusAnterior, this.status, LocalDateTime.now());
+        logMudancaStatus(statusAnterior, this.status, timestamp);
+
+        this.dataUltimaMudancaStatus = timestamp;
     }
     
     public void enviarParaDiagnostico() {
@@ -173,8 +187,11 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
 
         StatusOS statusAnterior = this.status;
         this.status = StatusOS.EM_DIAGNOSTICO;
+        LocalDateTime timestamp = LocalDateTime.now();
 
-        logMudancaStatus(statusAnterior, this.status, LocalDateTime.now());
+        logMudancaStatus(statusAnterior, this.status, timestamp);
+
+        this.dataUltimaMudancaStatus = timestamp;
     }
     
     public void enviarOrcamentoAoCliente() {
@@ -187,8 +204,11 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
 
         StatusOS statusAnterior = this.status;
         this.status = StatusOS.AGUARDANDO_APROVACAO;
+        LocalDateTime timestamp = LocalDateTime.now();
 
-        logMudancaStatus(statusAnterior, this.status, LocalDateTime.now());
+        logMudancaStatus(statusAnterior, this.status, timestamp);
+
+        this.dataUltimaMudancaStatus = timestamp;
 
         // Emitir evento de domínio
         String clienteNome = cliente != null && cliente.getNome() != null ? cliente.getNome().getValor() : "Cliente";
@@ -208,8 +228,11 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
         StatusOS statusAnterior = this.status;
         this.status = StatusOS.EM_EXECUCAO;
         this.dataInicioExecucao = LocalDateTime.now();
+        LocalDateTime timestamp = LocalDateTime.now();
 
-        logMudancaStatus(statusAnterior, this.status, this.dataInicioExecucao);
+        logMudancaStatus(statusAnterior, this.status, timestamp);
+
+        this.dataUltimaMudancaStatus = timestamp;
 
         // Emitir evento de domínio
         String clienteNome = cliente != null && cliente.getNome() != null ? cliente.getNome().getValor() : "Cliente";
@@ -230,8 +253,11 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
         StatusOS statusAnterior = this.status;
         this.status = StatusOS.CANCELADA;
         this.dataFinalizacao = LocalDateTime.now();
+        LocalDateTime timestamp = LocalDateTime.now();
 
-        logMudancaStatus(statusAnterior, this.status, this.dataFinalizacao);
+        logMudancaStatus(statusAnterior, this.status, timestamp);
+
+        this.dataUltimaMudancaStatus = timestamp;
 
         // Emitir evento de domínio
         String clienteNome = cliente != null && cliente.getNome() != null ? cliente.getNome().getValor() : "Cliente";
@@ -254,8 +280,11 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
         StatusOS statusAnterior = this.status;
         this.status = StatusOS.FINALIZADA;
         this.dataFinalizacao = LocalDateTime.now();
+        LocalDateTime timestamp = LocalDateTime.now();
 
-        logMudancaStatus(statusAnterior, this.status, this.dataFinalizacao);
+        logMudancaStatus(statusAnterior, this.status, timestamp);
+
+        this.dataUltimaMudancaStatus = timestamp;
 
         // Emitir evento de domínio
         String clienteNome = cliente != null && cliente.getNome() != null ? cliente.getNome().getValor() : "Cliente";
@@ -281,8 +310,11 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
 
         StatusOS statusAnterior = this.status;
         this.status = StatusOS.ENTREGUE;
+        LocalDateTime timestamp = LocalDateTime.now();
 
-        logMudancaStatus(statusAnterior, this.status, LocalDateTime.now());
+        logMudancaStatus(statusAnterior, this.status, timestamp);
+
+        this.dataUltimaMudancaStatus = timestamp;
 
         // Emitir evento de domínio
         String clienteNome = cliente != null && cliente.getNome() != null ? cliente.getNome().getValor() : "Cliente";
