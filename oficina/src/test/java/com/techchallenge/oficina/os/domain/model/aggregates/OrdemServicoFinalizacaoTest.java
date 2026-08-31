@@ -219,7 +219,8 @@ class OrdemServicoFinalizacaoTest {
                 ordemServico.getStatus(),
                 ordemServico.getDataCriacao(),
                 ordemServico.getDataInicioExecucao(),
-                ordemServico.getDataFinalizacao()
+                ordemServico.getDataFinalizacao(),
+                ordemServico.getDataUltimaMudancaStatus()
         );
         
         // Assert
