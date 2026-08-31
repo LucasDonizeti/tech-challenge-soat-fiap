@@ -41,14 +41,16 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
         if (veiculo == null) {
             throw new ValidacaoOrdemServicoException("Veículo não pode ser nulo");
         }
-        
+
         OrdemServico ordemServico = new OrdemServico();
         ordemServico.id = UUID.randomUUID();
         ordemServico.cliente = cliente;
         ordemServico.veiculo = veiculo;
         ordemServico.status = StatusOS.RECEBIDA;
         ordemServico.dataCriacao = LocalDateTime.now();
-        
+
+        ordemServico.logMudancaStatus(null, ordemServico.status, ordemServico.dataCriacao);
+
         return ordemServico;
     }
     
@@ -129,27 +131,36 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
     }
     
     private void validarAlteracaoPermitida() {
-        if (this.status == StatusOS.EM_DIAGNOSTICO || 
+        if (this.status == StatusOS.EM_DIAGNOSTICO ||
             this.status == StatusOS.AGUARDANDO_APROVACAO) {
             throw new ValidacaoOrdemServicoException(
-                "Não é permitido alterar a OS quando ela está no status " + this.status + 
+                "Não é permitido alterar a OS quando ela está no status " + this.status +
                 ". Apenas a aprovação do orçamento é permitida no status AGUARDANDO_APROVACAO.");
         }
+    }
+
+    private void logMudancaStatus(StatusOS statusAnterior, StatusOS statusAtual, LocalDateTime timestamp) {
+        log.info("Status da OS alterado - OS ID: {}, Status Anterior: {}, Status Atual: {}, Timestamp: {}",
+                this.id, statusAnterior != null ? statusAnterior : "N/A", statusAtual, timestamp);
     }
     
     public void atualizarStatus(StatusOS novoStatus) {
         if (novoStatus == null) {
             throw new ValidacaoOrdemServicoException("Status não pode ser nulo");
         }
-        
+
+        StatusOS statusAnterior = this.status;
+
         // Validar se a alteração de status é permitida no status atual
         // Em AGUARDANDO_APROVACAO, apenas aprovarOrcamento (transição para EM_EXECUCAO) é permitida
         if (this.status == StatusOS.AGUARDANDO_APROVACAO && novoStatus != StatusOS.EM_EXECUCAO) {
             throw new ValidacaoOrdemServicoException(
                 "No status AGUARDANDO_APROVACAO, apenas a aprovação do orçamento é permitida. Status atual: " + this.status);
         }
-        
+
         this.status = novoStatus;
+
+        logMudancaStatus(statusAnterior, this.status, LocalDateTime.now());
     }
     
     public void enviarParaDiagnostico() {
@@ -159,7 +170,11 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
         if (!possuiItensServico()) {
             throw new ValidacaoOrdemServicoException("OS deve ter pelo menos um serviço para ser enviada para diagnóstico");
         }
+
+        StatusOS statusAnterior = this.status;
         this.status = StatusOS.EM_DIAGNOSTICO;
+
+        logMudancaStatus(statusAnterior, this.status, LocalDateTime.now());
     }
     
     public void enviarOrcamentoAoCliente() {
@@ -169,15 +184,19 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
         if (!possuiItensServico()) {
             throw new ValidacaoOrdemServicoException("OS deve ter pelo menos um serviço para enviar orçamento ao cliente");
         }
+
+        StatusOS statusAnterior = this.status;
         this.status = StatusOS.AGUARDANDO_APROVACAO;
-        
+
+        logMudancaStatus(statusAnterior, this.status, LocalDateTime.now());
+
         // Emitir evento de domínio
         String clienteNome = cliente != null && cliente.getNome() != null ? cliente.getNome().getValor() : "Cliente";
         String clienteEmail = cliente != null && cliente.getEmail() != null ? cliente.getEmail().getEndereco() : null;
         String veiculoMarca = veiculo != null ? veiculo.getMarca() : null;
         String veiculoModelo = veiculo != null ? veiculo.getModelo() : null;
         String veiculoPlaca = veiculo != null && veiculo.getPlaca() != null ? veiculo.getPlaca().getFormatada() : null;
-        
+
         registerEvent(new OrcamentoProntoEvent(id, clienteNome, clienteEmail, veiculoMarca, veiculoModelo, veiculoPlaca));
     }
     
@@ -185,18 +204,20 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
         if (this.status != StatusOS.AGUARDANDO_APROVACAO) {
             throw new ValidacaoOrdemServicoException("Só é possível aprovar orçamento quando a OS está no status AGUARDANDO_APROVACAO. Status atual: " + this.status);
         }
+
+        StatusOS statusAnterior = this.status;
         this.status = StatusOS.EM_EXECUCAO;
         this.dataInicioExecucao = LocalDateTime.now();
-        log.info("Orçamento aprovado - OS ID: {}, Status alterado para EM_EXECUCAO, Cliente: {}", 
-                this.id, this.cliente != null ? this.cliente.getNome() : "N/A");
-        
+
+        logMudancaStatus(statusAnterior, this.status, this.dataInicioExecucao);
+
         // Emitir evento de domínio
         String clienteNome = cliente != null && cliente.getNome() != null ? cliente.getNome().getValor() : "Cliente";
         String clienteEmail = cliente != null && cliente.getEmail() != null ? cliente.getEmail().getEndereco() : null;
         String veiculoMarca = veiculo != null ? veiculo.getMarca() : null;
         String veiculoModelo = veiculo != null ? veiculo.getModelo() : null;
         String veiculoPlaca = veiculo != null && veiculo.getPlaca() != null ? veiculo.getPlaca().getFormatada() : null;
-        
+
         registerEvent(new ServicoIniciadoEvent(id, clienteNome, clienteEmail, veiculoMarca, veiculoModelo, veiculoPlaca));
     }
 
@@ -205,10 +226,12 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
             throw new ValidacaoOrdemServicoException(
                 "Só é possível recusar orçamento quando a OS está no status AGUARDANDO_APROVACAO. Status atual: " + this.status);
         }
+
+        StatusOS statusAnterior = this.status;
         this.status = StatusOS.CANCELADA;
         this.dataFinalizacao = LocalDateTime.now();
-        log.info("Orçamento recusado - OS ID: {}, Status alterado para CANCELADA, Cliente: {}, Motivo: {}",
-                this.id, this.cliente != null ? this.cliente.getNome() : "N/A", motivo);
+
+        logMudancaStatus(statusAnterior, this.status, this.dataFinalizacao);
 
         // Emitir evento de domínio
         String clienteNome = cliente != null && cliente.getNome() != null ? cliente.getNome().getValor() : "Cliente";
@@ -227,11 +250,13 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
         if (!podeSerFinalizada()) {
             throw new ValidacaoOrdemServicoException("OS só pode ser finalizada quando todos os serviços estiverem CONCLUIDO");
         }
+
+        StatusOS statusAnterior = this.status;
         this.status = StatusOS.FINALIZADA;
         this.dataFinalizacao = LocalDateTime.now();
-        log.info("OS finalizada - OS ID: {}, Status alterado para FINALIZADA, Cliente: {}, Data Finalização: {}", 
-                this.id, this.cliente != null ? this.cliente.getNome() : "N/A", this.dataFinalizacao);
-        
+
+        logMudancaStatus(statusAnterior, this.status, this.dataFinalizacao);
+
         // Emitir evento de domínio
         String clienteNome = cliente != null && cliente.getNome() != null ? cliente.getNome().getValor() : "Cliente";
         String clienteEmail = cliente != null && cliente.getEmail() != null ? cliente.getEmail().getEndereco() : null;
@@ -239,7 +264,7 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
         String veiculoModelo = veiculo != null ? veiculo.getModelo() : null;
         String veiculoPlaca = veiculo != null && veiculo.getPlaca() != null ? veiculo.getPlaca().getFormatada() : null;
         BigDecimal valorTotal = calcularValorTotal();
-        
+
         registerEvent(new ServicoFinalizadoEvent(id, clienteNome, clienteEmail, veiculoMarca, veiculoModelo, veiculoPlaca, valorTotal));
     }
     
@@ -253,17 +278,19 @@ public class OrdemServico extends AbstractAggregateRoot<OrdemServico> {
         if (this.status != StatusOS.FINALIZADA) {
             throw new ValidacaoOrdemServicoException("Só é possível entregar quando a OS está no status FINALIZADA. Status atual: " + this.status);
         }
+
+        StatusOS statusAnterior = this.status;
         this.status = StatusOS.ENTREGUE;
-        log.info("OS entregue - OS ID: {}, Status alterado para ENTREGUE, Cliente: {}", 
-                this.id, this.cliente != null ? this.cliente.getNome() : "N/A");
-        
+
+        logMudancaStatus(statusAnterior, this.status, LocalDateTime.now());
+
         // Emitir evento de domínio
         String clienteNome = cliente != null && cliente.getNome() != null ? cliente.getNome().getValor() : "Cliente";
         String clienteEmail = cliente != null && cliente.getEmail() != null ? cliente.getEmail().getEndereco() : null;
         String veiculoMarca = veiculo != null ? veiculo.getMarca() : null;
         String veiculoModelo = veiculo != null ? veiculo.getModelo() : null;
         String veiculoPlaca = veiculo != null && veiculo.getPlaca() != null ? veiculo.getPlaca().getFormatada() : null;
-        
+
         registerEvent(new VeiculoEntregueEvent(id, clienteNome, clienteEmail, veiculoMarca, veiculoModelo, veiculoPlaca));
     }
     
