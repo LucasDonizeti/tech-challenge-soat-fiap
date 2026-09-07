@@ -114,6 +114,60 @@
 - **Contexto:** Ausência de documentação formal e padronizada das APIs REST, dificultando integração entre bounded contexts e onboarding de novos desenvolvedores
 - **Decisão:** Implementação do Swagger (OpenAPI Specification 3.0) com SpringDoc OpenAPI para documentação automática e interativa das APIs
 
+### ADR-015: Observabilidade com New Relic APM e Synthetic Monitor
+- **Número:** 015
+- **Título:** Observabilidade com New Relic APM e Synthetic Monitor
+- **Data:** 2026-04-20
+- **Responsável:** Arquiteto do Projeto
+- **Contexto:** Necessidade de instrumentação de APM, traces distribuídos e health check externo para a aplicação rodando no Amazon EKS
+- **Decisão:** Adoção do New Relic Java Agent 9.4.0 injetado via initContainer, Synthetic Monitor HTTP e Dashboard provisionados por Terraform
+
+### ADR-016: Análise de Segurança de Dependências com OWASP Dependency Check
+- **Número:** 016
+- **Título:** Análise de Segurança de Dependências com OWASP Dependency Check
+- **Data:** 2026-04-22
+- **Responsável:** Arquiteto do Projeto
+- **Contexto:** Requisito obrigatório do Tech Challenge de relatório de análise de vulnerabilidades das dependências do projeto
+- **Decisão:** Integração do plugin OWASP Dependency Check ao Maven com threshold CVSS ≥ 7.0, supressões documentadas e geração de relatórios em HTML/XML/JSON
+
+### ADR-017: Orquestração de Containers com Kubernetes (EKS) e Helm
+- **Número:** 017
+- **Título:** Orquestração de Containers com Kubernetes (EKS) e Helm
+- **Data:** 2026-04-25
+- **Responsável:** Arquiteto do Projeto
+- **Contexto:** Requisito obrigatório do Tech Challenge Fase 2 de deploy em Kubernetes com manifestos de Deployment, Service, ConfigMap, Secret e HPA
+- **Decisão:** Amazon EKS v1.36 com Helm Charts próprios, NodePort + NLB + API Gateway para exposição externa, HPA por CPU/Memória, New Relic via initContainer
+
+### ADR-018: Pipeline de CI/CD com GitHub Actions
+- **Número:** 018
+- **Título:** Pipeline de CI/CD com GitHub Actions
+- **Data:** 2026-04-28
+- **Responsável:** Arquiteto do Projeto
+- **Contexto:** Requisito obrigatório do Tech Challenge Fase 2 de pipeline de CI/CD com build, testes, build de imagem Docker e deploy no Kubernetes
+- **Decisão:** GitHub Actions com três jobs encadeados (Build & Test → Push ECR → Deploy Helm/EKS), senha do RDS recuperada do Secrets Manager, rollback automático via Helm
+
+### ADR-019: Uso do Lombok para Redução de Código Boilerplate
+- **Número:** 019
+- **Título:** Uso do Lombok para Redução de Código Boilerplate
+- **Data:** 2026-05-02
+- **Responsável:** Arquiteto do Projeto
+- **Contexto:** Grande volume de código boilerplate (getters, setters, construtores, loggers) em projeto com múltiplos bounded contexts e muitas classes de domínio, DTOs e Use Cases
+- **Decisão:** Adoção do Lombok 1.18.44 com restrições de uso definidas (proibido `@Data` em entidades JPA e Value Objects; uso de Records Java onde adequado)
+
+### ADR-020: Máquina de Estados da Ordem de Serviço
+- **Número:** 020
+- **Título:** Máquina de Estados da Ordem de Serviço (OS)
+- **Data:** 2026-05-05
+- **Responsável:** Arquiteto do Projeto
+- **Contexto:** A OS possui seis status com transições complexas, pré-condições e ações associadas (débito de estoque, notificações ao cliente) que precisam ser formalizadas e protegidas por invariantes do domínio
+- **Decisão:** Máquina de estados implementada no aggregate `OrdemServico` com métodos de negócio encapsulando validações, Domain Events para notificações e exceções específicas do domínio para transições inválidas
+
+---
+
+## Nota sobre sobreposição: ADR-010 e ADR-011
+
+Os ADRs 010 e 011 possuem sobreposição intencional: o ADR-010 documenta a hierarquia de exceções de domínio (`DomainException`) em conjunto com o `ErrorResponse`, enquanto o ADR-011 detalha exclusivamente o padrão `ErrorResponse` e o `GlobalExceptionHandler`. Ambos foram mantidos por rastreabilidade histórica — o ADR-010 representa a decisão original que incluía os dois temas, e o ADR-011 foi criado posteriormente para detalhar o aspecto de respostas de erro de forma isolada.
+
 ---
 
 *Os ADRs detalhados estão disponíveis na pasta `ADR/` com arquivos individuais para cada decisão.*

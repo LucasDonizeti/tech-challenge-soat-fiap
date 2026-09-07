@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="1380" viewBox="0 0 1300 1380" font-family="Segoe UI, Arial, sans-serif">
+
+  <!-- ═══════════════════════════════ BACKGROUND ═══════════════════════════ -->
+  <rect width="1300" height="1380" fill="#f7fafc"/>
+
+  <!-- ═══════════════════════════════ TITLE ═══════════════════════════════ -->
+  <text x="650" y="34" text-anchor="middle" font-size="18" font-weight="bold" fill="#1a202c">Diagrama de Sequência</text>
+  <text x="650" y="54" text-anchor="middle" font-size="13" fill="#4a5568">Autenticação (Auth Lambda) + Abertura de Ordem de Serviço (oficina-api)</text>
+
+  <!-- ═══════════════════════════════ LIFELINE HEADERS ════════════════════ -->
+  <!-- X positions: Client=80, APIGateway=250, AuthLambda=420, RDS=580, OficinaPod=760, JwtFilter=920, OSUseCase=1080, RDS2=1220 -->
+
+  <!-- 1. Cliente -->
+  <rect x="25" y="72" width="110" height="48" rx="6" fill="#4299e1" stroke="#2b6cb0" stroke-width="1.5"/>
+  <text x="80" y="92" text-anchor="middle" font-size="11" font-weight="bold" fill="white">👤 Admin</text>
+  <text x="80" y="108" text-anchor="middle" font-size="9" fill="#bee3f8">Client / Browser</text>
+
+  <!-- 2. API Gateway -->
+  <rect x="190" y="72" width="120" height="48" rx="6" fill="#48bb78" stroke="#276749" stroke-width="1.5"/>
+  <text x="250" y="92" text-anchor="middle" font-size="11" font-weight="bold" fill="white">🚪 API GW</text>
+  <text x="250" y="108" text-anchor="middle" font-size="9" fill="#c6f6d5">HTTP API v2</text>
+
+  <!-- 3. Auth Lambda -->
+  <rect x="355" y="72" width="130" height="48" rx="6" fill="#805ad5" stroke="#553c9a" stroke-width="1.5"/>
+  <text x="420" y="92" text-anchor="middle" font-size="11" font-weight="bold" fill="white">λ Auth Lambda</text>
+  <text x="420" y="108" text-anchor="middle" font-size="9" fill="#e9d8fd">Java 21 · JWT gen</text>
+
+  <!-- 4. RDS (used by Lambda) -->
+  <rect x="525" y="72" width="110" height="48" rx="6" fill="#d69e2e" stroke="#744210" stroke-width="1.5"/>
+  <text x="580" y="92" text-anchor="middle" font-size="11" font-weight="bold" fill="white">🗄️ RDS</text>
+  <text x="580" y="108" text-anchor="middle" font-size="9" fill="#fefcbf">MySQL 8.0</text>
+
+  <!-- 5. oficina-api Pod -->
+  <rect x="690" y="72" width="140" height="48" rx="6" fill="#fc8181" stroke="#c53030" stroke-width="1.5"/>
+  <text x="760" y="92" text-anchor="middle" font-size="11" font-weight="bold" fill="white">☸️ oficina-api</text>
+  <text x="760" y="108" text-anchor="middle" font-size="9" fill="#fff5f5">Spring Boot Pod</text>
+
+  <!-- 6. JwtFilter -->
+  <rect x="856" y="72" width="128" height="48" rx="6" fill="#ed8936" stroke="#c05621" stroke-width="1.5"/>
+  <text x="920" y="92" text-anchor="middle" font-size="11" font-weight="bold" fill="white">🔐 JwtFilter</text>
+  <text x="920" y="108" text-anchor="middle" font-size="9" fill="#fefcbf">Spring Security</text>
+
+  <!-- 7. OS Use Case -->
+  <rect x="1016" y="72" width="148" height="48" rx="6" fill="#667eea" stroke="#434190" stroke-width="1.5"/>
+  <text x="1090" y="92" text-anchor="middle" font-size="11" font-weight="bold" fill="white">⚙️ CriarOS</text>
+  <text x="1090" y="108" text-anchor="middle" font-size="9" fill="#ebf4ff">UseCase + Persistence</text>
+
+  <!-- ═══════════════════════════════ LIFELINES ════════════════════════════ -->
+  <line x1="80"   y1="120" x2="80"   y2="1365" stroke="#4299e1" stroke-width="1.2" stroke-dasharray="6,4"/>
+  <line x1="250"  y1="120" x2="250"  y2="1365" stroke="#48bb78" stroke-width="1.2" stroke-dasharray="6,4"/>
+  <line x1="420"  y1="120" x2="420"  y2="1365" stroke="#805ad5" stroke-width="1.2" stroke-dasharray="6,4"/>
+  <line x1="580"  y1="120" x2="580"  y2="1365" stroke="#d69e2e" stroke-width="1.2" stroke-dasharray="6,4"/>
+  <line x1="760"  y1="120" x2="760"  y2="1365" stroke="#fc8181" stroke-width="1.2" stroke-dasharray="6,4"/>
+  <line x1="920"  y1="120" x2="920"  y2="1365" stroke="#ed8936" stroke-width="1.2" stroke-dasharray="6,4"/>
+  <line x1="1090" y1="120" x2="1090" y2="1365" stroke="#667eea" stroke-width="1.2" stroke-dasharray="6,4"/>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 1 — AUTENTICAÇÃO                                           -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <rect x="20" y="138" width="1260" height="22" rx="4" fill="#805ad5" opacity="0.15"/>
+  <text x="30" y="154" font-size="12" font-weight="bold" fill="#553c9a">PARTE 1 — AUTENTICAÇÃO  (POST /v1/auth/login)</text>
+
+  <!-- ── Step 1: Admin → API GW ── -->
+  <text x="30" y="180" font-size="9" fill="#718096" font-style="italic">1</text>
+  <line x1="80" y1="175" x2="248" y2="175" stroke="#2d3748" stroke-width="1.8" marker-end="url(#arr)"/>
+  <rect x="82" y="160" width="164" height="16" rx="3" fill="#bee3f8" opacity="0.8"/>
+  <text x="164" y="172" text-anchor="middle" font-size="9" font-weight="bold" fill="#2b6cb0">POST /v1/auth/login</text>
+  <text x="164" y="186" text-anchor="middle" font-size="8" fill="#4a5568">{ "username":"admin", "password":"secret123" }</text>
+
+  <!-- ── Step 2: API GW → Lambda (roteamento) ── -->
+  <text x="200" y="208" font-size="9" fill="#718096" font-style="italic">2</text>
+  <line x1="250" y1="203" x2="418" y2="203" stroke="#2d3748" stroke-width="1.8" marker-end="url(#arr)"/>
+  <rect x="252" y="190" width="164" height="16" rx="3" fill="#e9d8fd" opacity="0.9"/>
+  <text x="334" y="201" text-anchor="middle" font-size="9" font-weight="bold" fill="#553c9a">Route: POST /v1/auth/login → λ</text>
+  <text x="334" y="213" text-anchor="middle" font-size="8" fill="#4a5568">invoca AuthLambdaHandler::handleRequest</text>
+
+  <!-- ── Activation bar: Lambda ── -->
+  <rect x="414" y="215" width="12" height="175" rx="2" fill="#805ad5" opacity="0.35"/>
+
+  <!-- ── Step 3: Lambda gera correlationId ── -->
+  <text x="370" y="233" font-size="9" fill="#718096" font-style="italic">3</text>
+  <line x1="420" y1="228" x2="456" y2="228" stroke="#805ad5" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <text x="462" y="232" font-size="8" fill="#553c9a">gera/extrai x-correlation-id (UUID)</text>
+
+  <!-- ── Step 4: Lambda → parse body → AutenticarUsuarioUseCase ── -->
+  <text x="370" y="252" font-size="9" fill="#718096" font-style="italic">4</text>
+  <line x1="420" y1="247" x2="456" y2="247" stroke="#805ad5" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <text x="462" y="251" font-size="8" fill="#553c9a">parse JSON → AuthRequestDto → toCommand()</text>
+
+  <!-- ── Step 5: Lambda → isAdminUser check ── -->
+  <text x="370" y="270" font-size="9" fill="#718096" font-style="italic">5</text>
+  <line x1="420" y1="265" x2="456" y2="265" stroke="#805ad5" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <text x="462" y="269" font-size="8" fill="#553c9a">isAdminUser("admin") → BCrypt.checkpw(password, hash)</text>
+
+  <!-- ── Step 6: Admin check TRUE → skip RDS ── -->
+  <rect x="456" y="273" width="260" height="14" rx="3" fill="#f0fff4" stroke="#9ae6b4" stroke-width="1"/>
+  <text x="586" y="283" text-anchor="middle" font-size="8" fill="#276749">[admin match TRUE] → NÃO consulta RDS</text>
+
+  <!-- ── Step 7: Lambda → JwtTokenUtil.generateAdminToken ── -->
+  <text x="370" y="303" font-size="9" fill="#718096" font-style="italic">6</text>
+  <line x1="420" y1="298" x2="456" y2="298" stroke="#805ad5" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <text x="462" y="302" font-size="8" fill="#553c9a">jwtTokenUtil.generateAdminToken("admin")</text>
+
+  <!-- ── Note: JWT content ── -->
+  <rect x="456" y="306" width="320" height="22" rx="3" fill="#faf5ff" stroke="#d6bcfa" stroke-width="1"/>
+  <text x="616" y="318" text-anchor="middle" font-size="8" fill="#553c9a">JWT: sub=admin · role=ADMIN · alg=HS256 · exp=+1h</text>
+
+  <!-- ── Alt box: cpf/cnpj user ── -->
+  <rect x="380" y="332" width="220" height="48" rx="4" fill="white" stroke="#9f7aea" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="390" y="346" font-size="8" font-weight="bold" fill="#805ad5">ALT [usuário CPF/CNPJ]</text>
+  <text x="390" y="359" font-size="8" fill="#4a5568">Lambda → RDS: SELECT * FROM clientes</text>
+  <text x="390" y="372" font-size="8" fill="#4a5568">WHERE cpf/cnpj = ?  →  BCrypt.checkpw(pwd)</text>
+  <!-- Lambda → RDS dashed arrow inside alt -->
+  <line x1="420" y1="360" x2="576" y2="360" stroke="#d69e2e" stroke-width="1.2" stroke-dasharray="3,2" marker-end="url(#arr-yellow)"/>
+  <line x1="578" y1="368" x2="422" y2="368" stroke="#d69e2e" stroke-width="1.2" stroke-dasharray="3,2" marker-end="url(#arr-yellow)"/>
+
+  <!-- ── Step 8: Lambda builds response ── -->
+  <text x="370" y="401" font-size="9" fill="#718096" font-style="italic">7</text>
+  <line x1="420" y1="396" x2="456" y2="396" stroke="#805ad5" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <text x="462" y="400" font-size="8" fill="#553c9a">buildResponse(200) → AuthResponseDto { token, type, username }</text>
+
+  <!-- ── Step 9: Lambda → API GW ── -->
+  <text x="370" y="418" font-size="9" fill="#718096" font-style="italic">8</text>
+  <line x1="414" y1="413" x2="252" y2="413" stroke="#2d3748" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <rect x="258" y="400" width="154" height="16" rx="3" fill="#e9d8fd" opacity="0.8"/>
+  <text x="335" y="411" text-anchor="middle" font-size="9" fill="#553c9a">HTTP 200 + x-correlation-id</text>
+
+  <!-- ── Step 10: API GW → Client ── -->
+  <text x="100" y="437" font-size="9" fill="#718096" font-style="italic">9</text>
+  <line x1="248" y1="432" x2="82" y2="432" stroke="#2d3748" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <rect x="84" y="419" width="162" height="16" rx="3" fill="#bee3f8" opacity="0.8"/>
+  <text x="165" y="430" text-anchor="middle" font-size="9" fill="#2b6cb0">200 OK { token: "eyJhb...", type: "Bearer" }</text>
+
+  <!-- ── Note box ── -->
+  <rect x="24" y="443" width="258" height="24" rx="4" fill="#fffaf0" stroke="#ed8936" stroke-width="1"/>
+  <text x="153" y="455" text-anchor="middle" font-size="8" fill="#c05621">🔑 Admin armazena o Bearer token para próximas requisições</text>
+
+  <!-- separator -->
+  <line x1="20" y1="478" x2="1280" y2="478" stroke="#a0aec0" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 2 — CRIAÇÃO DE OS                                          -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <rect x="20" y="485" width="1260" height="22" rx="4" fill="#fc8181" opacity="0.2"/>
+  <text x="30" y="501" font-size="12" font-weight="bold" fill="#c53030">PARTE 2 — ABERTURA DE ORDEM DE SERVIÇO  (POST /v1/os)</text>
+
+  <!-- ── Step 10: Admin → API GW ── -->
+  <text x="30" y="525" font-size="9" fill="#718096" font-style="italic">10</text>
+  <line x1="80" y1="520" x2="248" y2="520" stroke="#2d3748" stroke-width="1.8" marker-end="url(#arr)"/>
+  <rect x="82" y="506" width="164" height="16" rx="3" fill="#bee3f8" opacity="0.8"/>
+  <text x="164" y="517" text-anchor="middle" font-size="9" font-weight="bold" fill="#2b6cb0">POST /v1/os</text>
+  <text x="164" y="531" text-anchor="middle" font-size="8" fill="#4a5568">Authorization: Bearer eyJhb...  |  body: CriarOSRequest</text>
+
+  <!-- ── Step 11: API GW → NLB → oficina-api ── -->
+  <text x="200" y="551" font-size="9" fill="#718096" font-style="italic">11</text>
+  <line x1="250" y1="546" x2="758" y2="546" stroke="#2d3748" stroke-width="1.8" marker-end="url(#arr)"/>
+  <rect x="370" y="533" width="216" height="16" rx="3" fill="#fed7d7" opacity="0.9"/>
+  <text x="478" y="544" text-anchor="middle" font-size="9" font-weight="bold" fill="#c53030">Route ANY /{proxy+} → VPC Link → NLB → NodePort 30080</text>
+
+  <!-- ── Activation bar: oficina-api ── -->
+  <rect x="754" y="558" width="12" height="560" rx="2" fill="#fc8181" opacity="0.35"/>
+
+  <!-- ── Step 12: oficina-api → JwtFilter ── -->
+  <text x="720" y="576" font-size="9" fill="#718096" font-style="italic">12</text>
+  <line x1="760" y1="571" x2="918" y2="571" stroke="#2d3748" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="762" y="558" width="154" height="16" rx="3" fill="#fef3c7" opacity="0.9"/>
+  <text x="839" y="569" text-anchor="middle" font-size="9" font-weight="bold" fill="#c05621">JwtAuthenticationFilter.doFilterInternal()</text>
+
+  <!-- ── Activation bar: JwtFilter ── -->
+  <rect x="914" y="583" width="12" height="160" rx="2" fill="#ed8936" opacity="0.35"/>
+
+  <!-- ── Step 13: JwtFilter → extract token from header ── -->
+  <text x="878" y="600" font-size="9" fill="#718096" font-style="italic">13</text>
+  <line x1="920" y1="595" x2="956" y2="595" stroke="#ed8936" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <text x="962" y="599" font-size="8" fill="#c05621">tokenHeader = request.getHeader("Authorization")</text>
+
+  <!-- ── Step 14: JwtFilter → JwtTokenUtil.getUsernameFromToken ── -->
+  <text x="878" y="618" font-size="9" fill="#718096" font-style="italic">14</text>
+  <line x1="920" y1="613" x2="956" y2="613" stroke="#ed8936" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <text x="962" y="617" font-size="8" fill="#c05621">jwtTokenUtil.getUsernameFromToken(jwt) → "admin"</text>
+
+  <!-- ── Step 15: extractRole ── -->
+  <text x="878" y="636" font-size="9" fill="#718096" font-style="italic">15</text>
+  <line x1="920" y1="631" x2="956" y2="631" stroke="#ed8936" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <text x="962" y="635" font-size="8" fill="#c05621">extractRole(jwt) → "ADMIN" → usa adminUserDetailsService</text>
+
+  <!-- ── Step 16: loadUserByUsername ── -->
+  <text x="878" y="654" font-size="9" fill="#718096" font-style="italic">16</text>
+  <line x1="920" y1="649" x2="956" y2="649" stroke="#ed8936" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <text x="962" y="653" font-size="8" fill="#c05621">adminUDS.loadUserByUsername("admin") → UserDetails(ROLE_ADMIN)</text>
+
+  <!-- ── Step 17: validateToken ── -->
+  <text x="878" y="672" font-size="9" fill="#718096" font-style="italic">17</text>
+  <line x1="920" y1="667" x2="956" y2="667" stroke="#ed8936" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <text x="962" y="671" font-size="8" fill="#c05621">jwtTokenUtil.validateToken(jwt, userDetails) → true</text>
+
+  <!-- ── Step 18: set SecurityContext ── -->
+  <text x="878" y="690" font-size="9" fill="#718096" font-style="italic">18</text>
+  <line x1="920" y1="685" x2="956" y2="685" stroke="#ed8936" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <text x="962" y="689" font-size="8" fill="#c05621">SecurityContextHolder.setAuthentication(admin, ROLE_ADMIN)</text>
+
+  <!-- ── Fail path box ── -->
+  <rect x="760" y="695" width="295" height="24" rx="4" fill="#fff5f5" stroke="#fc8181" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="780" y="707" font-size="8" font-weight="bold" fill="#c53030">ALT [token inválido/expirado]</text>
+  <text x="780" y="718" font-size="8" fill="#c53030">→ chain.doFilter sem autenticação → Spring retorna 401 Unauthorized</text>
+
+  <!-- ── Step 19: JwtFilter returns chain to Controller ── -->
+  <text x="720" y="737" font-size="9" fill="#718096" font-style="italic">19</text>
+  <line x1="914" y1="732" x2="772" y2="732" stroke="#2d3748" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="843" y="728" text-anchor="middle" font-size="8" fill="#4a5568">chain continua → chega no OrdemServicoController</text>
+
+  <!-- ── Step 20: Controller → CriarOrdemServicoUseCase ── -->
+  <text x="720" y="757" font-size="9" fill="#718096" font-style="italic">20</text>
+  <line x1="760" y1="752" x2="1088" y2="752" stroke="#2d3748" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="770" y="739" width="315" height="16" rx="3" fill="#e9d8fd" opacity="0.8"/>
+  <text x="927" y="750" text-anchor="middle" font-size="9" font-weight="bold" fill="#434190">criarOrdemServicoInput.execute(request.toCommand())</text>
+
+  <!-- ── Activation bar: UseCase ── -->
+  <rect x="1084" y="764" width="12" height="320" rx="2" fill="#667eea" opacity="0.35"/>
+
+  <!-- ── Step 21: UseCase → resolverCliente ── -->
+  <text x="1045" y="782" font-size="9" fill="#718096" font-style="italic">21</text>
+  <line x1="1090" y1="777" x2="1126" y2="777" stroke="#667eea" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <text x="1132" y="781" font-size="8" fill="#434190">resolverCliente(cpfOuCnpj) → CPF.of() / CNPJ.of()</text>
+
+  <!-- ── Step 22: clienteGateway.findByCPF → RDS ── -->
+  <text x="1045" y="800" font-size="9" fill="#718096" font-style="italic">22</text>
+  <line x1="1090" y1="795" x2="758" y2="795" stroke="#d69e2e" stroke-width="1.6" marker-end="url(#arr-yellow)"/>
+  <rect x="870" y="782" width="215" height="16" rx="3" fill="#fefcbf" opacity="0.9"/>
+  <text x="977" y="793" text-anchor="middle" font-size="9" font-weight="bold" fill="#744210">clienteGateway.findByCPF(cpf) → JPA → MySQL</text>
+
+  <!-- ── Step 23: RDS return cliente ── -->
+  <line x1="760" y1="807" x2="1088" y2="807" stroke="#d69e2e" stroke-width="1.4" stroke-dasharray="5,3" marker-end="url(#arr-yellow)"/>
+  <text x="924" y="803" text-anchor="middle" font-size="8" fill="#744210">Cliente { id, nome, cpf, ... }</text>
+
+  <!-- ── Step 24: veiculoGateway.findByPlaca → RDS ── -->
+  <text x="1045" y="826" font-size="9" fill="#718096" font-style="italic">23</text>
+  <line x1="1090" y1="821" x2="758" y2="821" stroke="#d69e2e" stroke-width="1.6" marker-end="url(#arr-yellow)"/>
+  <rect x="875" y="808" width="210" height="16" rx="3" fill="#fefcbf" opacity="0.9"/>
+  <text x="980" y="819" text-anchor="middle" font-size="9" font-weight="bold" fill="#744210">veiculoGateway.findByPlaca(placa) → JPA → MySQL</text>
+
+  <line x1="760" y1="833" x2="1088" y2="833" stroke="#d69e2e" stroke-width="1.4" stroke-dasharray="5,3" marker-end="url(#arr-yellow)"/>
+  <text x="924" y="829" text-anchor="middle" font-size="8" fill="#744210">Veiculo { id, placa, modelo, ... }</text>
+
+  <!-- ── Step 25: OrdemServico.criar ── -->
+  <text x="1045" y="852" font-size="9" fill="#718096" font-style="italic">24</text>
+  <line x1="1090" y1="847" x2="1126" y2="847" stroke="#667eea" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <text x="1132" y="851" font-size="8" fill="#434190">OrdemServico.criar(cliente, veiculo) → status=RECEBIDA</text>
+
+  <!-- ── Step 26: servicoAdapter para cada codigo ── -->
+  <text x="1045" y="870" font-size="9" fill="#718096" font-style="italic">25</text>
+  <line x1="1090" y1="865" x2="758" y2="865" stroke="#d69e2e" stroke-width="1.6" marker-end="url(#arr-yellow)"/>
+  <rect x="855" y="852" width="230" height="16" rx="3" fill="#fefcbf" opacity="0.9"/>
+  <text x="970" y="863" text-anchor="middle" font-size="9" font-weight="bold" fill="#744210">servicoAdapter.buscarPorCodigo(cod) → ServicoJPA</text>
+
+  <line x1="760" y1="877" x2="1088" y2="877" stroke="#d69e2e" stroke-width="1.4" stroke-dasharray="5,3" marker-end="url(#arr-yellow)"/>
+  <text x="924" y="873" text-anchor="middle" font-size="8" fill="#744210">ServicoIntegrationDto { id, nome, preco, ativo }</text>
+
+  <!-- ── Step 27: mroAdapter para cada mro ── -->
+  <text x="1045" y="896" font-size="9" fill="#718096" font-style="italic">26</text>
+  <line x1="1090" y1="891" x2="758" y2="891" stroke="#d69e2e" stroke-width="1.6" marker-end="url(#arr-yellow)"/>
+  <rect x="865" y="878" width="220" height="16" rx="3" fill="#fefcbf" opacity="0.9"/>
+  <text x="975" y="889" text-anchor="middle" font-size="9" font-weight="bold" fill="#744210">mroAdapter.buscarPorCodigo(cod) → MROJpa</text>
+
+  <line x1="760" y1="903" x2="1088" y2="903" stroke="#d69e2e" stroke-width="1.4" stroke-dasharray="5,3" marker-end="url(#arr-yellow)"/>
+  <text x="924" y="899" text-anchor="middle" font-size="8" fill="#744210">MROIntegrationDto { id, nome, precoUnitario, ativo }</text>
+
+  <!-- ── Step 28: primeiroItem.adicionarMRO + ordemServico.adicionarItemServico ── -->
+  <text x="1045" y="922" font-size="9" fill="#718096" font-style="italic">27</text>
+  <line x1="1090" y1="917" x2="1126" y2="917" stroke="#667eea" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <text x="1132" y="921" font-size="8" fill="#434190">ordemServico.adicionarItemServico(itemServico)</text>
+  <line x1="1090" y1="931" x2="1126" y2="931" stroke="#667eea" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <text x="1132" y="935" font-size="8" fill="#434190">primeiroItem.adicionarMRO(..., quantidade)</text>
+
+  <!-- ── Step 29: ordemServicoGateway.save → RDS ── -->
+  <text x="1045" y="953" font-size="9" fill="#718096" font-style="italic">28</text>
+  <line x1="1090" y1="948" x2="758" y2="948" stroke="#d69e2e" stroke-width="1.8" marker-end="url(#arr-yellow)"/>
+  <rect x="840" y="935" width="245" height="16" rx="3" fill="#fef3c7" opacity="0.9"/>
+  <text x="962" y="946" text-anchor="middle" font-size="9" font-weight="bold" fill="#744210">ordemServicoGateway.save(os) → JPA INSERT → MySQL</text>
+
+  <!-- ── RDS returns saved entity ── -->
+  <line x1="760" y1="960" x2="1088" y2="960" stroke="#d69e2e" stroke-width="1.4" stroke-dasharray="5,3" marker-end="url(#arr-yellow)"/>
+  <text x="924" y="956" text-anchor="middle" font-size="8" fill="#744210">OrdemServico { id=UUID, status=RECEBIDA, valorTotal=R$ }</text>
+
+  <!-- ── Step 30: UseCase returns OrdemServicoResponse ── -->
+  <text x="1045" y="979" font-size="9" fill="#718096" font-style="italic">29</text>
+  <line x1="1084" y1="974" x2="772" y2="974" stroke="#2d3748" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="928" y="970" text-anchor="middle" font-size="8" fill="#434190">OrdemServicoResponse.from(savedOS)</text>
+
+  <!-- ── Step 31: presenter.prepararViewModel ── -->
+  <text x="720" y="997" font-size="9" fill="#718096" font-style="italic">30</text>
+  <line x1="760" y1="992" x2="796" y2="992" stroke="#fc8181" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <text x="802" y="996" font-size="8" fill="#c53030">presenter.prepararViewModel(response) → OrdemServicoResponseDto</text>
+
+  <!-- ── Step 32: oficina-api → API GW ── -->
+  <text x="720" y="1018" font-size="9" fill="#718096" font-style="italic">31</text>
+  <line x1="754" y1="1013" x2="252" y2="1013" stroke="#2d3748" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <rect x="380" y="1000" width="370" height="16" rx="3" fill="#fed7d7" opacity="0.8"/>
+  <text x="565" y="1011" text-anchor="middle" font-size="9" fill="#c53030">HTTP 201 Created  |  body: OrdemServicoResponseDto</text>
+
+  <!-- ── Step 33: API GW → Client ── -->
+  <text x="100" y="1037" font-size="9" fill="#718096" font-style="italic">32</text>
+  <line x1="248" y1="1032" x2="82" y2="1032" stroke="#2d3748" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <rect x="84" y="1019" width="162" height="16" rx="3" fill="#bee3f8" opacity="0.8"/>
+  <text x="165" y="1030" text-anchor="middle" font-size="9" font-weight="bold" fill="#2b6cb0">201 Created { id, status:"RECEBIDA", valorTotal }</text>
+
+  <!-- separator -->
+  <line x1="20" y1="1053" x2="1280" y2="1053" stroke="#a0aec0" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 3 — MONITORAMENTO PARALELO                                  -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <rect x="20" y="1060" width="1260" height="22" rx="4" fill="#ed8936" opacity="0.15"/>
+  <text x="30" y="1076" font-size="12" font-weight="bold" fill="#c05621">PARALELO — MONITORAMENTO  (New Relic Java Agent — background)</text>
+
+  <!-- New Relic agent note -->
+  <rect x="680" y="1090" width="570" height="54" rx="6" fill="white" stroke="#ed8936" stroke-width="1.5"/>
+  <text x="965" y="1108" text-anchor="middle" font-size="9" font-weight="bold" fill="#c05621">☸️ oficina-api Pod  →  New Relic Java Agent (javaagent)</text>
+  <text x="965" y="1121" text-anchor="middle" font-size="8" fill="#4a5568">A cada requisição: instrumentação automática de traces, spans e métricas via -javaagent:/opt/newrelic/newrelic.jar</text>
+  <text x="965" y="1134" text-anchor="middle" font-size="8" fill="#4a5568">Dados enviados para New Relic Cloud → Dashboard "oficina-api-prod" + Distributed Tracing ativo</text>
+
+  <!-- NR Synthetic monitor note -->
+  <rect x="90" y="1090" width="580" height="54" rx="6" fill="white" stroke="#ed8936" stroke-width="1.5"/>
+  <text x="380" y="1108" text-anchor="middle" font-size="9" font-weight="bold" fill="#c05621">📡 New Relic Synthetic Monitor (provisioned por k8s-infra Terraform)</text>
+  <text x="380" y="1121" text-anchor="middle" font-size="8" fill="#4a5568">GET /actuator/health/liveness  a cada 2 minutos via API Gateway</text>
+  <text x="380" y="1134" text-anchor="middle" font-size="8" fill="#4a5568">Resposta esperada: 200 OK { status: "UP" }  →  Alerta automático em caso de falha</text>
+
+  <!-- separator -->
+  <line x1="20" y1="1157" x2="1280" y2="1157" stroke="#a0aec0" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- RESPONSE PAYLOAD BOX                                               -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <rect x="20" y="1163" width="1260" height="195" rx="8" fill="white" stroke="#cbd5e0" stroke-width="1.5"/>
+  <text x="40" y="1183" font-size="11" font-weight="bold" fill="#2d3748">Exemplos de Payloads</text>
+
+  <!-- Auth request -->
+  <rect x="35" y="1192" width="290" height="75" rx="5" fill="#faf5ff" stroke="#9f7aea" stroke-width="1"/>
+  <text x="180" y="1207" text-anchor="middle" font-size="9" font-weight="bold" fill="#553c9a">POST /v1/auth/login  (request)</text>
+  <text x="45" y="1222" font-size="8" font-family="Courier New, monospace" fill="#4a5568">{</text>
+  <text x="55" y="1234" font-size="8" font-family="Courier New, monospace" fill="#4a5568">  "username": "admin",</text>
+  <text x="55" y="1246" font-size="8" font-family="Courier New, monospace" fill="#4a5568">  "password": "secret123"</text>
+  <text x="45" y="1258" font-size="8" font-family="Courier New, monospace" fill="#4a5568">}</text>
+
+  <!-- Auth response -->
+  <rect x="340" y="1192" width="310" height="75" rx="5" fill="#faf5ff" stroke="#9f7aea" stroke-width="1"/>
+  <text x="495" y="1207" text-anchor="middle" font-size="9" font-weight="bold" fill="#553c9a">POST /v1/auth/login  (response 200)</text>
+  <text x="350" y="1222" font-size="8" font-family="Courier New, monospace" fill="#4a5568">{</text>
+  <text x="360" y="1234" font-size="8" font-family="Courier New, monospace" fill="#4a5568">  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",</text>
+  <text x="360" y="1246" font-size="8" font-family="Courier New, monospace" fill="#4a5568">  "type": "Bearer",   "username": "admin"</text>
+  <text x="350" y="1258" font-size="8" font-family="Courier New, monospace" fill="#4a5568">}</text>
+
+  <!-- OS request -->
+  <rect x="665" y="1192" width="290" height="107" rx="5" fill="#fff5f5" stroke="#fc8181" stroke-width="1"/>
+  <text x="810" y="1207" text-anchor="middle" font-size="9" font-weight="bold" fill="#c53030">POST /v1/os  (request)</text>
+  <text x="675" y="1222" font-size="8" font-family="Courier New, monospace" fill="#4a5568">{</text>
+  <text x="685" y="1234" font-size="8" font-family="Courier New, monospace" fill="#4a5568">  "cpfOuCnpj": "12345678901",</text>
+  <text x="685" y="1246" font-size="8" font-family="Courier New, monospace" fill="#4a5568">  "placa": "ABC1234",</text>
+  <text x="685" y="1258" font-size="8" font-family="Courier New, monospace" fill="#4a5568">  "codigosServico": ["SRV-001"],</text>
+  <text x="685" y="1270" font-size="8" font-family="Courier New, monospace" fill="#4a5568">  "itensMRO": [{cod:"P-10",qty:2}]</text>
+  <text x="675" y="1282" font-size="8" font-family="Courier New, monospace" fill="#4a5568">}</text>
+
+  <!-- OS response -->
+  <rect x="970" y="1192" width="290" height="150" rx="5" fill="#fff5f5" stroke="#fc8181" stroke-width="1"/>
+  <text x="1115" y="1207" text-anchor="middle" font-size="9" font-weight="bold" fill="#c53030">POST /v1/os  (response 201 Created)</text>
+  <text x="980" y="1222" font-size="8" font-family="Courier New, monospace" fill="#4a5568">{</text>
+  <text x="990" y="1234" font-size="8" font-family="Courier New, monospace" fill="#4a5568">  "id": "550e8400-e29b-41d4...",</text>
+  <text x="990" y="1246" font-size="8" font-family="Courier New, monospace" fill="#4a5568">  "status": "RECEBIDA",</text>
+  <text x="990" y="1258" font-size="8" font-family="Courier New, monospace" fill="#4a5568">  "valorTotal": 350.00,</text>
+  <text x="990" y="1270" font-size="8" font-family="Courier New, monospace" fill="#4a5568">  "cliente": { ... },</text>
+  <text x="990" y="1282" font-size="8" font-family="Courier New, monospace" fill="#4a5568">  "veiculo": { ... },</text>
+  <text x="990" y="1294" font-size="8" font-family="Courier New, monospace" fill="#4a5568">  "itensServico": [ ... ],</text>
+  <text x="990" y="1306" font-size="8" font-family="Courier New, monospace" fill="#4a5568">  "dataCriacao": "2026-09-05T..."</text>
+  <text x="980" y="1318" font-size="8" font-family="Courier New, monospace" fill="#4a5568">}</text>
+
+  <!-- Auth header note -->
+  <rect x="35" y="1274" width="620" height="22" rx="4" fill="#fffaf0" stroke="#ed8936" stroke-width="1"/>
+  <text x="345" y="1289" text-anchor="middle" font-size="8" fill="#c05621">⚠️  POST /v1/os requer cabeçalho:  Authorization: Bearer &lt;token obtido no passo 9&gt;  — sem ele → 401 Unauthorized</text>
+
+  <!-- ═══════════════════════════════ ARROW DEFS ════════════════════════ -->
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#2d3748"/>
+    </marker>
+    <marker id="arr-yellow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#d69e2e"/>
+    </marker>
+    <marker id="arr-purple" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#805ad5"/>
+    </marker>
+  </defs>
+
+</svg>

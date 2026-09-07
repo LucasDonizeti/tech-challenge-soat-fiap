@@ -1,238 +1,176 @@
-# Fluxo de CI/CD (Integração e Entrega Contínuas)
+# Pipeline CI/CD — GitHub Actions
 
-Esta documentação descreve o funcionamento e a arquitetura da pipeline de CI/CD configurada para o projeto **Sistema de Gestão de Oficina**, utilizando GitHub Actions, Terraform e Helm para provisionar e implantar a aplicação na AWS.
+Este documento descreve a pipeline de CI/CD do **repositório principal** (`tech-challenge-soat-fiap`), que cuida exclusivamente do build, publicação da imagem Docker e deploy da aplicação `oficina-api` no EKS.
+
+> **Nota:** O provisionamento de infraestrutura (VPC, EKS, RDS, Lambda) é feito por pipelines separadas nos repositórios `k8s-infra`, `db-infra` e `auth-lambda`. Este repo assume que toda a infraestrutura já está provisionada.
 
 ---
 
-## 🏗️ Arquitetura do Deployment
+## Fluxo da pipeline
 
-O deploy da aplicação é realizado em um cluster **AWS EKS (Elastic Kubernetes Service)** provisionado via **Terraform**, com o empacotamento e a implantação gerenciados pelo **Helm**. A imagem Docker é gerada e armazenada no **Amazon ECR (Elastic Container Registry)**. O state file do Terraform é armazenado no **Amazon S3** com controle de concorrência feito via **DynamoDB**.
-
-Abaixo está a representação visual do relacionamento entre a pipeline e os recursos na AWS:
-
-```mermaid
-graph TD
-    subgraph GitHub_Actions [GitHub Actions Pipeline]
-        build_job[Build & Test]
-        boot_job[Terraform Bootstrap]
-        docker_job[Docker Build & Push]
-        tf_job[Terraform Apply]
-        helm_job[Helm Deploy]
-    end
-
-    subgraph AWS [AWS Cloud]
-        subgraph Base [Infraestrutura Backend State & Registry]
-            s3[(S3 Bucket & DynamoDB State Lock)]
-            ecr[Amazon ECR Repository]
-        end
-        
-        subgraph VPC [AWS VPC]
-            eks[AWS EKS Cluster]
-            rds[(Amazon RDS Database)]
-        end
-    end
-
-    build_job --> boot_job
-    boot_job -->|Provisiona State Lock| s3
-    boot_job -->|Provisiona Repositório| ecr
-    
-    boot_job --> docker_job
-    docker_job -->|Envia Imagem Docker| ecr
-    
-    docker_job --> tf_job
-    tf_job -->|Consome State Remoto| s3
-    tf_job -->|Provisiona VPC, EKS & RDS| eks
-    tf_job -->|Provisiona VPC, EKS & RDS| rds
-    
-    tf_job --> helm_job
-    helm_job -->|Aplica Manifestos/Upgrade| eks
-    eks -->|Puxa Imagem Privada| ecr
-    eks -->|Conecta no Banco| rds
-
+```
+Push → develop
+         │
+         ▼
+┌─────────────────────────┐
+│  Job 1: build           │  mvn -B verify (compilação + testes + JaCoCo)
+│  Build & Test           │  Sobe o JAR como artefato GitHub
+└────────────┬────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Job 2: push-image-ecr  │  Docker build + push para ECR oficina-api
+│  Build & Push           │  Tags: SHORT_SHA + latest
+└────────────┬────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────────────────┐
+│  Job 3: deploy                                          │
+│  Deploy Helm → EKS                                      │
+│  ├── aws eks update-kubeconfig                          │
+│  ├── Busca endpoint do RDS (aws rds describe-db-instances)│
+│  ├── Recupera senha do RDS no Secrets Manager           │
+│  ├── Cria/atualiza imagePullSecret (aws-ecr-secret)     │
+│  ├── helm upgrade --install (com --rollback-on-failure) │
+│  └── kubectl rollout status deployment/oficina-api      │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Pipeline de CI/CD (GitHub Actions)
+## GitHub Secrets obrigatórios
 
-A pipeline está declarada em [../.github/workflows/pipeline.yml](https://www.google.com/search?q=../.github/workflows/pipeline.yml) e é disparada nas seguintes condições:
+Acesse: **Repositório → Settings → Secrets and variables → Actions → New repository secret**
 
-* **Push** na branch `main`.
-* **Pull Request** direcionado às branches `main` ou `develop`.
+| Secret | Descrição | Como obter |
+|--------|-----------|-----------|
+| `AWS_ACCESS_KEY_ID` | ID da chave de acesso AWS | AWS Academy → **AWS Details** |
+| `AWS_SECRET_ACCESS_KEY` | Chave secreta de acesso AWS | AWS Academy → **AWS Details** |
+| `AWS_SESSION_TOKEN` | Token de sessão temporário | AWS Academy → **AWS Details** |
+| `DB_USERNAME` | Usuário master do RDS | O mesmo configurado no db-infra (padrão: `admindb`) |
+| `JWT_SECRET` | Chave de assinatura JWT | Deve ser **idêntico** ao `jwt_secret` do auth-lambda |
+| `SECURITY_USER_NAME` | Usuário admin padrão da aplicação | Ex: `admin` |
+| `SECURITY_USER_PASSWORD` | Senha do admin padrão | Valor livre — use no login local |
+| `NEW_RELIC_LICENSE_KEY` | Ingest License Key do New Relic | New Relic → API Keys → tipo **Ingest - License** |
 
-> [!NOTE]
-> Para Pull Requests, apenas o primeiro Job (`Build & Test`) é executado. O provisionamento de infraestrutura e o deploy em produção são limitados a merges ocorridos na branch `main`.
-
-### 📋 Detalhamento dos Jobs
-
-
-#### 1. Build & Test
-
-* **Descrição:** Compila o código fonte em Java 21 e roda toda a suíte de testes.
-* **Passos:**
-* Configuração do JDK 21 (Corretto).
-* Execução do Maven: `mvn clean verify` no diretório `/oficina`.
-* Salvamento do arquivo `.jar` gerado como um artefato temporário do GitHub Actions (`application-jar`) para ser reutilizado nos passos seguintes.
-
-
-
-#### 2. Bootstrap Terraform Backend
-
-* **Descrição:** Garante a existência do bucket S3 e da tabela DynamoDB necessários para persistir e travar o state remoto do Terraform, além do repositório no Amazon ECR.
-* **Passos:**
-* Configuração das credenciais da AWS.
-* Verifica a existência do bucket `bucket-tfstate-1029`.
-* Caso não exista, executa o `terraform init` e `terraform apply` na pasta `terraform/bootstrap` para provisionar o bucket S3, a tabela de controle de lock no DynamoDB (`meu-terraform-state-lock`) e o repositório ECR (`oficina-api`).
-
-
-
-#### 3. Build & Push Docker Image
-
-* **Descrição:** Cria a imagem Docker da aplicação empacotando o `.jar` construído anteriormente.
-* **Passos:**
-* Login no Amazon ECR.
-* Download do artefato do JAR gerado no primeiro Job.
-* Build da imagem Docker usando o [../oficina/Dockerfile](https://www.google.com/search?q=../oficina/Dockerfile).
-* Envio da imagem para o repositório ECR (`oficina-api`) tagueada com o SHA curto do commit (`SHORT_SHA`) e a tag `latest`.
-
-
-
-#### 4. Terraform Plan
-
-* **Descrição:** Planeja as alterações de infraestrutura na AWS (VPC, RDS, EKS).
-* **Passos:**
-* Inicialização do Terraform apontando para o backend remoto configurado no S3.
-* Geração do plano de execução do Terraform (`terraform plan`) injetando variáveis de ambiente confidenciais (ex: `db_username`).
-* Salvamento do plano gerado como artefato (`tfplan`).
-
-
-
-#### 5. Terraform Apply
-
-* **Descrição:** Aplica as mudanças planejadas no Terraform para criar/atualizar a infraestrutura da AWS.
-* **Passos:**
-* Aplicação do plano de infraestrutura (`terraform apply tfplan`) para provisionamento da VPC, banco de dados RDS (MySQL/PostgreSQL) e cluster AWS EKS (`oficina-cluster`).
-* Exportação do endpoint do RDS para ser consumido nas variáveis do Helm.
-
-
-
-#### 6. Deploy Helm -> EKS
-
-* **Descrição:** Atualiza a aplicação e suas configurações no cluster Kubernetes.
-* **Passos:**
-* Configuração do contexto local do Kubernetes (`kubectl`) apontando para o EKS Cluster.
-* Recuperação da senha mestre do RDS criada no AWS Secrets Manager.
-* Criação ou atualização do segredo do tipo `docker-registry` (`aws-ecr-secret`) no Kubernetes para permitir que o cluster baixe a imagem privada do ECR.
-* Execução de `helm upgrade --install` utilizando o chart contido em [../k8s/oficina](https://www.google.com/search?q=../k8s/oficina).
-* Validação do rollout do deployment da API (`oficina-api`) garantindo que a nova versão está saudável e em execução.
-
-
+> ⚠️ **AWS Academy:** Os três secrets AWS expiram a cada ~4h. Atualize-os antes de cada execução.
+>
+> ⚠️ **JWT_SECRET crítico:** Se este valor for diferente do configurado no `auth-lambda`, todos os tokens gerados pela Lambda serão rejeitados pelo Spring Security.
 
 ---
 
-## 🔍 Como Localizar e Acessar a Aplicação pós-Deploy
+## Detalhes de cada job
 
-Uma vez que a pipeline conclua o Job de Deploy com sucesso, a aplicação estará publicada. Como a infraestrutura de produção desabilita o Ingress e utiliza a exposição via **LoadBalancer** diretamente no Service (`type: LoadBalancer`), um balanceador de carga físico (CLB ou NLB) é criado na AWS.
+### Job 1 — Build & Test
 
-Siga os passos abaixo na sua máquina local para encontrar a URL de acesso externa.
+- Runner: `ubuntu-latest`
+- JDK: Amazon Corretto 21 com cache Maven
+- Comando: `mvn -B verify --file pom.xml` na pasta `./oficina`
+  - Compila o código
+  - Executa todos os testes (JUnit 5 + Mockito + H2)
+  - Verifica cobertura JaCoCo (build falha se < 80%)
+- Sobe o JAR como artefato `application-jar` (retenção: 1 dia)
 
-### 📋 Requisitos Mínimos Locais
+### Job 2 — Build & Push Docker Image
 
-Para interagir com o cluster e validar as URLs, você precisa ter instalado:
+- Autentica na AWS via `aws-actions/configure-aws-credentials@v4`
+- Login no ECR: `aws-actions/amazon-ecr-login@v2`
+- Tag: `SHORT_SHA` (7 chars do commit) + `latest`
+- Build da imagem a partir de `./oficina/Dockerfile`
+- Push das duas tags para `<account>.dkr.ecr.us-east-1.amazonaws.com/oficina-api`
+- Exporta `image_tag` e `ecr_registry` para o Job 3
 
-1. **AWS CLI (v2)**.
-2. **kubectl** (Componente de linha de comando do Kubernetes).
-3. **Um cliente HTTP/Navegador** (Chrome, Postman, cURL, etc.).
+### Job 3 — Deploy Helm → EKS
 
-### 🛠️ Passo a Passo para Descoberta da URL
+1. Configura `kubectl` via `aws eks update-kubeconfig --name oficina-cluster`
+2. Busca o endpoint do RDS:
+   ```bash
+   aws rds describe-db-instances --db-instance-identifier oficina-rds \
+     --query 'DBInstances[0].Endpoint.Address' --output text
+   ```
+3. Recupera a senha do RDS do Secrets Manager (mascarada com `::add-mask::`)
+4. Cria/atualiza o `imagePullSecret` `aws-ecr-secret` via `kubectl create secret docker-registry --dry-run | kubectl apply`
+5. Executa `helm upgrade --install oficina ./k8s/oficina` com:
+   - `-f k8s/oficina/values-prod.yaml`
+   - `--set image.repository=...` e `--set image.tag=$IMAGE_TAG`
+   - `--set secret.*` para todas as variáveis sensíveis
+   - `--rollback-on-failure` — reverte automaticamente em falha
+   - `--timeout 10m --wait`
+6. Valida o rollout: `kubectl rollout status deployment/oficina-api --timeout=5m`
 
-#### 1. Configurar Credenciais Locais da AWS
+---
 
-Caso ainda não tenha feito, configure a CLI da AWS com as credenciais que possuem acesso ao cluster:
+## Variáveis de ambiente injetadas no pod (via Helm)
+
+| Variável | Origem | Descrição |
+|----------|--------|-----------|
+| `SPRING_DATASOURCE_URL` | Gerada dinamicamente | `jdbc:mysql://<rds-endpoint>:3306/oficina` |
+| `SPRING_DATASOURCE_USERNAME` | Secret `DB_USERNAME` | Usuário do banco |
+| `SPRING_DATASOURCE_PASSWORD` | AWS Secrets Manager (dinâmico) | Senha do banco |
+| `JWT_SECRET` | Secret `JWT_SECRET` | Chave de validação JWT |
+| `SECURITY_USER_NAME` | Secret `SECURITY_USER_NAME` | Usuário admin da aplicação |
+| `SECURITY_USER_PASSWORD` | Secret `SECURITY_USER_PASSWORD` | Senha admin da aplicação |
+| `NEW_RELIC_LICENSE_KEY` | Secret `NEW_RELIC_LICENSE_KEY` | License key do New Relic |
+| `SPRING_APPLICATION_NAME` | ConfigMap | `oficina-api-prod` |
+| `LOG_LEVEL` | ConfigMap | `INFO` em produção |
+
+---
+
+## Como acessar a aplicação após o deploy
+
+### 1. Obter o URL do API Gateway
 
 ```bash
-aws configure
-
+aws apigatewayv2 get-apis \
+  --region us-east-1 \
+  --query 'Items[?Name==`oficina-api-gateway`].ApiEndpoint' \
+  --output text
 ```
 
-*Se estiver em ambientes como o AWS Academy, lembre-se de exportar o seu `AWS_SESSION_TOKEN` no terminal antes de prosseguir.*
-
-#### 2. Conectar e Atualizar o Contexto do Cluster EKS
-
-Execute o comando abaixo para configurar o seu `kubectl` local para apontar e ditar comandos ao cluster do projeto:
+### 2. URLs disponíveis
 
 ```bash
-aws eks update-kubeconfig --name oficina-cluster --region us-east-1
+API_URL="https://<api-id>.execute-api.us-east-1.amazonaws.com"
 
+# Swagger UI
+echo "$API_URL/swagger-ui/index.html"
+
+# Health check
+curl "$API_URL/actuator/health"
+
+# Login
+curl -s -X POST "$API_URL/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"secret123"}'
 ```
 
-#### 3. Buscar o Endereço Externo (External IP) do Service
+> **Em produção:** o `POST /v1/auth/login` é interceptado pela **Lambda Authorizer** antes de chegar ao pod Spring Boot. Todas as outras rotas passam pelo NLB → NodePort 30080 → pod.
 
-Rode o comando abaixo para listar os serviços ativos mapeados no namespace do deploy:
+### 3. Verificar pods e HPA
 
 ```bash
-kubectl get service -n default
+# Conectar ao cluster
+aws eks update-kubeconfig --region us-east-1 --name oficina-cluster
 
+# Status dos pods
+kubectl get pods
+
+# Status do HPA (escala de 1 a 4 réplicas)
+kubectl get hpa
+
+# Logs do pod
+kubectl logs -l app.kubernetes.io/name=oficina -f
 ```
-
-*Procure pelo serviço chamado `oficina-api`. Na coluna **`EXTERNAL-IP`**, você verá uma URL pública longa gerada pela AWS, similar a:*
-
-`a1234567890abcdef1234567890abcdef-123456789.us-east-1.elb.amazonaws.com`
-
-#### 4. Montar as URLs do Actuator e Swagger
-
-O Service mapeia a porta **80** externa para a **8080** interna da aplicação. Como a porta 80 é o padrão HTTP, não é necessário digitar portas na URL. Copie o endereço obtido no passo anterior (`EXTERNAL-IP`) e monte suas requisições:
-
-* **Swagger UI (Documentação da API):**
-```text
-http://<URL_DO_EXTERNAL_IP>/swagger-ui/index.html
-
-```
-
-
-* **Actuator Health (Status geral da API):**
-```text
-http://<URL_DO_EXTERNAL_IP>/actuator/health
-
-```
-
-
-* **Probes de Ciclo de Vida do Kubernetes:**
-```text
-http://<URL_DO_EXTERNAL_IP>/actuator/health/liveness
-http://<URL_DO_EXTERNAL_IP>/actuator/health/readiness
-
-```
-
-
-
-> [!TIP]
-> **Tempo de Espera:** A AWS leva de 2 a 3 minutos para provisionar e ativar o LoadBalancer físico após o comando do Kubernetes. Se receber um erro de "Conexão Recusada" de imediato, aguarde um momento e tente novamente.
 
 ---
 
-## 🔐 Configuração de Secrets no GitHub
+## Re-executar ou depurar a pipeline
 
-Para que a pipeline execute com sucesso na sua conta AWS, você deve cadastrar as seguintes variáveis sensíveis em **Settings -> Secrets and variables -> Actions** no repositório do GitHub:
+```bash
+# Re-run via GitHub CLI
+gh run list --workflow=pipeline.yml
+gh run rerun <run-id>
 
-| Secret | Descrição |
-| --- | --- |
-| `AWS_ACCESS_KEY_ID` | ID da chave de acesso da AWS. |
-| `AWS_SECRET_ACCESS_KEY` | Chave de acesso secreta da AWS. |
-| `AWS_SESSION_TOKEN` | Token de sessão temporária da AWS  |
-| `DB_USERNAME` | Nome do usuário root para o banco de dados RDS. |
-| `JWT_SECRET` | Chave secreta de criptografia para os tokens JWT do Spring Security. |
-| `SECURITY_USER_NAME` | Nome de usuário administrativo padrão da API. |
-| `SECURITY_USER_PASSWORD` | Senha do usuário administrativo padrão da API. |
-
----
-
-## ⚙️ Variáveis de Ambiente da Aplicação no EKS
-
-Durante o deployment via Helm, as seguintes variáveis de ambiente são passadas para o container da aplicação e mapeadas nas configurações do Spring Boot:
-
-* `SPRING_DATASOURCE_URL`: String de conexão JDBC gerada dinamicamente apontando para o endpoint do RDS MySQL criado pelo Terraform (`jdbc:mysql://[RDS_ENDPOINT]:3306/oficina`).
-* `SPRING_DATASOURCE_USERNAME`: Nome do usuário administrador extraído do secret `DB_USERNAME`.
-* `SPRING_DATASOURCE_PASSWORD`: Senha do RDS recuperada de forma segura do AWS Secrets Manager.
-* `JWT_SECRET`: Chave secreta de autenticação extraída dos secrets do GitHub.
-* `SECURITY_USER_NAME` e `SECURITY_USER_PASSWORD`: Credenciais para autenticação administrativa padrão da API.
+# Acompanhar em tempo real
+gh run watch <run-id>
+```
