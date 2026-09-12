@@ -34,6 +34,7 @@ public class OrdemServicoJpaMapper {
                 .dataCriacao(ordemServico.getDataCriacao())
                 .dataInicioExecucao(ordemServico.getDataInicioExecucao())
                 .dataFinalizacao(ordemServico.getDataFinalizacao())
+                .dataUltimaMudancaStatus(ordemServico.getDataUltimaMudancaStatus())
                 .build();
         
         if (ordemServico.getItensServico() != null && !ordemServico.getItensServico().isEmpty()) {
@@ -60,7 +61,8 @@ public class OrdemServicoJpaMapper {
                 statusOS,
                 entity.getDataCriacao(),
                 entity.getDataInicioExecucao(),
-                entity.getDataFinalizacao()
+                entity.getDataFinalizacao(),
+                entity.getDataUltimaMudancaStatus()
         );
         
         if (entity.getItensServico() != null && !entity.getItensServico().isEmpty()) {

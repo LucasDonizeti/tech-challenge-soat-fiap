@@ -4,6 +4,7 @@ import com.techchallenge.oficina.os.domain.exceptions.ValidacaoOrdemServicoExcep
 import com.techchallenge.oficina.os.domain.model.aggregates.OrdemServico;
 import com.techchallenge.oficina.os.domain.model.valueobjects.StatusItemServico;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Getter
+@Slf4j
 public class ItemServico {
     
     private UUID id;
@@ -25,6 +27,7 @@ public class ItemServico {
     private BigDecimal valorMro;
     private LocalDateTime dataInicioExecucao;
     private LocalDateTime dataFinalizacao;
+    private LocalDateTime dataUltimaMudancaStatus;
     private OrdemServico ordemServico;
     private List<ItemMRO> mrosServicos = new ArrayList<>();
     
@@ -36,7 +39,7 @@ public class ItemServico {
         if (servicoId == null) {
             throw new ValidacaoOrdemServicoException("ID do serviço não pode ser nulo");
         }
-        
+
         ItemServico itemServico = new ItemServico();
         itemServico.id = UUID.randomUUID();
         itemServico.servicoId = servicoId;
@@ -46,15 +49,21 @@ public class ItemServico {
         itemServico.observacoes = null;
         itemServico.valorServico = preco;
         itemServico.valorMro = BigDecimal.ZERO;
-        
+        LocalDateTime timestamp = LocalDateTime.now();
+
+        itemServico.logMudancaStatus(null, itemServico.status, timestamp);
+
+        itemServico.dataUltimaMudancaStatus = timestamp;
+
         return itemServico;
     }
     
     // Factory method para reconstrução a partir de dados persistidos
-    public static ItemServico reconstruir(UUID id, UUID servicoId, String servicoNome, String servicoDescricao, 
-                                          StatusItemServico status, String observacoes, 
+    public static ItemServico reconstruir(UUID id, UUID servicoId, String servicoNome, String servicoDescricao,
+                                          StatusItemServico status, String observacoes,
                                           BigDecimal valorServico, BigDecimal valorMro,
-                                          LocalDateTime dataInicioExecucao, LocalDateTime dataFinalizacao) {
+                                          LocalDateTime dataInicioExecucao, LocalDateTime dataFinalizacao,
+                                          LocalDateTime dataUltimaMudancaStatus) {
         ItemServico itemServico = new ItemServico();
         itemServico.id = id;
         itemServico.servicoId = servicoId;
@@ -66,7 +75,8 @@ public class ItemServico {
         itemServico.valorMro = valorMro;
         itemServico.dataInicioExecucao = dataInicioExecucao;
         itemServico.dataFinalizacao = dataFinalizacao;
-        
+        itemServico.dataUltimaMudancaStatus = dataUltimaMudancaStatus;
+
         return itemServico;
     }
     
@@ -102,19 +112,26 @@ public class ItemServico {
         if (novoStatus == null) {
             throw new ValidacaoOrdemServicoException("Status não pode ser nulo");
         }
-        
+
+        StatusItemServico statusAnterior = this.status;
+
         // Registrar data de início quando status muda para EM_ANDAMENTO
         if (novoStatus == StatusItemServico.EM_ANDAMENTO && this.status != StatusItemServico.EM_ANDAMENTO) {
             this.dataInicioExecucao = LocalDateTime.now();
         }
-        
+
         // Registrar data de finalização quando status muda para CONCLUIDO
         if (novoStatus == StatusItemServico.CONCLUIDO && this.status != StatusItemServico.CONCLUIDO) {
             this.dataFinalizacao = LocalDateTime.now();
         }
-        
+
         this.status = novoStatus;
-        
+        LocalDateTime timestamp = LocalDateTime.now();
+
+        logMudancaStatus(statusAnterior, this.status, timestamp);
+
+        this.dataUltimaMudancaStatus = timestamp;
+
         // Verificar se todos os serviços estão concluídos para finalizar automaticamente
         if (novoStatus == StatusItemServico.CONCLUIDO && ordemServico != null) {
             ordemServico.verificarEFinalizarAutomaticamente();
@@ -136,6 +153,17 @@ public class ItemServico {
         if (novoPreco != null) {
             this.valorServico = novoPreco;
         }
+    }
+
+    private void logMudancaStatus(StatusItemServico statusAnterior, StatusItemServico statusAtual, LocalDateTime timestamp) {
+        String tempoEntreMudancas = "N/A";
+        if (dataUltimaMudancaStatus != null && statusAnterior != null) {
+            long segundos = java.time.Duration.between(dataUltimaMudancaStatus, timestamp).getSeconds();
+            tempoEntreMudancas = segundos + "s";
+        }
+
+        log.info("Status do ItemServico alterado - ItemServico ID: {}, OS ID: {}, Status Anterior: {}, Status Atual: {}, Tempo entre mudanças: {}",
+                this.id, ordemServico != null ? ordemServico.getId() : "N/A", statusAnterior != null ? statusAnterior : "N/A", statusAtual, tempoEntreMudancas);
     }
     
     public BigDecimal calcularValorTotal() {

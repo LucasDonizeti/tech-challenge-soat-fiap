@@ -7,9 +7,12 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
+    - port: {{ (index .Values.service.ports 0).port }}
+      targetPort: {{ (index .Values.service.ports 0).targetPort }}
       protocol: TCP
       name: http
+      {{- if and (eq .Values.service.type "NodePort") (index .Values.service.ports 0).nodePort }}
+      nodePort: {{ (index .Values.service.ports 0).nodePort }}
+      {{- end }}
   selector:
     {{- include "oficina.selectorLabels" . | nindent 4 }}

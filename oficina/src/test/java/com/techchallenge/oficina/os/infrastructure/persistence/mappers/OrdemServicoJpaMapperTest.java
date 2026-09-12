@@ -97,7 +97,8 @@ class OrdemServicoJpaMapperTest {
                 statusOS,
                 dataCriacao,
                 dataInicioExecucao,
-                dataFinalizacao
+                dataFinalizacao,
+                null
         );
 
         // Act
@@ -134,7 +135,8 @@ class OrdemServicoJpaMapperTest {
                 StatusOS.RECEBIDA,
                 dataCriacao,
                 dataInicioExecucao,
-                dataFinalizacao
+                dataFinalizacao,
+                null
         );
         ordemServico.adicionarItemServico(itemServico);
 
@@ -243,6 +245,7 @@ class OrdemServicoJpaMapperTest {
                 itemEntity.getValorServico(),
                 itemEntity.getValorMro(),
                 null,
+                null,
                 null
         );
 
@@ -344,7 +347,8 @@ class OrdemServicoJpaMapperTest {
                 statusOS,
                 dataCriacao,
                 dataInicioExecucao,
-                dataFinalizacao
+                dataFinalizacao,
+                null
         );
 
         // Act
@@ -369,7 +373,8 @@ class OrdemServicoJpaMapperTest {
                 null,
                 dataCriacao,
                 dataInicioExecucao,
-                dataFinalizacao
+                dataFinalizacao,
+                null
         );
 
         // Act
@@ -456,7 +461,8 @@ class OrdemServicoJpaMapperTest {
                 domainStatus,
                 dataCriacao,
                 dataInicioExecucao,
-                dataFinalizacao
+                dataFinalizacao,
+                null
         );
 
         // Act
@@ -509,7 +515,8 @@ class OrdemServicoJpaMapperTest {
                 statusOS,
                 dataCriacao,
                 dataInicioExecucao,
-                dataFinalizacao
+                dataFinalizacao,
+                null
         );
 
         // Act
