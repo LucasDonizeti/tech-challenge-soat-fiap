@@ -1,139 +1,214 @@
 # Provisionamento de Infraestrutura com Terraform
 
-Esta documentação descreve como provisionar a infraestrutura da AWS necessária para executar o Sistema de Gestão de Oficina utilizando Terraform.
+A infraestrutura do **Sistema de Gestão de Oficina** é provisionada via Terraform em **três repositórios separados**, com estado remoto em S3 e dependências encadeadas.
+
+> **Este repositório não contém Terraform.** O provisionamento de infraestrutura é feito nos repositórios dedicados listados abaixo.
 
 ---
 
-## 🏗️ Arquitetura da Infraestrutura
+## Visão geral dos repositórios de infraestrutura
 
-O Terraform provisiona os seguintes recursos na AWS:
+```
+[1] tech-challenge-soat-fiap-k8s-infra
+    └── VPC · EKS · ECR (oficina-api + auth-lambda) · API Gateway · New Relic
+    └── State: s3://bucket-tfstate-1029/k8s/terraform.tfstate
 
-- **S3 Bucket**: Armazenamento do state file do Terraform com controle de versão.
-- **DynamoDB Table**: Controle de concorrência (lock) para evitar conflitos no state file.
-- **ECR Repository**: Repositório privado para armazenar imagens Docker da aplicação.
-- **VPC**: Rede virtual isolada com subnets públicas e privadas.
-- **EKS Cluster**: Cluster Kubernetes gerenciado para execução dos containers.
-- **RDS Database**: Banco de dados MySQL gerenciado com integração nativa ao AWS Secrets Manager para senhas.
+[2] tech-challenge-soat-fiap-db-infra
+    └── RDS MySQL 8.0 · Security Group · Secrets Manager (senha)
+    └── State: s3://bucket-tfstate-1029/db/terraform.tfstate
+    └── Depende de: k8s-infra (lê vpc_id, database_subnets, eks_node_sg_id)
+
+[3] tech-challenge-soat-fiap-auth-lambda
+    └── Lambda Authorizer · API Gateway route (POST /v1/auth/login)
+    └── State: s3://bucket-tfstate-1029/auth-lambda/terraform.tfstate
+    └── Depende de: k8s-infra (lê api_gateway_id, ecr_auth_lambda_url, private_subnets)
+```
 
 ---
 
-## 📋 Pré-requisitos e Configuração Local
+## Ordem obrigatória de provisionamento
 
-Antes de começar, certifique-se de ter as ferramentas instaladas e configuradas em sua máquina local:
+```
+Bootstrap (S3 + DynamoDB)          → executar UMA VEZ no k8s-infra/terraform/bootstrap
+         │
+         ▼
+[1] k8s-infra apply                → ~12-18 min
+         │
+         ├──────────────┐
+         ▼              ▼
+[2] db-infra apply    [3] Pode esperar
+    ~8-12 min
+         │
+         ▼
+[4] Deploy da aplicação via pipeline Helm (este repo)
+         │
+         ▼
+[5] auth-lambda apply              → ~1-3 min (precisa da imagem no ECR auth-lambda)
+```
 
-### 1. Ferramentas Necessárias
-* **AWS CLI** instalado (v2 preferencialmente).
-* **Terraform** instalado (versão `1.15.7` ou superior).
+---
 
-### 2. Configurando a CLI da AWS Localmente
-Você precisa configurar suas credenciais para que o Terraform consiga autenticar na sua conta AWS. Execute:
+## Recursos criados por repositório
+
+### k8s-infra
+
+| Recurso | Configuração |
+|---------|-------------|
+| VPC | `10.0.0.0/16`, 2 AZs, 3 tiers de subnets (public/private/database) |
+| NAT Gateway | Single (economia de custo) |
+| EKS Cluster | v1.36, managed node group `t3.medium` (1–2 nós) |
+| Add-ons EKS | `vpc-cni`, `kube-proxy`, `coredns` |
+| ECR `oficina-api` | Privado, scan-on-push, lifecycle: 5 imagens |
+| ECR `auth-lambda` | Privado, scan-on-push, lifecycle: 5 imagens |
+| API Gateway HTTP v2 | Stage `$default`, rota `ANY /{proxy+}` → EKS via NLB |
+| NLB Interno | Port 80 → Target Group NodePort 30080 |
+| VPC Link | API GW → NLB em private subnets |
+| S3 + DynamoDB | Backend de state Terraform |
+| New Relic Monitor | Ping `/actuator/health/liveness` a cada 2 min |
+| New Relic Dashboard | 4 páginas: Cluster, Logs, OS, Healthcheck |
+
+### db-infra
+
+| Recurso | Configuração |
+|---------|-------------|
+| RDS MySQL 8.0 | `db.t3.micro`, 20 GB, single-AZ, `utf8mb4` |
+| Security Group | Ingress 3306/TCP somente do CIDR da VPC |
+| Secrets Manager | Senha gerada e rotacionada automaticamente |
+
+### auth-lambda
+
+| Recurso | Configuração |
+|---------|-------------|
+| Lambda Function | Java 21, container image, 512 MB, 15s timeout |
+| Lambda Permission | API GW pode invocar a Lambda |
+| API GW Integration | `AWS_PROXY`, `POST /v1/auth/login` |
+| API GW Route | `POST /v1/auth/login` → Lambda |
+
+---
+
+## Pré-requisitos locais
+
+| Ferramenta | Versão |
+|-----------|--------|
+| Terraform | >= 1.6.0 |
+| AWS CLI | v2 |
+| kubectl | >= 1.28 |
+| Helm | >= 3.14 |
+
+---
+
+## Configuração AWS CLI
 
 ```bash
+# Credenciais permanentes
 aws configure
-```
 
-Insira seu `AWS Access Key ID`, `AWS Secret Access Key`, `Default region name` (use `us-east-1` para manter o padrão do projeto) e o formato de saída (`json`).
+# AWS Academy (sessão temporária — atualizar a cada ~4h)
+aws configure set aws_access_key_id     "ASIA..."
+aws configure set aws_secret_access_key "..."
+aws configure set aws_session_token     "..."
+aws configure set region                "us-east-1"
 
-Se você estiver utilizando um ambiente temporário (como **AWS Academy**), exporte o token de sessão no seu terminal antes de rodar o Terraform:
-
-```bash
-export AWS_ACCESS_KEY_ID="sua-access-key"
-export AWS_SECRET_ACCESS_KEY="sua-secret-key"
-export AWS_SESSION_TOKEN="seu-session-token"
-export AWS_DEFAULT_REGION="us-east-1"
-```
-
-### 3. Validando o Acesso Local
-
-Antes de iniciar o Terraform, valide se sua CLI está respondendo e apontando para a conta correta:
-
-```bash
+# Verificar
 aws sts get-caller-identity
 ```
 
 ---
 
-## 🔧 Configuração Inicial (Bootstrap)
+## Comandos resumidos por repositório
 
-O primeiro passo é provisionar a infraestrutura base necessária para o funcionamento do backend remoto do Terraform e o repositório de imagens.
-
-### 1. Provisionar Backend (S3 + DynamoDB + ECR)
-
-Navegue para o diretório de bootstrap:
+### k8s-infra (primeiro)
 
 ```bash
-cd terraform/bootstrap
-```
+cd tech-challenge-soat-fiap-k8s-infra/
 
-Inicialize o Terraform:
+# Bootstrap (UMA VEZ)
+cd terraform/bootstrap && terraform init && terraform apply
+cd ..
 
-```bash
-terraform init
-```
-
-Revise o plano de execução:
-
-```bash
-terraform plan
-```
-
-Aplique as mudanças:
-
-```bash
-terraform apply -auto-approve
-```
-
-Este comando criará:
-
-* Bucket S3: `bucket-tfstate-1029` 
-* Tabela DynamoDB: `meu-terraform-state-lock` 
-* Repositório ECR: `oficina-api` 
-
----
-
-## 🚀 Provisionamento da Infraestrutura Principal
-
-Após o bootstrap, mude para o diretório raiz do Terraform para provisionar a infraestrutura principal (VPC, EKS, RDS).
-
-### 1. Configurar Backend Remoto
-
-Navegue para o diretório principal do Terraform:
-
-```bash
-cd ../
-```
-
-Inicialize o Terraform configurando o backend remoto apontando para os recursos gerados no bootstrap:
-
-```bash
+# Infraestrutura principal
+cd terraform/
 terraform init \
   -backend-config="bucket=bucket-tfstate-1029" \
-  -backend-config="key=global/s3/terraform.tfstate" \
+  -backend-config="key=k8s/terraform.tfstate" \
   -backend-config="region=us-east-1" \
   -backend-config="dynamodb_table=meu-terraform-state-lock" \
   -backend-config="encrypt=true"
+
+terraform apply \
+  -var="newrelic_account_id=SEU_ID" \
+  -var="newrelic_api_key=NRAK-..." \
+  -var="newrelic_license_key=..."
+
+# Ver outputs (necessários para os próximos repos)
+terraform output
 ```
 
-### 2. Definir Variáveis
-
-Crie um arquivo `terraform.tfvars` para evitar expor dados sensíveis no terminal:
-
-```hcl
-db_username  = "admin"
-environment  = "production"
-cluster_name = "oficina-cluster"
-```
-
-### 3. Planejar e Aplicar a Infraestrutura
+### db-infra (segundo)
 
 ```bash
-terraform plan -out=tfplan
-terraform apply tfplan
+cd tech-challenge-soat-fiap-db-infra/terraform/
+
+terraform init
+terraform apply
 ```
 
-Os outputs importantes gerados serão:
+### Deploy da aplicação (terceiro — via pipeline deste repo)
 
-* `rds_endpoint`: Endpoint do banco de dados (ex: `oficina-rds.xxxx.us-east-1.rds.amazonaws.com`).
-* `cluster_endpoint`: Endpoint do cluster EKS.
-* `cluster_name`: Nome do cluster Kubernetes (`oficina-cluster`).
+```bash
+# Apenas faça push para a branch develop
+git push origin develop
+# A pipeline GitHub Actions cuida do resto
+```
 
+### auth-lambda (quarto)
+
+```bash
+# 1. Build e push da imagem
+cd tech-challenge-soat-fiap-auth-lambda/lambda-authorizer/
+mvn package -DskipTests
+# ... docker build + push para ECR auth-lambda
+
+# 2. Terraform
+cd ../terraform/
+terraform init
+terraform apply \
+  -var="account_id=$(aws sts get-caller-identity --query Account --output text)" \
+  -var="db_url=jdbc:mysql://<RDS_ENDPOINT>:3306/oficina" \
+  -var="db_user=admindb" \
+  -var="db_password=<SENHA_SECRETS_MANAGER>" \
+  -var="jwt_secret=<MESMA_CHAVE_DO_OFICINA_API>" \
+  -var="image_tag=latest"
+```
+
+---
+
+## Destruir a infraestrutura
+
+Para economizar créditos do AWS Academy, destrua em ordem inversa:
+
+```bash
+# 1. auth-lambda
+cd tech-challenge-soat-fiap-auth-lambda/terraform/
+terraform destroy -var="account_id=..." -var="..." 
+
+# 2. db-infra
+cd tech-challenge-soat-fiap-db-infra/terraform/
+terraform destroy
+
+# 3. k8s-infra
+cd tech-challenge-soat-fiap-k8s-infra/terraform/
+terraform destroy -var="newrelic_account_id=..." -var="..."
+```
+
+> O bucket S3 de state (`bucket-tfstate-1029`) sobrevive ao destroy por ter `force_destroy = false` — o estado é preservado para a próxima sessão.
+
+---
+
+## Documentação detalhada por repositório
+
+Cada repositório tem seu próprio README com guias completos:
+
+- [k8s-infra/README.md](../../tech-challenge-soat-fiap-k8s-infra/README.md)
+- [db-infra/README.md](../../tech-challenge-soat-fiap-db-infra/README.md)
+- [auth-lambda/README.md](../../tech-challenge-soat-fiap-auth-lambda/README.md)

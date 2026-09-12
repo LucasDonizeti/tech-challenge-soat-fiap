@@ -1,105 +1,180 @@
 # Segurança e Autenticação de APIs
 
-Este documento detalha o fluxo de segurança, autenticação e autorização implementados para as APIs do **Sistema de Gestão de Oficina**.
+Detalha o fluxo de autenticação, geração e validação de tokens JWT no **Sistema de Gestão de Oficina**.
 
 ---
 
-## 🔐 Como Funciona a Autenticação
+## Visão geral
 
-A segurança do sistema é implementada utilizando o **Spring Security** com autenticação **JWT (JSON Web Token)** sem estado (stateless).
+A autenticação funciona de forma diferente dependendo do ambiente:
 
-```
-[Cliente] ── POST /v1/auth/login ──> [API]
-[Cliente] <─── Retorna Token JWT ──── [API]
+| Ambiente | Quem gera o token | Quem valida |
+|----------|------------------|-------------|
+| **Local** (Docker Compose) | `AutenticarUsuarioUseCase` no Spring Boot | `JwtAuthenticationFilter` no Spring Security |
+| **Produção** (AWS) | **AWS Lambda Authorizer** | `JwtAuthenticationFilter` no Spring Security |
 
-[Cliente] ── GET /v1/admin/... + Token ─> [API (Valida Token)]
-[Cliente] <─── Retorna Dados Protegidos ── [API]
-```
-
-- A API é protegida e exige autenticação para a maioria dos endpoints administrativos.
-- Tokens gerados têm um tempo de expiração padrão de **24 horas (86400 segundos)**.
-- O algoritmo de assinatura utilizado é o **HMAC-SHA256 (HS256)**.
+Em ambos os casos o token usa **HMAC-SHA256 (HS256)** com a mesma chave `JWT_SECRET`. O `oficina-api` nunca gera tokens em produção — ele apenas os valida.
 
 ---
 
-## 👤 Credenciais Padrão de Administrador
+## Fluxo em produção
 
-Para testes locais e primeiro acesso, a aplicação inicia com as seguintes credenciais padrão:
+```
+[Admin/Cliente]
+     │
+     │  POST /v1/auth/login
+     │  { "username": "admin", "password": "secret123" }
+     ▼
+[API Gateway HTTP v2]
+     │  Rota dedicada → AWS_PROXY → Lambda Authorizer
+     ▼
+[Auth Lambda] (Java 21, BCrypt + JJWT)
+     ├── Admin → verifica env var (sem banco)  → gera JWT ADMIN
+     └── CPF/CNPJ → JDBC → RDS MySQL → BCrypt → gera JWT CLIENTE
+     │
+     ▼
+[Cliente recebe]  { "token": "eyJ...", "type": "Bearer", "username": "admin" }
 
-- **Usuário:** `admin`
-- **Senha:** `secret123`
-- **Role:** `ADMIN`
+----
+
+[Requisição subsequente]
+     │  GET /v1/admin/clientes
+     │  Authorization: Bearer eyJ...
+     ▼
+[API Gateway → NLB → EKS NodePort 30080]
+     ▼
+[JwtAuthenticationFilter — Spring Security]
+     ├── Extrai token do header Authorization: Bearer
+     ├── getUsernameFromToken(jwt) → "admin"
+     ├── getRoleFromToken(jwt) → "ADMIN"
+     ├── adminUserDetailsService.loadUserByUsername("admin")
+     ├── validateToken(jwt, userDetails) → true ✅
+     └── SecurityContextHolder.setAuthentication(admin, [ROLE_ADMIN])
+     ▼
+[Controller executa normalmente]
+```
 
 ---
 
-## 🛠️ Passo a Passo para Autenticação
+## Credenciais padrão (local e produção)
 
-### 1. Obter o Token JWT (Login)
+| Campo | Valor |
+|-------|-------|
+| Usuário Admin | `admin` |
+| Senha Admin | `secret123` (configurável via `SECURITY_USER_NAME` / `SECURITY_USER_PASSWORD`) |
+| Role | `ADMIN` |
 
-Envie uma requisição POST para o endpoint `/v1/auth/login`:
+> Em produção, as credenciais do admin são lidas de variáveis de ambiente (`SPRING_SECURITY_USER_NAME` e `SPRING_SECURITY_USER_PASSWORD`) injetadas pela Lambda e pelo Helm — nunca hardcoded.
 
-```http
-POST /v1/auth/login HTTP/1.1
-Host: localhost:8080
-Content-Type: application/json
+---
 
-{
-  "username": "admin",
-  "password": "secret123"
-}
+## Obtendo o token
+
+### Local
+
+```bash
+curl -s -X POST http://localhost:8080/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"secret123"}' \
+  | python3 -m json.tool
 ```
 
-**Resposta de Sucesso (200 OK):**
+### Produção
+
+```bash
+API_URL=$(aws apigatewayv2 get-apis \
+  --region us-east-1 \
+  --query 'Items[?Name==`oficina-api-gateway`].ApiEndpoint' \
+  --output text)
+
+curl -s -X POST "$API_URL/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"secret123"}' \
+  | python3 -m json.tool
+```
+
+**Resposta (200 OK):**
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTcyMDIzNDU2MCwiZXhwIjoxNzIwMzIwOTYwfQ.xyz...",
+  "token": "eyJhbGciOiJIUzI1NiJ9...",
   "type": "Bearer",
   "username": "admin"
 }
 ```
 
-### 2. Usar o Token em Endpoints Protegidos
+---
 
-Para consumir endpoints protegidos, inclua o token obtido no cabeçalho `Authorization` de cada requisição no formato `Bearer <token>`:
+## Usando o token
 
-```http
-GET /v1/admin/clientes HTTP/1.1
-Host: localhost:8080
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTcyMDIzNDU2MCwiZXhwIjoxNzIwMzIwOTYwfQ.xyz...
+```bash
+# Salvar o token
+TOKEN=$(curl -s -X POST http://localhost:8080/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"secret123"}' \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+
+# Usar em endpoint protegido
+curl -s http://localhost:8080/v1/admin/clientes \
+  -H "Authorization: Bearer $TOKEN" \
+  | python3 -m json.tool
 ```
 
 ---
 
-## 🌐 Mapeamento de Endpoints
+## Mapeamento de endpoints
 
-### 🟢 Endpoints Públicos (Sem Autenticação)
+### Endpoints públicos (sem autenticação)
 
-Os seguintes endpoints são públicos e podem ser acessados livremente (por exemplo, pelo cliente final ou para monitoramento):
+| Padrão | Descrição |
+|--------|-----------|
+| `POST /v1/auth/login` | Login — roteado para Lambda em produção |
+| `GET /v1/os/**` | Acompanhamento de OS pelo cliente |
+| `GET /actuator/**` | Health checks (Kubernetes probes + New Relic) |
+| `GET /swagger-ui/**` | Documentação interativa da API |
+| `GET /v3/api-docs/**` | Spec OpenAPI 3.0 em JSON |
 
-- **Autenticação:** `/v1/auth/**` (Login e registro)
-- **Ordens de Serviço:** `/v1/os/**` (Endpoints de acompanhamento de OS públicos)
-- **Monitoramento e Saúde:**
-  - `/v1/admin/health` (Endpoint público de saúde)
-  - `/actuator/**` (Métricas e health checks do Spring Boot Actuator)
-- **Documentação de API:**
-  - `/swagger-ui/**` (Painel interativo do Swagger UI)
-  - `/v3/api-docs/**` (Especificação OpenAPI JSON)
+### Endpoints protegidos (requer `ADMIN`)
 
-### 🔴 Endpoints Protegidos (Requer Autenticação ADMIN)
-
-Todos os endpoints administrativos que realizam modificações ou listagens gerais de dados exigem o perfil de `ADMIN`:
-
-- **Administrativo Geral:** `/v1/admin/**` (ex: Cadastro e edição de clientes, veículos, peças, insumos e listagem completa de ordens de serviço).
+| Padrão | Descrição |
+|--------|-----------|
+| `GET/POST/PUT/DELETE /v1/admin/**` | CRUD: clientes, veículos, serviços, peças, estoque, listagem de OS |
 
 ---
 
-## ⚙️ Configurações do JWT (Spring Boot)
+## Estrutura do token JWT
 
-As configurações do JWT podem ser ajustadas no arquivo [../oficina/src/main/resources/application.yaml](../oficina/src/main/resources/application.yaml):
+| Claim | Admin | Cliente (CPF/CNPJ) |
+|-------|-------|-------------------|
+| `sub` | username (ex: `admin`) | CPF/CNPJ normalizado |
+| `role` | `ADMIN` | `CLIENTE` |
+| `nome` | — | Nome do cliente |
+| `clienteId` | — | UUID do cliente |
+| `iat` | Timestamp de emissão | Timestamp de emissão |
+| `exp` | `iat + 3600s` (1h) | `iat + 86400s` (24h) |
 
+---
+
+## Configurações do JWT
+
+**Local (`application.yaml`):**
 ```yaml
 security:
   jwt:
-    secret: chavesecreta              # Chave de assinatura (alterar em produção)
-    expiration: 86400                 # Tempo de expiração (24 horas em segundos)
+    secret: chavesecreta    # alterar em produção
+    expiration: 86400       # tempo de expiração em segundos
 ```
+
+**Produção:** injetado como variável de ambiente `JWT_SECRET` pelo Helm (vindo do GitHub Secret). O mesmo valor deve estar configurado no `auth-lambda`.
+
+---
+
+## Erros comuns
+
+| Situação | Status | Causa |
+|----------|--------|-------|
+| Sem header `Authorization` | `401` | Spring Security bloqueia sem autenticação |
+| Token expirado | `401` | Expiração da claim `exp` |
+| Token inválido / assinatura errada | `401` | `JWT_SECRET` diferente entre Lambda e Spring Boot |
+| Role incorreta (ex: CLIENTE em `/v1/admin/**`) | `403` | Autorização insuficiente |
+| Body vazio no login | `400` | Lambda retorna erro de validação |
+| Credenciais incorretas | `401` | `{"error": "Credenciais inválidas"}` da Lambda |
